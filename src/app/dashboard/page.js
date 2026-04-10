@@ -9,6 +9,7 @@ export default function DashboardPage() {
   const [user, setUser] = useState(null);
   const [trips, setTrips] = useState([]);
   const [loading, setLoading] = useState(true);
+  const [deleteId, setDeleteId] = useState(null);
   const router = useRouter();
 
   useEffect(() => {
@@ -41,6 +42,12 @@ export default function DashboardPage() {
   async function handleSignOut() {
     await supabase.auth.signOut();
     router.push("/");
+  }
+
+  async function handleDeleteTrip(tripId) {
+    await supabase.from("trips").delete().eq("id", tripId);
+    setTrips((prev) => prev.filter((t) => t.id !== tripId));
+    setDeleteId(null);
   }
 
   if (loading) {
@@ -103,27 +110,68 @@ export default function DashboardPage() {
         ) : (
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
             {trips.map((trip) => (
-              <Link
+              <div
                 key={trip.id}
-                href={`/trips/${trip.id}`}
-                className="bg-white rounded-xl p-6 shadow-sm border border-sky-100 hover:shadow-md transition-shadow"
+                className="relative bg-white rounded-xl p-6 shadow-sm border border-sky-100 hover:shadow-md transition-shadow group"
               >
-                <h3 className="font-semibold text-sky-900 text-lg mb-1">
-                  {trip.title}
-                </h3>
-                {trip.destination && (
-                  <p className="text-slate-500 text-sm mb-3">
-                    📍 {trip.destination}
-                  </p>
-                )}
-                {trip.start_date && trip.end_date && (
-                  <p className="text-slate-400 text-sm">
-                    {new Date(trip.start_date).toLocaleDateString()} —{" "}
-                    {new Date(trip.end_date).toLocaleDateString()}
-                  </p>
-                )}
-              </Link>
+                <Link href={`/trips/${trip.id}`} className="block">
+                  <h3 className="font-semibold text-sky-900 text-lg mb-1 pr-8">
+                    {trip.title}
+                  </h3>
+                  {trip.destination && (
+                    <p className="text-slate-500 text-sm mb-3">
+                      📍 {trip.destination}
+                    </p>
+                  )}
+                  {trip.start_date && trip.end_date && (
+                    <p className="text-slate-400 text-sm">
+                      {new Date(trip.start_date).toLocaleDateString()} —{" "}
+                      {new Date(trip.end_date).toLocaleDateString()}
+                    </p>
+                  )}
+                </Link>
+                <button
+                  onClick={(e) => {
+                    e.stopPropagation();
+                    setDeleteId(trip.id);
+                  }}
+                  className="absolute top-4 right-4 text-slate-300 hover:text-red-500 opacity-0 group-hover:opacity-100 transition-all"
+                  title="Delete trip"
+                >
+                  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor" className="w-4 h-4"><path fillRule="evenodd" d="M8.75 1A2.75 2.75 0 0 0 6 3.75v.443c-.795.077-1.584.176-2.365.298a.75.75 0 1 0 .23 1.482l.149-.022.841 10.518A2.75 2.75 0 0 0 7.596 19h4.807a2.75 2.75 0 0 0 2.742-2.53l.841-10.519.149.023a.75.75 0 0 0 .23-1.482A41.03 41.03 0 0 0 14 4.193V3.75A2.75 2.75 0 0 0 11.25 1h-2.5ZM10 4c.84 0 1.673.025 2.5.075V3.75c0-.69-.56-1.25-1.25-1.25h-2.5c-.69 0-1.25.56-1.25 1.25v.325C8.327 4.025 9.16 4 10 4ZM8.58 7.72a.75.75 0 0 0-1.5.06l.3 7.5a.75.75 0 1 0 1.5-.06l-.3-7.5Zm4.34.06a.75.75 0 1 0-1.5-.06l-.3 7.5a.75.75 0 1 0 1.5.06l.3-7.5Z" clipRule="evenodd" /></svg>
+                </button>
+              </div>
             ))}
+          </div>
+
+        )}
+
+        {/* Delete Confirmation Modal */}
+        {deleteId && (
+          <div className="fixed inset-0 bg-black/30 flex items-center justify-center z-50 p-4" onClick={() => setDeleteId(null)}>
+            <div className="bg-white rounded-2xl shadow-xl border border-red-100 w-full max-w-sm" onClick={(e) => e.stopPropagation()}>
+              <div className="px-6 py-5 text-center">
+                <div className="text-4xl mb-3">⚠️</div>
+                <h2 className="text-lg font-bold text-slate-900 mb-2">Delete this trip?</h2>
+                <p className="text-sm text-slate-500 mb-6">
+                  This will permanently delete the trip and all its days and activities. This cannot be undone.
+                </p>
+                <div className="flex gap-3">
+                  <button
+                    onClick={() => setDeleteId(null)}
+                    className="flex-1 px-4 py-2.5 border border-slate-300 text-slate-600 rounded-lg hover:bg-slate-50 transition-colors text-sm font-medium"
+                  >
+                    Cancel
+                  </button>
+                  <button
+                    onClick={() => handleDeleteTrip(deleteId)}
+                    className="flex-1 px-4 py-2.5 bg-red-600 text-white rounded-lg hover:bg-red-700 transition-colors text-sm font-medium"
+                  >
+                    Delete Trip
+                  </button>
+                </div>
+              </div>
+            </div>
           </div>
         )}
       </main>
