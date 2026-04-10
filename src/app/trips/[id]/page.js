@@ -502,7 +502,7 @@ export default function TripDetailPage() {
                         <div
                           key={dateKey}
                           className={`
-                            relative min-h-[80px] p-2 border-r border-sky-50 last:border-r-0
+                            relative min-h-[90px] p-2 border-r border-sky-50 last:border-r-0
                             transition-colors cursor-pointer
                             ${inRange ? "bg-sky-100/60" : "hover:bg-slate-50"}
                             ${isStart ? "bg-sky-200/70 rounded-l-lg" : ""}
@@ -543,10 +543,25 @@ export default function TripDetailPage() {
                             </div>
                           )}
 
-                          {/* Activity count */}
+                          {/* Activity previews */}
                           {dayActivities.length > 0 && (
-                            <div className="mt-1 text-xs text-slate-400">
-                              {dayActivities.length} {dayActivities.length === 1 ? "activity" : "activities"}
+                            <div className="mt-1 space-y-0.5">
+                              {dayActivities.slice(0, 2).map((act) => {
+                                const cat = getCategoryInfo(act.category);
+                                return (
+                                  <div key={act.id} className="flex items-center gap-1 text-[11px] leading-tight">
+                                    <span className="flex-shrink-0">{cat.icon}</span>
+                                    <span className={`truncate ${inRange ? "text-sky-800" : "text-slate-500"}`}>
+                                      {act.title}
+                                    </span>
+                                  </div>
+                                );
+                              })}
+                              {dayActivities.length > 2 && (
+                                <div className={`text-[10px] ${inRange ? "text-sky-500" : "text-slate-400"}`}>
+                                  +{dayActivities.length - 2} more
+                                </div>
+                              )}
                             </div>
                           )}
                         </div>
@@ -586,11 +601,35 @@ export default function TripDetailPage() {
   );
 }
 
+const CATEGORIES = [
+  { value: "sightseeing", label: "Sightseeing", icon: "🏛️" },
+  { value: "food", label: "Food & Dining", icon: "🍽️" },
+  { value: "outdoors", label: "Outdoors", icon: "🌲" },
+  { value: "transport", label: "Transport", icon: "🚌" },
+  { value: "shopping", label: "Shopping", icon: "🛍️" },
+  { value: "nightlife", label: "Nightlife", icon: "🌙" },
+  { value: "wellness", label: "Wellness", icon: "🧘" },
+  { value: "task", label: "Task / Errand", icon: "📋" },
+  { value: "other", label: "Other", icon: "📌" },
+];
+
+function getCategoryInfo(value) {
+  return CATEGORIES.find((c) => c.value === value) || { value: "other", label: "Other", icon: "📌" };
+}
+
 function DayPopout({ dateKey, tripId, dayData, activities, inRange, onClose, onUpdate }) {
   const [title, setTitle] = useState(dayData?.title || "");
   const [notes, setNotes] = useState(dayData?.notes || "");
-  const [newActivity, setNewActivity] = useState("");
+  const [showAddForm, setShowAddForm] = useState(false);
+  const [newTitle, setNewTitle] = useState("");
+  const [newStartTime, setNewStartTime] = useState("");
+  const [newEndTime, setNewEndTime] = useState("");
+  const [newLocation, setNewLocation] = useState("");
+  const [newCategory, setNewCategory] = useState("sightseeing");
+  const [newNotes, setNewNotes] = useState("");
+  const [editingActivity, setEditingActivity] = useState(null);
   const [saving, setSaving] = useState(false);
+  const [dragIndex, setDragIndex] = useState(null);
 
   const dateFormatted = new Date(dateKey + "T00:00:00").toLocaleDateString("en-US", {
     weekday: "long",
@@ -599,10 +638,8 @@ function DayPopout({ dateKey, tripId, dayData, activities, inRange, onClose, onU
     year: "numeric",
   });
 
-  // Create or update the day record
   async function handleSaveDay() {
     setSaving(true);
-
     if (dayData) {
       await supabase
         .from("days")
@@ -616,38 +653,55 @@ function DayPopout({ dateKey, tripId, dayData, activities, inRange, onClose, onU
         notes: notes || null,
       });
     }
-
     setSaving(false);
     onUpdate();
   }
 
+  async function ensureDayExists() {
+    if (dayData?.id) return dayData.id;
+    const { data } = await supabase
+      .from("days")
+      .insert({
+        trip_id: tripId,
+        date: dateKey,
+        title: title || null,
+        notes: notes || null,
+      })
+      .select()
+      .single();
+    return data.id;
+  }
+
   async function handleAddActivity(e) {
     e.preventDefault();
-    if (!newActivity.trim()) return;
+    if (!newTitle.trim()) return;
 
-    // Make sure the day exists first
-    let dayId = dayData?.id;
-    if (!dayId) {
-      const { data } = await supabase
-        .from("days")
-        .insert({
-          trip_id: tripId,
-          date: dateKey,
-          title: title || null,
-          notes: notes || null,
-        })
-        .select()
-        .single();
-      dayId = data.id;
-    }
+    const dayId = await ensureDayExists();
 
     await supabase.from("activities").insert({
       day_id: dayId,
-      title: newActivity.trim(),
+      title: newTitle.trim(),
+      start_time: newStartTime || null,
+      end_time: newEndTime || null,
+      location: newLocation || null,
+      category: newCategory,
+      notes: newNotes || null,
       sort_order: activities.length,
     });
 
-    setNewActivity("");
+    setNewTitle("");
+    setNewStartTime("");
+    setNewEndTime("");
+    setNewLocation("");
+    setNewCategory("sightseeing");
+    setNewNotes("");
+    setShowAddForm(false);
+    onUpdate();
+  }
+
+  async function handleUpdateActivity(activityId, updates) {
+    await supabase.from("activities").update(updates).eq("id", activityId);
+    setEditingActivity(null);
     onUpdate();
   }
 
@@ -664,34 +718,49 @@ function DayPopout({ dateKey, tripId, dayData, activities, inRange, onClose, onU
     onUpdate();
   }
 
+  // Sort activities by sort_order first (to respect manual reordering), then start_time
+  const sortedActivities = [...activities].sort((a, b) => {
+    if (a.sort_order !== b.sort_order) return a.sort_order - b.sort_order;
+    if (a.start_time && b.start_time) return a.start_time.localeCompare(b.start_time);
+    if (a.start_time) return -1;
+    if (b.start_time) return 1;
+    return 0;
+  });
+
+  async function handleReorder(fromIndex, toIndex) {
+    if (fromIndex === toIndex) return;
+    const reordered = [...sortedActivities];
+    const [moved] = reordered.splice(fromIndex, 1);
+    reordered.splice(toIndex, 0, moved);
+    // Update sort_order in DB for each activity
+    const updates = reordered.map((act, i) =>
+      supabase.from("activities").update({ sort_order: i }).eq("id", act.id)
+    );
+    await Promise.all(updates);
+    onUpdate();
+  }
+
   return (
     <div className="fixed inset-0 bg-black/30 flex items-center justify-center z-50 p-4" onClick={onClose}>
       <div
-        className="bg-white rounded-2xl shadow-xl border border-sky-100 w-full max-w-lg max-h-[80vh] overflow-y-auto"
+        className="bg-white rounded-2xl shadow-xl border border-sky-100 w-full max-w-xl max-h-[85vh] overflow-y-auto"
         onClick={(e) => e.stopPropagation()}
       >
         {/* Header */}
-        <div className="flex items-center justify-between px-6 py-4 border-b border-sky-100 bg-sky-50 rounded-t-2xl">
+        <div className="flex items-center justify-between px-6 py-4 border-b border-sky-100 bg-sky-50 rounded-t-2xl sticky top-0 z-10">
           <div>
             <h2 className="text-lg font-bold text-sky-900">{dateFormatted}</h2>
             {!inRange && (
               <span className="text-xs text-amber-600 font-medium">Outside trip dates</span>
             )}
           </div>
-          <button
-            onClick={onClose}
-            className="text-slate-400 hover:text-slate-600 text-xl"
-          >
-            ✕
-          </button>
+          <button onClick={onClose} className="text-slate-400 hover:text-slate-600 text-xl">✕</button>
         </div>
 
         <div className="px-6 py-5 space-y-5">
           {/* Day Title */}
           <div>
-            <label className="block text-sm font-medium text-slate-700 mb-1">
-              Day Title
-            </label>
+            <label className="block text-sm font-medium text-slate-700 mb-1">Day Title</label>
             <input
               type="text"
               value={title}
@@ -704,14 +773,12 @@ function DayPopout({ dateKey, tripId, dayData, activities, inRange, onClose, onU
 
           {/* Notes */}
           <div>
-            <label className="block text-sm font-medium text-slate-700 mb-1">
-              Notes
-            </label>
+            <label className="block text-sm font-medium text-slate-700 mb-1">Notes</label>
             <textarea
               value={notes}
               onChange={(e) => setNotes(e.target.value)}
               onBlur={handleSaveDay}
-              rows={3}
+              rows={2}
               placeholder="Any notes for this day..."
               className="w-full px-3 py-2 border border-slate-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-sky-500 focus:border-transparent text-sm"
             />
@@ -719,57 +786,274 @@ function DayPopout({ dateKey, tripId, dayData, activities, inRange, onClose, onU
 
           {/* Activities */}
           <div>
-            <label className="block text-sm font-medium text-slate-700 mb-2">
-              Activities
-            </label>
+            <div className="flex items-center justify-between mb-3">
+              <label className="text-sm font-medium text-slate-700">Activities</label>
+              {!showAddForm && (
+                <button
+                  onClick={() => setShowAddForm(true)}
+                  className="text-sky-600 hover:text-sky-700 text-sm font-medium"
+                >
+                  + Add Activity
+                </button>
+              )}
+            </div>
 
-            {activities.length > 0 && (
-              <ul className="space-y-2 mb-3">
-                {activities.map((activity) => (
-                  <li key={activity.id} className="flex items-center gap-3 group">
-                    <input
-                      type="checkbox"
-                      checked={activity.is_checked}
-                      onChange={() => handleToggleActivity(activity.id, activity.is_checked)}
-                      className="w-4 h-4 rounded border-slate-300 text-sky-600 focus:ring-sky-500 cursor-pointer"
-                    />
-                    <span
-                      className={`flex-1 text-sm ${
-                        activity.is_checked ? "line-through text-slate-400" : "text-slate-700"
-                      }`}
+            {/* Activity List */}
+            {sortedActivities.length > 0 && (
+              <div className="space-y-2 mb-4">
+                {sortedActivities.map((activity, idx) => {
+                  const cat = getCategoryInfo(activity.category);
+                  const isEditing = editingActivity === activity.id;
+
+                  if (isEditing) {
+                    return (
+                      <ActivityEditForm
+                        key={activity.id}
+                        activity={activity}
+                        onSave={(updates) => handleUpdateActivity(activity.id, updates)}
+                        onCancel={() => setEditingActivity(null)}
+                      />
+                    );
+                  }
+
+                  return (
+                    <div
+                      key={activity.id}
+                      draggable
+                      onDragStart={() => setDragIndex(idx)}
+                      onDragOver={(e) => { e.preventDefault(); }}
+                      onDrop={() => { handleReorder(dragIndex, idx); setDragIndex(null); }}
+                      onDragEnd={() => setDragIndex(null)}
+                      className={`flex items-start gap-3 group p-2 rounded-lg hover:bg-slate-50 transition-colors ${dragIndex === idx ? "opacity-40" : ""}`}
                     >
-                      {activity.title}
-                    </span>
-                    <button
-                      onClick={() => handleDeleteActivity(activity.id)}
-                      className="text-slate-300 hover:text-red-500 opacity-0 group-hover:opacity-100 transition-all text-sm"
-                    >
-                      ✕
-                    </button>
-                  </li>
-                ))}
-              </ul>
+                      <span className="text-slate-300 cursor-grab active:cursor-grabbing mt-1 opacity-0 group-hover:opacity-100 transition-opacity" title="Drag to reorder">
+                        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 16 16" fill="currentColor" className="w-3.5 h-3.5"><circle cx="5" cy="3" r="1.2"/><circle cx="11" cy="3" r="1.2"/><circle cx="5" cy="8" r="1.2"/><circle cx="11" cy="8" r="1.2"/><circle cx="5" cy="13" r="1.2"/><circle cx="11" cy="13" r="1.2"/></svg>
+                      </span>
+                      <input
+                        type="checkbox"
+                        checked={activity.is_checked}
+                        onChange={() => handleToggleActivity(activity.id, activity.is_checked)}
+                        className="w-4 h-4 mt-1 rounded border-slate-300 text-sky-600 focus:ring-sky-500 cursor-pointer"
+                      />
+                      <div className="flex-1 min-w-0">
+                        <div className="flex items-center gap-2">
+                          <span className="text-sm" title={cat.label}>{cat.icon}</span>
+                          <span className={`text-sm font-medium ${activity.is_checked ? "line-through text-slate-400" : "text-slate-800"}`}>
+                            {activity.title}
+                          </span>
+                        </div>
+                        <div className="flex flex-wrap gap-x-3 gap-y-1 mt-1">
+                          {activity.start_time && (
+                            <span className="text-xs text-slate-400">
+                              🕐 {activity.start_time.slice(0, 5)}
+                              {activity.end_time && ` – ${activity.end_time.slice(0, 5)}`}
+                            </span>
+                          )}
+                          {activity.location && (
+                            <span className="text-xs text-slate-400">📍 {activity.location}</span>
+                          )}
+                        </div>
+                        {activity.notes && (
+                          <p className="text-xs text-slate-400 mt-1">{activity.notes}</p>
+                        )}
+                      </div>
+                      <div className="flex gap-1 opacity-0 group-hover:opacity-100 transition-all">
+                        <button
+                          onClick={() => setEditingActivity(activity.id)}
+                          className="text-slate-300 hover:text-sky-600 p-1"
+                          title="Edit"
+                        >
+                          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor" className="w-3.5 h-3.5"><path d="m5.433 13.917 1.262-3.155A4 4 0 0 1 7.58 9.42l6.92-6.918a2.121 2.121 0 0 1 3 3l-6.92 6.918c-.383.383-.84.685-1.343.886l-3.154 1.262a.5.5 0 0 1-.65-.65Z" /><path d="M3.5 5.75c0-.69.56-1.25 1.25-1.25H10A.75.75 0 0 0 10 3H4.75A2.75 2.75 0 0 0 2 5.75v9.5A2.75 2.75 0 0 0 4.75 18h9.5A2.75 2.75 0 0 0 17 15.25V10a.75.75 0 0 0-1.5 0v5.25c0 .69-.56 1.25-1.25 1.25h-9.5c-.69 0-1.25-.56-1.25-1.25v-9.5Z" /></svg>
+                        </button>
+                        <button
+                          onClick={() => handleDeleteActivity(activity.id)}
+                          className="text-slate-300 hover:text-red-500 p-1"
+                          title="Delete"
+                        >
+                          ✕
+                        </button>
+                      </div>
+                    </div>
+                  );
+                })}
+              </div>
             )}
 
-            {/* Add Activity */}
-            <form onSubmit={handleAddActivity} className="flex gap-2">
-              <input
-                type="text"
-                value={newActivity}
-                onChange={(e) => setNewActivity(e.target.value)}
-                placeholder="Add an activity..."
-                className="flex-1 px-3 py-1.5 text-sm border border-slate-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-sky-500"
-              />
-              <button
-                type="submit"
-                className="bg-sky-600 text-white px-4 py-1.5 rounded-lg text-sm font-semibold hover:bg-sky-700 transition-colors"
-              >
-                Add
-              </button>
-            </form>
+            {/* Add Activity Form */}
+            {showAddForm && (
+              <form onSubmit={handleAddActivity} className="bg-sky-50 rounded-lg p-4 space-y-3 border border-sky-100">
+                <div>
+                  <input
+                    type="text"
+                    value={newTitle}
+                    onChange={(e) => setNewTitle(e.target.value)}
+                    placeholder="Activity name *"
+                    autoFocus
+                    required
+                    className="w-full px-3 py-2 border border-slate-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-sky-500 text-sm bg-white"
+                  />
+                </div>
+                <div className="grid grid-cols-2 gap-3">
+                  <div>
+                    <label className="block text-xs text-slate-500 mb-1">Start Time</label>
+                    <input
+                      type="time"
+                      value={newStartTime}
+                      onChange={(e) => setNewStartTime(e.target.value)}
+                      className="w-full px-3 py-1.5 border border-slate-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-sky-500 text-sm bg-white"
+                    />
+                  </div>
+                  <div>
+                    <label className="block text-xs text-slate-500 mb-1">End Time</label>
+                    <input
+                      type="time"
+                      value={newEndTime}
+                      onChange={(e) => setNewEndTime(e.target.value)}
+                      className="w-full px-3 py-1.5 border border-slate-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-sky-500 text-sm bg-white"
+                    />
+                  </div>
+                </div>
+                <div>
+                  <input
+                    type="text"
+                    value={newLocation}
+                    onChange={(e) => setNewLocation(e.target.value)}
+                    placeholder="Location (optional)"
+                    className="w-full px-3 py-1.5 border border-slate-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-sky-500 text-sm bg-white"
+                  />
+                </div>
+                <div>
+                  <label className="block text-xs text-slate-500 mb-1">Category</label>
+                  <select
+                    value={newCategory}
+                    onChange={(e) => setNewCategory(e.target.value)}
+                    className="w-full px-3 py-1.5 border border-slate-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-sky-500 text-sm bg-white"
+                  >
+                    {CATEGORIES.map((cat) => (
+                      <option key={cat.value} value={cat.value}>
+                        {cat.icon} {cat.label}
+                      </option>
+                    ))}
+                  </select>
+                </div>
+                <div>
+                  <textarea
+                    value={newNotes}
+                    onChange={(e) => setNewNotes(e.target.value)}
+                    placeholder="Notes (optional)"
+                    rows={2}
+                    className="w-full px-3 py-1.5 border border-slate-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-sky-500 text-sm bg-white"
+                  />
+                </div>
+                <div className="flex gap-2">
+                  <button
+                    type="submit"
+                    className="flex-1 bg-sky-600 text-white py-2 rounded-lg text-sm font-semibold hover:bg-sky-700 transition-colors"
+                  >
+                    Add Activity
+                  </button>
+                  <button
+                    type="button"
+                    onClick={() => {
+                      setShowAddForm(false);
+                      setNewTitle("");
+                      setNewStartTime("");
+                      setNewEndTime("");
+                      setNewLocation("");
+                      setNewCategory("sightseeing");
+                      setNewNotes("");
+                    }}
+                    className="px-4 py-2 text-sm text-slate-500 hover:text-slate-700"
+                  >
+                    Cancel
+                  </button>
+                </div>
+              </form>
+            )}
+
+            {sortedActivities.length === 0 && !showAddForm && (
+              <p className="text-sm text-slate-400 italic">No activities yet — add something to this day!</p>
+            )}
           </div>
         </div>
       </div>
     </div>
+  );
+}
+
+function ActivityEditForm({ activity, onSave, onCancel }) {
+  const [title, setTitle] = useState(activity.title || "");
+  const [startTime, setStartTime] = useState(activity.start_time?.slice(0, 5) || "");
+  const [endTime, setEndTime] = useState(activity.end_time?.slice(0, 5) || "");
+  const [location, setLocation] = useState(activity.location || "");
+  const [category, setCategory] = useState(activity.category || "sightseeing");
+  const [notes, setNotes] = useState(activity.notes || "");
+
+  function handleSubmit(e) {
+    e.preventDefault();
+    onSave({
+      title,
+      start_time: startTime || null,
+      end_time: endTime || null,
+      location: location || null,
+      category,
+      notes: notes || null,
+    });
+  }
+
+  return (
+    <form onSubmit={handleSubmit} className="bg-sky-50 rounded-lg p-3 space-y-2 border border-sky-100">
+      <input
+        type="text"
+        value={title}
+        onChange={(e) => setTitle(e.target.value)}
+        required
+        autoFocus
+        className="w-full px-3 py-1.5 border border-slate-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-sky-500 text-sm bg-white"
+      />
+      <div className="grid grid-cols-2 gap-2">
+        <input
+          type="time"
+          value={startTime}
+          onChange={(e) => setStartTime(e.target.value)}
+          className="w-full px-3 py-1.5 border border-slate-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-sky-500 text-sm bg-white"
+        />
+        <input
+          type="time"
+          value={endTime}
+          onChange={(e) => setEndTime(e.target.value)}
+          className="w-full px-3 py-1.5 border border-slate-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-sky-500 text-sm bg-white"
+        />
+      </div>
+      <input
+        type="text"
+        value={location}
+        onChange={(e) => setLocation(e.target.value)}
+        placeholder="Location"
+        className="w-full px-3 py-1.5 border border-slate-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-sky-500 text-sm bg-white"
+      />
+      <select
+        value={category}
+        onChange={(e) => setCategory(e.target.value)}
+        className="w-full px-3 py-1.5 border border-slate-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-sky-500 text-sm bg-white"
+      >
+        {CATEGORIES.map((cat) => (
+          <option key={cat.value} value={cat.value}>
+            {cat.icon} {cat.label}
+          </option>
+        ))}
+      </select>
+      <textarea
+        value={notes}
+        onChange={(e) => setNotes(e.target.value)}
+        placeholder="Notes"
+        rows={2}
+        className="w-full px-3 py-1.5 border border-slate-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-sky-500 text-sm bg-white"
+      />
+      <div className="flex gap-2">
+        <button type="submit" className="flex-1 bg-sky-600 text-white py-1.5 rounded-lg text-sm font-semibold hover:bg-sky-700">Save</button>
+        <button type="button" onClick={onCancel} className="px-4 py-1.5 text-sm text-slate-500 hover:text-slate-700">Cancel</button>
+      </div>
+    </form>
   );
 }
