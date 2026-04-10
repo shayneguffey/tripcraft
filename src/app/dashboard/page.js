@@ -125,8 +125,8 @@ export default function DashboardPage() {
                   )}
                   {trip.start_date && trip.end_date && (
                     <p className="text-slate-400 text-sm">
-                      {new Date(trip.start_date).toLocaleDateString()} —{" "}
-                      {new Date(trip.end_date).toLocaleDateString()}
+                      {new Date(trip.start_date + "T00:00:00").toLocaleDateString()} —{" "}
+                      {new Date(trip.end_date + "T00:00:00").toLocaleDateString()}
                     </p>
                   )}
                 </Link>
