@@ -1,3 +1,5 @@
+import Link from "next/link";
+
 export default function Home() {
   return (
     <div className="flex flex-col min-h-screen bg-gradient-to-b from-sky-50 to-white">
@@ -8,9 +10,9 @@ export default function Home() {
             <span className="text-2xl">✈️</span>
             <span className="text-xl font-bold text-sky-900">TripCraft</span>
           </div>
-          <nav className="flex gap-4 text-sm text-sky-700">
-            <span className="hover:text-sky-900 cursor-pointer">Features</span>
-            <span className="hover:text-sky-900 cursor-pointer">About</span>
+          <nav className="flex gap-4 text-sm">
+            <Link href="/login" className="text-sky-700 hover:text-sky-900">Sign In</Link>
+            <Link href="/signup" className="bg-sky-600 text-white px-4 py-1.5 rounded-lg hover:bg-sky-700 transition-colors">Sign Up</Link>
           </nav>
         </div>
       </header>
@@ -28,12 +30,12 @@ export default function Home() {
             flights, budgets, maps, and more — all in one beautiful place.
           </p>
           <div className="flex gap-4 justify-center">
-            <button className="bg-sky-600 text-white px-8 py-3 rounded-lg text-base font-semibold hover:bg-sky-700 transition-colors shadow-lg shadow-sky-200">
+            <Link href="/signup" className="bg-sky-600 text-white px-8 py-3 rounded-lg text-base font-semibold hover:bg-sky-700 transition-colors shadow-lg shadow-sky-200">
               Get Started
-            </button>
-            <button className="border-2 border-sky-200 text-sky-700 px-8 py-3 rounded-lg text-base font-semibold hover:bg-sky-50 transition-colors">
-              Learn More
-            </button>
+            </Link>
+            <Link href="/login" className="border-2 border-sky-200 text-sky-700 px-8 py-3 rounded-lg text-base font-semibold hover:bg-sky-50 transition-colors">
+              Sign In
+            </Link>
           </div>
         </div>
 
