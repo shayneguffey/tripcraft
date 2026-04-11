@@ -4,6 +4,8 @@ import { useState, useEffect, useRef, useCallback } from "react";
 import { supabase } from "@/lib/supabase";
 import { useRouter, useParams } from "next/navigation";
 import Link from "next/link";
+import FlightOptions from "@/components/FlightOptions";
+import ActivityOptions from "@/components/ActivityOptions";
 
 // Helper: generate array of dates for calendar display
 function getCalendarRange(startDate, endDate) {
@@ -61,6 +63,8 @@ export default function TripDetailPage() {
   const [editingField, setEditingField] = useState(null); // "title", "destination", "dates", "description"
   const [editValue, setEditValue] = useState("");
   const [editValue2, setEditValue2] = useState(""); // for end date when editing dates
+  const [flightOptions, setFlightOptions] = useState([]);
+  const [activityOptions, setActivityOptions] = useState([]);
   const router = useRouter();
   const params = useParams();
 
@@ -167,6 +171,17 @@ export default function TripDetailPage() {
     } else if (e.key === "Escape") {
       setEditingField(null);
     }
+  }
+
+  // Get flights on a given date from the selected flight option
+  function getFlightsOnDate(dateKey) {
+    const selectedOpt = flightOptions.find((o) => o.is_selected) || flightOptions[0];
+    if (!selectedOpt) return [];
+    return (selectedOpt.flight_legs || []).filter((leg) => leg.departure_date === dateKey);
+  }
+
+  function getScheduledActivities(dateKey) {
+    return activityOptions.filter((a) => a.scheduled_date === dateKey);
   }
 
   // Drag handlers for adjusting trip date range
@@ -451,6 +466,22 @@ export default function TripDetailPage() {
           </div>
         </div>
 
+        {/* Flight Options */}
+        <FlightOptions
+          tripId={params.id}
+          tripStart={trip?.start_date}
+          tripEnd={trip?.end_date}
+          onFlightOptionsChange={setFlightOptions}
+        />
+
+        {/* Activity Options */}
+        <ActivityOptions
+          tripId={params.id}
+          tripStart={trip?.start_date}
+          tripEnd={trip?.end_date}
+          onActivityOptionsChange={setActivityOptions}
+        />
+
         {/* Calendar */}
         {calendarDates.length > 0 ? (
           <div className="bg-white rounded-xl border border-sky-100 shadow-sm overflow-hidden select-none">
@@ -535,6 +566,47 @@ export default function TripDetailPage() {
                               </span>
                             )}
                           </div>
+
+                          {/* Flight indicators */}
+                          {(() => {
+                            const flights = getFlightsOnDate(dateKey);
+                            if (flights.length === 0) return null;
+                            return (
+                              <div className="mt-1 space-y-0.5">
+                                {flights.map((f, fi) => (
+                                  <div key={fi} className="flex items-center gap-1 bg-indigo-100 text-indigo-700 rounded px-1 py-0.5">
+                                    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 16 16" fill="currentColor" className="w-2.5 h-2.5 flex-shrink-0">
+                                      <path d="M3.478 2.404a.75.75 0 0 0-.926.941l2.432 7.905H13.5a.75.75 0 0 1 0 1.5H4.984l-2.432 7.905a.75.75 0 0 0 .926.94 60.519 60.519 0 0 0 18.445-8.986.75.75 0 0 0 0-1.218A60.517 60.517 0 0 0 3.478 2.404Z" />
+                                    </svg>
+                                    <span className="text-[10px] font-medium truncate">
+                                      {f.departure_airport}→{f.arrival_airport}
+                                    </span>
+                                  </div>
+                                ))}
+                              </div>
+                            );
+                          })()}
+
+                          {/* Scheduled activity indicators */}
+                          {(() => {
+                            const scheduled = getScheduledActivities(dateKey);
+                            if (scheduled.length === 0) return null;
+                            return (
+                              <div className="mt-1 space-y-0.5">
+                                {scheduled.slice(0, 2).map((a) => (
+                                  <div key={a.id} className="flex items-center gap-1 bg-emerald-100 text-emerald-700 rounded px-1 py-0.5">
+                                    <svg className="w-2.5 h-2.5 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24" strokeWidth={2}>
+                                      <path strokeLinecap="round" strokeLinejoin="round" d="M11.049 2.927c.3-.921 1.603-.921 1.902 0l1.519 4.674a1 1 0 00.95.69h4.915c.969 0 1.371 1.24.588 1.81l-3.976 2.888a1 1 0 00-.363 1.118l1.518 4.674c.3.922-.755 1.688-1.538 1.118l-3.976-2.888a1 1 0 00-1.176 0l-3.976 2.888c-.783.57-1.838-.197-1.538-1.118l1.518-4.674a1 1 0 00-.363-1.118l-3.976-2.888c-.784-.57-.38-1.81.588-1.81h4.914a1 1 0 00.951-.69l1.519-4.674z" />
+                                    </svg>
+                                    <span className="text-[10px] font-medium truncate">{a.name}</span>
+                                  </div>
+                                ))}
+                                {scheduled.length > 2 && (
+                                  <div className="text-[10px] text-emerald-500">+{scheduled.length - 2} more</div>
+                                )}
+                              </div>
+                            );
+                          })()}
 
                           {/* Day title if exists */}
                           {dayData?.title && (
