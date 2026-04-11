@@ -175,6 +175,7 @@ export default function DashboardPage() {
           </div>
         )}
       </main>
+      <footer className="text-center text-xs text-slate-300 py-4">v2.1.0 — Apr 11 2026</footer>
     </div>
   );
 }

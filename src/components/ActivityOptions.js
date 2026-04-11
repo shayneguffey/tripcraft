@@ -366,48 +366,32 @@ function AddActivityModal({ tripId, onClose, onSave }) {
   const [saving, setSaving] = useState(false);
   const [dragOver, setDragOver] = useState(false);
   const fileInputRef = useRef(null);
-  const urlParsing = useRef(false);
 
-  // Handle URL input — only trigger AI parse on explicit button click or paste detection
-  function handlePasteChange(val) {
+  // Auto-parse URL input — matches the working FlightOptions pattern exactly
+  async function handlePasteChange(val) {
     setPasteInput(val);
-    // Don't clear urlStatus if we're currently parsing
-    if (!urlParsing.current) {
-      const trimmed = val.trim();
-      const isUrl = trimmed.startsWith("http://") || trimmed.startsWith("https://");
-      if (!isUrl) setUrlStatus(null);
+    setUrlStatus(null);
+
+    if (!val.trim()) {
+      setAiResult(null);
+      return;
     }
-  }
 
-  async function handleParseUrl() {
-    const trimmed = pasteInput.trim();
-    if (!trimmed.startsWith("http://") && !trimmed.startsWith("https://")) return;
-    if (urlParsing.current) return;
+    const trimmed = val.trim();
+    const isUrl = trimmed.startsWith("http://") || trimmed.startsWith("https://");
 
-    urlParsing.current = true;
-    setUrlStatus("analyzing");
-    setAiResult(null);
-    try {
-      const result = await extractActivityFromUrl(trimmed);
-      setAiResult(result);
-      setUrlStatus("done");
-      if (result.name && !name) setName(result.name);
-      if (result.price && !price) setPrice(String(result.price));
-    } catch (err) {
-      console.error("AI URL parse error:", err);
-      setUrlStatus("error:" + (err.message || "Unknown error"));
-    } finally {
-      urlParsing.current = false;
-    }
-  }
-
-  // Auto-trigger parse when a URL is pasted (not typed character by character)
-  function handleUrlPaste(e) {
-    const pasted = e.clipboardData?.getData("text") || "";
-    const trimmed = pasted.trim();
-    if (trimmed.startsWith("http://") || trimmed.startsWith("https://")) {
-      // Let onChange update the value first, then parse
-      setTimeout(() => handleParseUrl(), 100);
+    if (isUrl) {
+      setUrlStatus("analyzing");
+      try {
+        const result = await extractActivityFromUrl(trimmed);
+        setAiResult(result);
+        setUrlStatus("done");
+        if (result.name && !name) setName(result.name);
+        if (result.price && !price) setPrice(String(result.price));
+      } catch (err) {
+        console.error("AI URL parse error:", err);
+        setUrlStatus("error:" + (err.message || "Unknown error"));
+      }
     }
   }
 
@@ -514,16 +498,9 @@ function AddActivityModal({ tripId, onClose, onSave }) {
           <div className="mb-4">
             <label className="block text-sm font-medium text-slate-700 mb-1">Paste URL</label>
             <p className="text-xs text-slate-400 mb-1">Paste a Viator, GetYourGuide, or any activity URL</p>
-            <div className="flex gap-2">
-              <textarea value={pasteInput} onChange={(e) => handlePasteChange(e.target.value)} onPaste={handleUrlPaste} rows={2}
-                placeholder="https://www.viator.com/tours/..."
-                className="flex-1 px-3 py-2 border border-slate-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-emerald-500 text-sm font-mono" />
-              {pasteInput.trim().startsWith("http") && urlStatus !== "analyzing" && (
-                <button onClick={handleParseUrl} className="px-3 py-2 bg-blue-600 text-white text-xs font-semibold rounded-lg hover:bg-blue-700 transition-colors self-start whitespace-nowrap">
-                  Analyze
-                </button>
-              )}
-            </div>
+            <textarea value={pasteInput} onChange={(e) => handlePasteChange(e.target.value)} rows={2}
+              placeholder="https://www.viator.com/tours/..."
+              className="w-full px-3 py-2 border border-slate-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-emerald-500 text-sm font-mono" />
             {urlStatus === "analyzing" && (
               <div className="mt-2 px-3 py-2 bg-blue-50 rounded-lg text-xs text-blue-700 flex items-center gap-2">
                 <svg className="animate-spin w-3.5 h-3.5" fill="none" viewBox="0 0 24 24">
