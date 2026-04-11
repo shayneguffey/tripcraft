@@ -366,16 +366,30 @@ function AddActivityModal({ tripId, onClose, onSave }) {
   const [saving, setSaving] = useState(false);
   const [dragOver, setDragOver] = useState(false);
   const fileInputRef = useRef(null);
+  const urlParseTimer = useRef(null);
+  const urlParseController = useRef(null);
 
-  // Auto-parse URL input
-  async function handlePasteChange(val) {
+  // Auto-parse URL input (debounced to avoid re-firing on every keystroke)
+  function handlePasteChange(val) {
     setPasteInput(val);
-    setUrlStatus(null);
-    setAiResult(null);
+
+    // Clear any pending debounce
+    if (urlParseTimer.current) clearTimeout(urlParseTimer.current);
 
     const trimmed = val.trim();
-    if (trimmed.startsWith("http://") || trimmed.startsWith("https://")) {
+    if (!trimmed.startsWith("http://") && !trimmed.startsWith("https://")) {
+      setUrlStatus(null);
+      return;
+    }
+
+    // Debounce 600ms so we only fire once after paste completes
+    urlParseTimer.current = setTimeout(async () => {
+      // Cancel any in-flight request
+      if (urlParseController.current) urlParseController.current.abort();
+      urlParseController.current = new AbortController();
+
       setUrlStatus("analyzing");
+      setAiResult(null);
       try {
         const result = await extractActivityFromUrl(trimmed);
         setAiResult(result);
@@ -383,10 +397,11 @@ function AddActivityModal({ tripId, onClose, onSave }) {
         if (result.name && !name) setName(result.name);
         if (result.price && !price) setPrice(String(result.price));
       } catch (err) {
+        if (err.name === "AbortError") return; // superseded by newer request
         console.error("AI URL parse error:", err);
-        setUrlStatus("error");
+        setUrlStatus("error:" + (err.message || "Unknown error"));
       }
-    }
+    }, 600);
   }
 
   // Screenshot handling
@@ -508,6 +523,11 @@ function AddActivityModal({ tripId, onClose, onSave }) {
               <div className="mt-2 px-3 py-2 bg-emerald-50 rounded-lg text-xs text-emerald-700">
                 Found: {aiResult.name}{aiResult.price ? ` · ${formatPrice(aiResult.price, aiResult.currency)}` : ""}
                 {aiResult.duration_minutes ? ` · ${formatDuration(aiResult.duration_minutes)}` : ""}
+              </div>
+            )}
+            {urlStatus?.startsWith("error") && (
+              <div className="mt-2 px-3 py-2 bg-red-50 rounded-lg text-xs text-red-700">
+                {urlStatus.includes(":") ? urlStatus.split(":").slice(1).join(":") : "Couldn't analyze URL. You can still enter details manually."}
               </div>
             )}
           </div>
