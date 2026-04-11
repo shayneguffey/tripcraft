@@ -56,17 +56,17 @@ export async function POST(request) {
       return NextResponse.json({ error: "No image or URL provided" }, { status: 400 });
     }
 
-    // Build the request parts
-    const parts = [{ text: SYSTEM_PROMPT }];
+    // Build the request parts — match the structure of the working flight parser
+    let parts;
 
     if (image) {
-      // Screenshot mode
+      // Screenshot mode — put system prompt and image in parts (same pattern as flight parser)
       const base64Data = image.includes(",") ? image.split(",")[1] : image;
       const imageMediaType = mimeType || "image/png";
-      parts.push({
-        inlineData: { mimeType: imageMediaType, data: base64Data },
-      });
-      parts.push({ text: "Extract all activity/tour information from this screenshot." });
+      parts = [
+        { text: SYSTEM_PROMPT },
+        { inlineData: { mimeType: imageMediaType, data: base64Data } },
+      ];
     } else if (url) {
       // URL mode — try to fetch page content
       let pageContent = "";
@@ -95,32 +95,52 @@ export async function POST(request) {
       if (pageContent) {
         msg += `\n\nPage content:\n${pageContent}`;
       }
-      parts.push({ text: msg });
+      parts = [{ text: SYSTEM_PROMPT }, { text: msg }];
+    } else {
+      return NextResponse.json({ error: "No image or URL provided" }, { status: 400 });
     }
 
-    // Call Gemini
-    const geminiResponse = await fetch(`${GEMINI_API_URL}?key=${apiKey}`, {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({
-        contents: [{ parts }],
-        generationConfig: {
-          temperature: 0.1,
-          maxOutputTokens: 4096,
-          responseMimeType: "application/json",
-        },
-      }),
-    });
+    // Call Gemini — try with responseMimeType first, fall back without it
+    async function callGemini(useJsonMime) {
+      const genConfig = {
+        temperature: 0.1,
+        maxOutputTokens: 4096,
+      };
+      if (useJsonMime) genConfig.responseMimeType = "application/json";
 
+      return fetch(`${GEMINI_API_URL}?key=${apiKey}`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          contents: [{ parts }],
+          generationConfig: genConfig,
+        }),
+      });
+    }
+
+    let geminiResponse = await callGemini(true);
+
+    // If responseMimeType causes an error with vision, retry without it
     if (!geminiResponse.ok) {
-      const errorText = await geminiResponse.text();
-      console.error("Gemini API error:", geminiResponse.status, errorText);
-      let detail = "";
-      try { detail = JSON.parse(errorText)?.error?.message || errorText.substring(0, 300); } catch (_) { detail = errorText.substring(0, 300); }
-      return NextResponse.json(
-        { error: `Gemini API error (${geminiResponse.status}): ${detail}` },
-        { status: 502 }
-      );
+      const status1 = geminiResponse.status;
+      const errorText1 = await geminiResponse.text();
+      console.error("Gemini attempt 1 error:", status1, errorText1.substring(0, 300));
+
+      if (image && (status1 === 400 || status1 === 500)) {
+        console.log("Retrying without responseMimeType...");
+        geminiResponse = await callGemini(false);
+      }
+
+      if (!geminiResponse.ok) {
+        const errorText = await geminiResponse.text().catch(() => errorText1);
+        console.error("Gemini API final error:", geminiResponse.status, errorText.substring(0, 300));
+        let detail = "";
+        try { detail = JSON.parse(errorText)?.error?.message || errorText.substring(0, 300); } catch (_) { detail = errorText.substring(0, 300); }
+        return NextResponse.json(
+          { error: `Gemini API error (${geminiResponse.status}): ${detail}` },
+          { status: 502 }
+        );
+      }
     }
 
     const geminiData = await geminiResponse.json();
@@ -134,8 +154,11 @@ export async function POST(request) {
     if (!responseText) responseText = responseParts.find(p => p.text)?.text || "";
 
     if (!responseText) {
+      console.error("Gemini returned no text. Full response:", JSON.stringify(geminiData).substring(0, 500));
       return NextResponse.json({ error: "No response from Gemini" }, { status: 502 });
     }
+
+    console.log("Gemini activity response (first 300):", responseText.substring(0, 300));
 
     // Parse JSON
     let cleanJson = responseText.trim();

@@ -407,7 +407,7 @@ function AddActivityModal({ tripId, onClose, onSave }) {
         if (result.price && !price) setPrice(String(result.price));
       } catch (err) {
         console.error("AI vision error:", err);
-        setAiStatus("error");
+        setAiStatus("error:" + (err.message || "Unknown error"));
       }
     };
     reader.readAsDataURL(file);
@@ -549,9 +549,9 @@ function AddActivityModal({ tripId, onClose, onSave }) {
                     {aiResult.rating ? ` · ★${aiResult.rating}` : ""}
                   </div>
                 )}
-                {aiStatus === "error" && (
+                {aiStatus?.startsWith("error") && (
                   <div className="mt-2 px-3 py-2 bg-red-50 rounded-lg text-xs text-red-700">
-                    Couldn't analyze screenshot. You can still save it and enter details manually.
+                    {aiStatus.includes(":") ? aiStatus.split(":").slice(1).join(":") : "Couldn't analyze screenshot. You can still save it and enter details manually."}
                   </div>
                 )}
               </div>
