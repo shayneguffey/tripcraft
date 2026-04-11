@@ -1,5 +1,7 @@
 // Server-side API route: sends a flight URL (+ fetched page content) to Gemini for extraction
 
+export const maxDuration = 30; // Allow up to 30s on Vercel
+
 import { NextResponse } from "next/server";
 
 const GEMINI_API_URL = "https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash:generateContent";

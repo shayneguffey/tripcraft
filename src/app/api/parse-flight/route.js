@@ -1,6 +1,8 @@
 // Server-side API route: sends a screenshot to Gemini Vision to extract flight data
 // This runs on the server so the API key is never exposed to the browser
 
+export const maxDuration = 30; // Allow up to 30s on Vercel
+
 import { NextResponse } from "next/server";
 
 const GEMINI_API_URL = "https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash:generateContent";

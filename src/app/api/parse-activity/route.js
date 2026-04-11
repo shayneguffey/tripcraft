@@ -1,5 +1,7 @@
 // Server-side API route: sends a screenshot or URL to Gemini to extract activity/tour data
 
+export const maxDuration = 30; // Allow up to 30s on Vercel (default is 10s)
+
 import { NextResponse } from "next/server";
 
 const GEMINI_API_URL = "https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash:generateContent";
@@ -77,7 +79,7 @@ export async function POST(request) {
             "Accept": "text/html",
           },
           redirect: "follow",
-          signal: AbortSignal.timeout(8000),
+          signal: AbortSignal.timeout(5000),
         });
         if (pageResponse.ok) {
           const html = await pageResponse.text();
