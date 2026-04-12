@@ -19,14 +19,20 @@ const PIN_CONFIG = {
   transport: { color: "#8b5cf6", label: "Transport", emoji: "\ud83d\ude8c" },
 };
 
-// ── Geocoding cache (persists across re-renders within session) ──
+// ── Day colors for route view (cycle through these) ──
+const DAY_COLORS = [
+  "#ef4444", "#f97316", "#eab308", "#22c55e", "#06b6d4",
+  "#3b82f6", "#8b5cf6", "#ec4899", "#f43f5e", "#14b8a6",
+  "#a855f7", "#6366f1", "#0ea5e9", "#84cc16", "#f59e0b",
+];
+
+// ── Geocoding cache ──
 const geocodeCache = {};
 
 async function geocode(query) {
   if (!query || query.trim().length < 2) return null;
   const key = query.trim().toLowerCase();
   if (geocodeCache[key]) return geocodeCache[key];
-  // Special handling for airport codes (3 letters)
   const airportQuery = query.match(/^[A-Z]{3}$/) ? `${query} airport` : query;
 
   try {
@@ -64,11 +70,29 @@ function createIcon(color, emoji) {
   });
 }
 
-// ── Collect location queries from all trip data ──
+// ── Create numbered day marker ──
+function createNumberedIcon(color, number) {
+  if (typeof window === "undefined") return null;
+  const L = require("leaflet");
+  const svg = `<svg xmlns="http://www.w3.org/2000/svg" width="32" height="42" viewBox="0 0 32 42">
+    <path d="M16 0C7.16 0 0 7.16 0 16c0 12 16 26 16 26s16-14 16-26C32 7.16 24.84 0 16 0z" fill="${color}" stroke="white" stroke-width="2"/>
+    <circle cx="16" cy="14" r="10" fill="white" opacity="0.9"/>
+    <text x="16" y="18" text-anchor="middle" font-size="11" font-weight="bold" fill="${color}">${number}</text>
+  </svg>`;
+  return L.divIcon({
+    html: svg,
+    iconSize: [32, 42],
+    iconAnchor: [16, 42],
+    popupAnchor: [0, -42],
+    className: "",
+  });
+}
+
+// ── Collect locations with date assignments for BOTH views ──
 function collectLocations(flightOptions, accommodationOptions, activityOptions, diningOptions, transportOptions) {
   const locations = [];
 
-  // Flights — origin and destination airports
+  // Flights
   const selectedFlight = (flightOptions || []).find(f => f.is_selected);
   if (selectedFlight?.flight_legs) {
     const legs = selectedFlight.flight_legs;
@@ -79,63 +103,97 @@ function collectLocations(flightOptions, accommodationOptions, activityOptions, 
       const first = outbound[0];
       const last = outbound[outbound.length - 1];
       if (first.departure_airport) {
-        locations.push({ type: "flight", query: first.departure_airport, name: `Depart: ${first.departure_airport}`, detail: first.airline_name || "" });
+        locations.push({ type: "flight", query: first.departure_airport, name: `Depart: ${first.departure_airport}`, detail: first.airline_name || "", date: first.departure_date || null });
       }
       if (last.arrival_airport) {
-        locations.push({ type: "flight", query: last.arrival_airport, name: `Arrive: ${last.arrival_airport}`, detail: last.airline_name || "" });
+        locations.push({ type: "flight", query: last.arrival_airport, name: `Arrive: ${last.arrival_airport}`, detail: last.airline_name || "", date: last.departure_date || first.departure_date || null });
       }
     }
     if (returnLegs.length > 0) {
+      const first = returnLegs[0];
       const last = returnLegs[returnLegs.length - 1];
-      if (last.arrival_airport && !locations.some(l => l.query === last.arrival_airport)) {
-        locations.push({ type: "flight", query: last.arrival_airport, name: `Return: ${last.arrival_airport}`, detail: "" });
+      if (first.departure_airport) {
+        locations.push({ type: "flight", query: first.departure_airport, name: `Return depart: ${first.departure_airport}`, detail: first.airline_name || "", date: first.departure_date || null });
+      }
+      if (last.arrival_airport && !locations.some(l => l.query === last.arrival_airport && l.date === last.departure_date)) {
+        locations.push({ type: "flight", query: last.arrival_airport, name: `Return arrive: ${last.arrival_airport}`, detail: "", date: last.departure_date || null });
       }
     }
   }
 
-  // Accommodation
+  // Accommodation — assign to check_in_date
   (accommodationOptions || []).filter(a => a.is_selected).forEach(a => {
     const query = a.address || a.location_name || a.name;
-    if (query) locations.push({ type: "accommodation", query, name: a.name || "Accommodation", detail: a.location_name || "" });
+    if (query) locations.push({ type: "accommodation", query, name: a.name || "Accommodation", detail: a.location_name || "", date: a.check_in_date || null, endDate: a.check_out_date || null });
   });
 
-  // Activities
+  // Activities — scheduled_date
   (activityOptions || []).filter(a => a.is_selected).forEach(a => {
     const query = a.address || a.location_name || a.name;
-    if (query) locations.push({ type: "activity", query, name: a.name || "Activity", detail: a.location_name || "" });
+    if (query) locations.push({ type: "activity", query, name: a.name || "Activity", detail: a.location_name || "", date: a.scheduled_date || null });
   });
 
-  // Dining
+  // Dining — scheduled_date
   (diningOptions || []).filter(d => d.is_selected).forEach(d => {
     const query = d.address || d.location_name || d.name;
-    if (query) locations.push({ type: "dining", query, name: d.name || "Restaurant", detail: d.location_name || "" });
+    if (query) locations.push({ type: "dining", query, name: d.name || "Restaurant", detail: d.location_name || "", date: d.scheduled_date || null });
   });
 
-  // Transport — pickup and dropoff
+  // Transport — departure_date
   (transportOptions || []).filter(t => t.is_selected).forEach(t => {
     if (t.pickup_location) {
-      locations.push({ type: "transport", query: t.pickup_location, name: `Pickup: ${t.name || "Transport"}`, detail: t.pickup_location });
+      locations.push({ type: "transport", query: t.pickup_location, name: `Pickup: ${t.name || "Transport"}`, detail: t.pickup_location, date: t.departure_date || null });
     }
     if (t.dropoff_location && t.dropoff_location !== t.pickup_location) {
-      locations.push({ type: "transport", query: t.dropoff_location, name: `Dropoff: ${t.name || "Transport"}`, detail: t.dropoff_location });
+      locations.push({ type: "transport", query: t.dropoff_location, name: `Dropoff: ${t.name || "Transport"}`, detail: t.dropoff_location, date: t.arrival_date || t.departure_date || null });
     }
   });
 
   return locations;
 }
 
-export default function TripMap({ tripDestination, flightOptions, accommodationOptions, activityOptions, diningOptions, transportOptions }) {
+// ── Generate list of trip dates ──
+function getTripDates(startDate, endDate) {
+  if (!startDate || !endDate) return [];
+  const dates = [];
+  const current = new Date(startDate + "T00:00:00");
+  const end = new Date(endDate + "T00:00:00");
+  while (current <= end) {
+    const y = current.getFullYear();
+    const m = String(current.getMonth() + 1).padStart(2, "0");
+    const d = String(current.getDate()).padStart(2, "0");
+    dates.push(`${y}-${m}-${d}`);
+    current.setDate(current.getDate() + 1);
+  }
+  return dates;
+}
+
+function formatShortDate(dateStr) {
+  if (!dateStr) return "";
+  const d = new Date(dateStr + "T00:00:00");
+  return d.toLocaleDateString("en-US", { month: "short", day: "numeric" });
+}
+
+function getDayOfWeek(dateStr) {
+  if (!dateStr) return "";
+  const d = new Date(dateStr + "T00:00:00");
+  return d.toLocaleDateString("en-US", { weekday: "short" });
+}
+
+export default function TripMap({ tripDestination, tripStart, tripEnd, flightOptions, accommodationOptions, activityOptions, diningOptions, transportOptions }) {
   const [pins, setPins] = useState([]);
   const [loading, setLoading] = useState(true);
   const [collapsed, setCollapsed] = useState(false);
+  const [viewMode, setViewMode] = useState("pins"); // "pins" | "route"
   const [filter, setFilter] = useState("all");
+  const [selectedDay, setSelectedDay] = useState("all");
   const [mapReady, setMapReady] = useState(false);
   const geocodingRef = useRef(false);
+  const dayStripRef = useRef(null);
 
-  // Import leaflet CSS on client
+  // Leaflet CSS
   useEffect(() => {
     if (typeof window === "undefined") return;
-    // Inject Leaflet CSS if not already present
     if (!document.querySelector('link[href*="leaflet"]')) {
       const link = document.createElement("link");
       link.rel = "stylesheet";
@@ -145,19 +203,21 @@ export default function TripMap({ tripDestination, flightOptions, accommodationO
     setMapReady(true);
   }, []);
 
+  // Trip dates
+  const tripDates = useMemo(() => getTripDates(tripStart, tripEnd), [tripStart, tripEnd]);
+
   // Collect all locations
   const locations = useMemo(() =>
     collectLocations(flightOptions, accommodationOptions, activityOptions, diningOptions, transportOptions),
     [flightOptions, accommodationOptions, activityOptions, diningOptions, transportOptions]
   );
 
-  // Geocode all locations
+  // Geocode
   useEffect(() => {
     if (locations.length === 0 || geocodingRef.current) {
       setLoading(false);
       return;
     }
-
     geocodingRef.current = true;
     let cancelled = false;
 
@@ -169,7 +229,6 @@ export default function TripMap({ tripDestination, flightOptions, accommodationO
         if (coords) {
           results.push({ ...loc, lat: coords.lat, lng: coords.lng });
         }
-        // Small delay to respect Nominatim rate limit (1 req/sec)
         await new Promise(r => setTimeout(r, 350));
       }
       if (!cancelled) {
@@ -178,26 +237,101 @@ export default function TripMap({ tripDestination, flightOptions, accommodationO
         geocodingRef.current = false;
       }
     }
-
     geocodeAll();
     return () => { cancelled = true; geocodingRef.current = false; };
   }, [locations]);
 
-  // Re-geocode when locations change
-  useEffect(() => {
-    geocodingRef.current = false;
-  }, [flightOptions, accommodationOptions, activityOptions, diningOptions, transportOptions]);
+  useEffect(() => { geocodingRef.current = false; }, [flightOptions, accommodationOptions, activityOptions, diningOptions, transportOptions]);
 
-  // Calculate map bounds
-  const filteredPins = filter === "all" ? pins : pins.filter(p => p.type === filter);
-  const bounds = filteredPins.length > 0
-    ? filteredPins.map(p => [p.lat, p.lng])
-    : null;
+  // ── PINS VIEW: filter by category ──
+  const pinViewPins = filter === "all" ? pins : pins.filter(p => p.type === filter);
 
-  // Default center: trip destination or world center
-  const defaultCenter = [13.7563, 100.5018]; // Bangkok fallback
+  // ── ROUTE VIEW: group pins by date, build day routes ──
+  const dayGroups = useMemo(() => {
+    const groups = {};
+    pins.forEach(pin => {
+      if (!pin.date) return;
+      // For accommodation, add to every day it spans
+      if (pin.type === "accommodation" && pin.endDate) {
+        const start = new Date(pin.date + "T00:00:00");
+        const end = new Date(pin.endDate + "T00:00:00");
+        const cur = new Date(start);
+        while (cur < end) {
+          const key = `${cur.getFullYear()}-${String(cur.getMonth() + 1).padStart(2, "0")}-${String(cur.getDate()).padStart(2, "0")}`;
+          if (!groups[key]) groups[key] = [];
+          groups[key].push(pin);
+          cur.setDate(cur.getDate() + 1);
+        }
+      } else {
+        if (!groups[pin.date]) groups[pin.date] = [];
+        groups[pin.date].push(pin);
+      }
+    });
+    return groups;
+  }, [pins]);
 
-  // Flight lines (connect departure → arrival)
+  // Route view: which pins to show
+  const routeViewData = useMemo(() => {
+    if (selectedDay === "all") {
+      // Show all days with color-coded routes
+      const allDayPins = [];
+      const routes = [];
+      const sortedDates = Object.keys(dayGroups).sort();
+
+      sortedDates.forEach((date, dayIdx) => {
+        const color = DAY_COLORS[dayIdx % DAY_COLORS.length];
+        const dayPins = dayGroups[date];
+        dayPins.forEach((pin, pinIdx) => {
+          allDayPins.push({ ...pin, dayColor: color, dayIndex: dayIdx + 1, stepIndex: pinIdx + 1 });
+        });
+        // Connect pins within this day
+        if (dayPins.length >= 2) {
+          const coords = dayPins.map(p => [p.lat, p.lng]);
+          routes.push({ positions: coords, color, dayIndex: dayIdx + 1 });
+        }
+      });
+
+      // Also connect last pin of each day to first pin of next day (travel between days)
+      for (let i = 0; i < sortedDates.length - 1; i++) {
+        const todayPins = dayGroups[sortedDates[i]];
+        const tomorrowPins = dayGroups[sortedDates[i + 1]];
+        if (todayPins.length > 0 && tomorrowPins.length > 0) {
+          const lastToday = todayPins[todayPins.length - 1];
+          const firstTomorrow = tomorrowPins[0];
+          // Only draw inter-day line if locations are different
+          if (Math.abs(lastToday.lat - firstTomorrow.lat) > 0.001 || Math.abs(lastToday.lng - firstTomorrow.lng) > 0.001) {
+            routes.push({
+              positions: [[lastToday.lat, lastToday.lng], [firstTomorrow.lat, firstTomorrow.lng]],
+              color: "#94a3b8",
+              dashed: true,
+            });
+          }
+        }
+      }
+
+      return { pins: allDayPins, routes };
+    } else {
+      // Single day
+      const dayIdx = tripDates.indexOf(selectedDay);
+      const color = DAY_COLORS[dayIdx % DAY_COLORS.length];
+      const dayPins = (dayGroups[selectedDay] || []).map((pin, i) => ({
+        ...pin, dayColor: color, dayIndex: dayIdx + 1, stepIndex: i + 1,
+      }));
+      const routes = [];
+      if (dayPins.length >= 2) {
+        routes.push({ positions: dayPins.map(p => [p.lat, p.lng]), color });
+      }
+      return { pins: dayPins, routes };
+    }
+  }, [dayGroups, selectedDay, tripDates]);
+
+  // Bounds for current view
+  const activePins = viewMode === "pins" ? pinViewPins : routeViewData.pins;
+  const bounds = activePins.length > 0 ? activePins.map(p => [p.lat, p.lng]) : null;
+
+  const defaultCenter = [13.7563, 100.5018];
+
+  // Flight lines for pin view
   const flightPins = pins.filter(p => p.type === "flight");
   const flightLines = [];
   if (flightPins.length >= 2) {
@@ -206,9 +340,11 @@ export default function TripMap({ tripDestination, flightOptions, accommodationO
     }
   }
 
-  // Count by type
+  // Counts
   const typeCounts = {};
   pins.forEach(p => { typeCounts[p.type] = (typeCounts[p.type] || 0) + 1; });
+
+  const daysWithPins = Object.keys(dayGroups).filter(d => tripDates.includes(d));
 
   const hasData = pins.length > 0;
   const hasPicked = locations.length > 0;
@@ -224,21 +360,44 @@ export default function TripMap({ tripDestination, flightOptions, accommodationO
           Trip Map
           {hasData && <span className="text-xs font-medium text-slate-400 ml-1">({pins.length} locations)</span>}
         </h2>
-        <button
-          onClick={() => setCollapsed(!collapsed)}
-          className="flex items-center gap-1.5 px-3 py-1.5 text-xs font-medium rounded-lg bg-slate-100 text-slate-600 hover:bg-slate-200 transition-colors"
-        >
-          {collapsed ? "Show" : "Hide"}
-          <svg className={`w-3.5 h-3.5 transition-transform ${collapsed ? "" : "rotate-180"}`} fill="none" stroke="currentColor" viewBox="0 0 24 24" strokeWidth={2}>
-            <path strokeLinecap="round" strokeLinejoin="round" d="M19 9l-7 7-7-7" />
-          </svg>
-        </button>
+        <div className="flex items-center gap-2">
+          {/* View mode toggle */}
+          {hasData && (
+            <div className="flex bg-slate-100 rounded-lg p-0.5">
+              <button
+                onClick={() => setViewMode("pins")}
+                className={`px-2.5 py-1 text-xs font-medium rounded-md transition-colors ${
+                  viewMode === "pins" ? "bg-white text-slate-800 shadow-sm" : "text-slate-500 hover:text-slate-700"
+                }`}
+              >
+                Pins
+              </button>
+              <button
+                onClick={() => setViewMode("route")}
+                className={`px-2.5 py-1 text-xs font-medium rounded-md transition-colors ${
+                  viewMode === "route" ? "bg-white text-slate-800 shadow-sm" : "text-slate-500 hover:text-slate-700"
+                }`}
+              >
+                Route
+              </button>
+            </div>
+          )}
+          <button
+            onClick={() => setCollapsed(!collapsed)}
+            className="flex items-center gap-1.5 px-3 py-1.5 text-xs font-medium rounded-lg bg-slate-100 text-slate-600 hover:bg-slate-200 transition-colors"
+          >
+            {collapsed ? "Show" : "Hide"}
+            <svg className={`w-3.5 h-3.5 transition-transform ${collapsed ? "" : "rotate-180"}`} fill="none" stroke="currentColor" viewBox="0 0 24 24" strokeWidth={2}>
+              <path strokeLinecap="round" strokeLinejoin="round" d="M19 9l-7 7-7-7" />
+            </svg>
+          </button>
+        </div>
       </div>
 
       {!collapsed && (
         <div className="bg-white rounded-xl border border-teal-100 shadow-sm overflow-hidden">
-          {/* Filter bar */}
-          {hasData && (
+          {/* PINS VIEW: category filter bar */}
+          {viewMode === "pins" && hasData && (
             <div className="px-4 py-2.5 border-b border-slate-100 flex gap-1.5 overflow-x-auto">
               <button
                 onClick={() => setFilter("all")}
@@ -266,8 +425,71 @@ export default function TripMap({ tripDestination, flightOptions, accommodationO
             </div>
           )}
 
+          {/* ROUTE VIEW: day selector strip */}
+          {viewMode === "route" && hasData && tripDates.length > 0 && (
+            <div className="border-b border-slate-100">
+              <div ref={dayStripRef} className="flex gap-1 px-4 py-2.5 overflow-x-auto">
+                <button
+                  onClick={() => setSelectedDay("all")}
+                  className={`flex-shrink-0 px-3 py-2 rounded-lg text-xs font-medium transition-colors ${
+                    selectedDay === "all"
+                      ? "bg-teal-600 text-white shadow-sm"
+                      : "bg-slate-100 text-slate-600 hover:bg-slate-200"
+                  }`}
+                >
+                  All Days
+                </button>
+                {tripDates.map((date, i) => {
+                  const hasPins = daysWithPins.includes(date);
+                  const color = DAY_COLORS[i % DAY_COLORS.length];
+                  const isSelected = selectedDay === date;
+                  return (
+                    <button
+                      key={date}
+                      onClick={() => setSelectedDay(date)}
+                      className={`flex-shrink-0 flex flex-col items-center px-3 py-1.5 rounded-lg text-xs transition-colors ${
+                        isSelected
+                          ? "text-white shadow-sm"
+                          : hasPins
+                            ? "bg-slate-100 text-slate-700 hover:bg-slate-200"
+                            : "bg-slate-50 text-slate-300"
+                      }`}
+                      style={isSelected ? { backgroundColor: color } : {}}
+                    >
+                      <span className="font-bold">Day {i + 1}</span>
+                      <span className={`text-[10px] ${isSelected ? "text-white/80" : "text-slate-400"}`}>
+                        {getDayOfWeek(date)} {formatShortDate(date)}
+                      </span>
+                      {hasPins && !isSelected && (
+                        <div className="w-1.5 h-1.5 rounded-full mt-0.5" style={{ backgroundColor: color }} />
+                      )}
+                    </button>
+                  );
+                })}
+              </div>
+              {/* Route legend for selected day */}
+              {selectedDay !== "all" && routeViewData.pins.length > 0 && (
+                <div className="px-4 pb-2.5 flex flex-wrap gap-2">
+                  {routeViewData.pins.map((pin, i) => (
+                    <div key={i} className="flex items-center gap-1.5 text-xs text-slate-600">
+                      <span className="w-5 h-5 rounded-full flex items-center justify-center text-white text-[10px] font-bold" style={{ backgroundColor: pin.dayColor }}>
+                        {pin.stepIndex}
+                      </span>
+                      <span>{PIN_CONFIG[pin.type]?.emoji} {pin.name}</span>
+                      {i < routeViewData.pins.length - 1 && (
+                        <svg className="w-3 h-3 text-slate-300" fill="none" stroke="currentColor" viewBox="0 0 24 24" strokeWidth={2}>
+                          <path strokeLinecap="round" strokeLinejoin="round" d="M9 5l7 7-7 7" />
+                        </svg>
+                      )}
+                    </div>
+                  ))}
+                </div>
+              )}
+            </div>
+          )}
+
           {/* Map */}
-          <div className="relative" style={{ height: 400 }}>
+          <div className="relative" style={{ height: 420 }}>
             {loading && (
               <div className="absolute inset-0 bg-slate-50 flex items-center justify-center z-10">
                 <div className="flex items-center gap-2 text-sm text-teal-600">
@@ -295,10 +517,13 @@ export default function TripMap({ tripDestination, flightOptions, accommodationO
 
             {mapReady && (
               <MapInner
-                pins={filteredPins}
+                key={viewMode} // force remount on view change for clean state
+                viewMode={viewMode}
+                pins={viewMode === "pins" ? pinViewPins : routeViewData.pins}
+                routes={viewMode === "route" ? routeViewData.routes : []}
                 bounds={bounds}
                 defaultCenter={defaultCenter}
-                flightLines={filter === "all" || filter === "flight" ? flightLines : []}
+                flightLines={viewMode === "pins" && (filter === "all" || filter === "flight") ? flightLines : []}
               />
             )}
           </div>
@@ -308,11 +533,10 @@ export default function TripMap({ tripDestination, flightOptions, accommodationO
   );
 }
 
-// ── Inner map component (only rendered client-side) ──
-function MapInner({ pins, bounds, defaultCenter, flightLines }) {
+// ── Inner map component ──
+function MapInner({ viewMode, pins, routes, bounds, defaultCenter, flightLines }) {
   const mapRef = useRef(null);
 
-  // Fit bounds when pins change
   useEffect(() => {
     if (mapRef.current && bounds && bounds.length > 0) {
       try {
@@ -323,7 +547,7 @@ function MapInner({ pins, bounds, defaultCenter, flightLines }) {
     }
   }, [bounds]);
 
-  const icons = useMemo(() => {
+  const categoryIcons = useMemo(() => {
     const result = {};
     Object.entries(PIN_CONFIG).forEach(([key, cfg]) => {
       result[key] = createIcon(cfg.color, cfg.emoji);
@@ -344,31 +568,49 @@ function MapInner({ pins, bounds, defaultCenter, flightLines }) {
         url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
       />
 
-      {/* Flight route lines */}
+      {/* PINS VIEW: flight route lines */}
       {flightLines.map((line, i) => (
+        <Polyline key={`fl-${i}`} positions={line} color="#3b82f6" weight={2} opacity={0.6} dashArray="8 6" />
+      ))}
+
+      {/* ROUTE VIEW: day route lines */}
+      {routes.map((route, i) => (
         <Polyline
-          key={`flight-line-${i}`}
-          positions={line}
-          color="#3b82f6"
-          weight={2}
-          opacity={0.6}
-          dashArray="8 6"
+          key={`route-${i}`}
+          positions={route.positions}
+          color={route.color}
+          weight={route.dashed ? 2 : 3}
+          opacity={route.dashed ? 0.4 : 0.7}
+          dashArray={route.dashed ? "6 8" : undefined}
         />
       ))}
 
       {/* Pins */}
-      {pins.map((pin, i) => (
-        icons[pin.type] ? (
-          <Marker key={`${pin.type}-${i}`} position={[pin.lat, pin.lng]} icon={icons[pin.type]}>
+      {pins.map((pin, i) => {
+        // Route view: use numbered icons
+        const icon = viewMode === "route" && pin.dayColor
+          ? createNumberedIcon(pin.dayColor, pin.stepIndex)
+          : categoryIcons[pin.type];
+
+        if (!icon) return null;
+
+        return (
+          <Marker key={`pin-${viewMode}-${i}`} position={[pin.lat, pin.lng]} icon={icon}>
             <Popup>
-              <div className="text-sm">
+              <div className="text-sm min-w-[140px]">
+                {viewMode === "route" && (
+                  <div className="text-[10px] text-slate-400 mb-0.5">
+                    Step {pin.stepIndex}{pin.date ? ` \u2022 ${formatShortDate(pin.date)}` : ""}
+                  </div>
+                )}
                 <div className="font-bold text-slate-800">{pin.name}</div>
                 {pin.detail && <div className="text-slate-500 text-xs">{pin.detail}</div>}
+                <div className="text-[10px] text-slate-400 mt-0.5">{PIN_CONFIG[pin.type]?.emoji} {PIN_CONFIG[pin.type]?.label}</div>
               </div>
             </Popup>
           </Marker>
-        ) : null
-      ))}
+        );
+      })}
     </MapContainer>
   );
 }

@@ -818,6 +818,8 @@ export default function TripDetailPage() {
         {/* Trip Map */}
         <TripMap
           tripDestination={trip?.destination}
+          tripStart={trip?.start_date}
+          tripEnd={trip?.end_date}
           flightOptions={flightOptions}
           accommodationOptions={accommodationOptions}
           activityOptions={activityOptions}
@@ -862,7 +864,7 @@ export default function TripDetailPage() {
           />
         )}
       </main>
-      <footer className="text-center text-xs text-slate-300 py-4">v2.8.0 — Apr 11 2026</footer>
+      <footer className="text-center text-xs text-slate-300 py-4">v2.9.0 — Apr 11 2026</footer>
     </div>
   );
 }
