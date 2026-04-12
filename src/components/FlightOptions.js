@@ -291,6 +291,9 @@ function OptionDetail({ option }) {
           />
         )}
         {legs[0]?.airline_name && <StatBadge label="Airline" value={legs[0].airline_name} />}
+        {option.num_passengers && option.num_passengers > 0 && (
+          <StatBadge label="Passengers" value={option.num_passengers} />
+        )}
       </div>
 
       {/* Flight legs */}
@@ -493,6 +496,7 @@ function AddFlightModal({ tripId, onClose, onSave }) {
   const [name, setName] = useState("");
   const [pasteInput, setPasteInput] = useState("");
   const [price, setPrice] = useState("");
+  const [numPassengers, setNumPassengers] = useState("");
   const [notes, setNotes] = useState("");
   const [parsedResult, setParsedResult] = useState(null);
   const [urlParseStatus, setUrlParseStatus] = useState(null); // null | "analyzing" | "done" | "error"
@@ -557,6 +561,11 @@ function AddFlightModal({ tripId, onClose, onSave }) {
         // Auto-fill price
         if (result.total_price && !price) {
           setPrice(String(result.total_price));
+        }
+
+        // Auto-fill passengers
+        if (result.num_passengers && !numPassengers) {
+          setNumPassengers(String(result.num_passengers));
         }
 
         // Auto-generate name
@@ -635,6 +644,11 @@ function AddFlightModal({ tripId, onClose, onSave }) {
             setPrice(String(result.total_price));
           }
 
+          // Auto-fill passengers
+          if (result.num_passengers && !numPassengers) {
+            setNumPassengers(String(result.num_passengers));
+          }
+
           // Auto-fill name if empty
           if (!name && legs[0]?.departure_airport) {
             const airline = result.airline_name || legs[0].airline_name || legs[0].airline_code || "";
@@ -710,6 +724,7 @@ function AddFlightModal({ tripId, onClose, onSave }) {
           trip_id: tripId,
           name: name.trim(),
           total_price: price ? parseFloat(price) : null,
+          num_passengers: numPassengers ? parseInt(numPassengers) : 1,
           source_url: parsedResult?.url || null,
           screenshot_url: screenshot || null,
           notes: notes || null,
@@ -921,18 +936,33 @@ function AddFlightModal({ tripId, onClose, onSave }) {
             </button>
           </div>
 
-          {/* Price */}
-          <div className="mb-4">
-            <label className="block text-sm font-medium text-slate-700 mb-1">Total Price</label>
-            <div className="relative">
-              <span className="absolute left-3 top-2 text-slate-400 text-sm">$</span>
+          {/* Price + Passengers */}
+          <div className="mb-4 grid grid-cols-2 gap-3">
+            <div>
+              <label className="block text-sm font-medium text-slate-700 mb-1">Total Price</label>
+              <div className="relative">
+                <span className="absolute left-3 top-2 text-slate-400 text-sm">$</span>
+                <input
+                  type="number"
+                  value={price}
+                  onChange={(e) => setPrice(e.target.value)}
+                  placeholder="1,437"
+                  className="w-full pl-7 pr-3 py-2 border border-slate-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-sky-500 focus:border-transparent text-sm"
+                />
+              </div>
+            </div>
+            <div>
+              <label className="block text-sm font-medium text-slate-700 mb-1">Passengers</label>
               <input
                 type="number"
-                value={price}
-                onChange={(e) => setPrice(e.target.value)}
-                placeholder="1,437"
-                className="w-full pl-7 pr-3 py-2 border border-slate-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-sky-500 focus:border-transparent text-sm"
+                min="1"
+                max="20"
+                value={numPassengers}
+                onChange={(e) => setNumPassengers(e.target.value)}
+                placeholder="1"
+                className="w-full px-3 py-2 border border-slate-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-sky-500 focus:border-transparent text-sm"
               />
+              <p className="text-[10px] text-slate-400 mt-0.5">How many travelers this price covers</p>
             </div>
           </div>
 

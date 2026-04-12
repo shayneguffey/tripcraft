@@ -9,6 +9,7 @@ import ActivityOptions from "@/components/ActivityOptions";
 import AccommodationOptions from "@/components/AccommodationOptions";
 import DiningOptions from "@/components/DiningOptions";
 import TransportationOptions from "@/components/TransportationOptions";
+import BudgetTracker from "@/components/BudgetTracker";
 
 // Helper: generate array of dates for calendar display
 function getCalendarRange(startDate, endDate) {
@@ -151,6 +152,7 @@ export default function TripDetailPage() {
       setEditValue2(trip.end_date || "");
     }
     else if (field === "description") setEditValue(trip.description || "");
+    else if (field === "num_travelers") setEditValue(trip.num_travelers || 1);
     setEditingField(field);
   }
 
@@ -164,6 +166,7 @@ export default function TripDetailPage() {
       updates.end_date = editValue2 || null;
     }
     else if (field === "description") updates.description = editValue || null;
+    else if (field === "num_travelers") updates.num_travelers = Math.max(1, parseInt(editValue) || 1);
 
     await supabase.from("trips").update(updates).eq("id", params.id);
     setEditingField(null);
@@ -492,6 +495,43 @@ export default function TripDetailPage() {
               </>
             )}
           </div>
+
+          {/* Number of Travelers */}
+          <div className="flex items-center gap-2 group mt-1">
+            <svg className="w-4 h-4 text-slate-400" fill="none" stroke="currentColor" viewBox="0 0 24 24" strokeWidth={2}>
+              <path strokeLinecap="round" strokeLinejoin="round" d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0z" />
+            </svg>
+            {editingField === "num_travelers" ? (
+              <div className="flex items-center gap-2">
+                <input
+                  type="number"
+                  min="1"
+                  max="50"
+                  value={editValue}
+                  onChange={(e) => setEditValue(e.target.value)}
+                  onKeyDown={(e) => handleFieldKeyDown(e, "num_travelers")}
+                  autoFocus
+                  className="w-20 text-sm bg-white border border-sky-300 rounded-lg px-2 py-1 focus:outline-none focus:ring-2 focus:ring-sky-500"
+                />
+                <span className="text-sm text-slate-500">traveler{editValue > 1 ? "s" : ""}</span>
+                <button onClick={() => saveField("num_travelers")} className="text-sky-600 hover:text-sky-700 text-sm font-medium">Save</button>
+                <button onClick={() => setEditingField(null)} className="text-slate-400 hover:text-slate-600 text-sm">Cancel</button>
+              </div>
+            ) : (
+              <>
+                <span className="text-sm text-slate-500">
+                  {trip.num_travelers || 1} traveler{(trip.num_travelers || 1) > 1 ? "s" : ""}
+                </span>
+                <button
+                  onClick={() => startEditing("num_travelers")}
+                  className="text-slate-300 hover:text-sky-600 opacity-0 group-hover:opacity-100 transition-all"
+                  title="Edit travelers"
+                >
+                  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor" className="w-3.5 h-3.5"><path d="m5.433 13.917 1.262-3.155A4 4 0 0 1 7.58 9.42l6.92-6.918a2.121 2.121 0 0 1 3 3l-6.92 6.918c-.383.383-.84.685-1.343.886l-3.154 1.262a.5.5 0 0 1-.65-.65Z" /><path d="M3.5 5.75c0-.69.56-1.25 1.25-1.25H10A.75.75 0 0 0 10 3H4.75A2.75 2.75 0 0 0 2 5.75v9.5A2.75 2.75 0 0 0 4.75 18h9.5A2.75 2.75 0 0 0 17 15.25V10a.75.75 0 0 0-1.5 0v5.25c0 .69-.56 1.25-1.25 1.25h-9.5c-.69 0-1.25-.56-1.25-1.25v-9.5Z" /></svg>
+                </button>
+              </>
+            )}
+          </div>
         </div>
 
         {/* Flight Options */}
@@ -768,6 +808,17 @@ export default function TripDetailPage() {
           </div>
         )}
 
+        {/* Budget Tracker */}
+        <BudgetTracker
+          tripId={params.id}
+          numTravelers={trip?.num_travelers || 1}
+          flightOptions={flightOptions}
+          activityOptions={activityOptions}
+          accommodationOptions={accommodationOptions}
+          diningOptions={diningOptions}
+          transportOptions={transportOptions}
+        />
+
         {/* Day Detail Popout */}
         {selectedDay && (
           <DayPopout
@@ -781,7 +832,7 @@ export default function TripDetailPage() {
           />
         )}
       </main>
-      <footer className="text-center text-xs text-slate-300 py-4">v2.3.0 — Apr 11 2026</footer>
+      <footer className="text-center text-xs text-slate-300 py-4">v2.5.0 — Apr 11 2026</footer>
     </div>
   );
 }

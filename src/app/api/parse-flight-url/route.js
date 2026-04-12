@@ -41,6 +41,7 @@ Return ONLY valid JSON (no markdown fences, no explanation, no comments):
   "total_price": number without currency symbol,
   "currency": "USD",
   "airline_name": "Primary airline",
+  "num_passengers": integer (number of passengers/travelers the price covers),
   "source": "Website name"
 }
 
@@ -52,6 +53,7 @@ CRITICAL RULES:
 - For price: look in URL params (price=, fare=, tfu=) AND page content ($xxx.xx patterns)
 - For airline: if page content mentions an airline name, use its IATA code too
 - First leg = "outbound", legs going back to origin = "return"
+- For passengers: look for "1 passenger", "2 adults", "passengers=2", traveler count in URL params or page content. Default to 1 if not found
 - Return raw JSON only — no backticks, no markdown, no explanation text`;
 
 export async function POST(request) {

@@ -10,6 +10,7 @@ export default function NewTripPage() {
   const [destination, setDestination] = useState("");
   const [startDate, setStartDate] = useState("");
   const [endDate, setEndDate] = useState("");
+  const [numTravelers, setNumTravelers] = useState(1);
   const [description, setDescription] = useState("");
   const [error, setError] = useState(null);
   const [loading, setLoading] = useState(false);
@@ -45,6 +46,7 @@ export default function NewTripPage() {
         destination: destination || null,
         start_date: startDate || null,
         end_date: endDate || null,
+        num_travelers: numTravelers || 1,
         description: description || null,
       })
       .select()
@@ -158,6 +160,25 @@ export default function NewTripPage() {
                 className="w-full px-3 py-2 border border-slate-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-sky-500 focus:border-transparent"
               />
             </div>
+          </div>
+
+          <div className="mb-4">
+            <label
+              htmlFor="numTravelers"
+              className="block text-sm font-medium text-slate-700 mb-1"
+            >
+              Number of Travelers
+            </label>
+            <input
+              id="numTravelers"
+              type="number"
+              min="1"
+              max="50"
+              value={numTravelers}
+              onChange={(e) => setNumTravelers(Math.max(1, parseInt(e.target.value) || 1))}
+              className="w-32 px-3 py-2 border border-slate-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-sky-500 focus:border-transparent"
+            />
+            <p className="text-xs text-slate-400 mt-1">Used to calculate per-person costs (dining, activities, transport tickets)</p>
           </div>
 
           <div className="mb-6">

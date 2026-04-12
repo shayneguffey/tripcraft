@@ -31,7 +31,8 @@ Return ONLY valid JSON (no markdown fences, no explanation):
   ],
   "total_price": number without currency symbol,
   "currency": "USD",
-  "airline_name": "Primary airline"
+  "airline_name": "Primary airline",
+  "num_passengers": integer (number of passengers/travelers the price covers)
 }
 
 CRITICAL RULES:
@@ -42,6 +43,7 @@ CRITICAL RULES:
 - For price: look for dollar amounts, "Total price", "Airfare", or any price displayed
 - For airline: read the airline name AND look for 2-letter IATA codes (AS=Alaska, DL=Delta, AA=American, UA=United, etc.)
 - First leg = "outbound", legs going back to the origin = "return"
+- For passengers: look for "1 passenger", "2 adults", "passengers: 3", traveler count, etc. Default to 1 if not visible
 - Return raw JSON only — no backticks, no markdown`;
 
 export async function POST(request) {
