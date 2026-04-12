@@ -26,13 +26,33 @@ export default function DashboardPage() {
 
       setUser(user);
 
-      // Fetch user's trips
-      const { data: trips } = await supabase
+      // Fetch user's own trips
+      const { data: ownTrips } = await supabase
         .from("trips")
         .select("*")
+        .eq("user_id", user.id)
         .order("created_at", { ascending: false });
 
-      setTrips(trips || []);
+      // Fetch trips where user is an accepted collaborator
+      const { data: collabs } = await supabase
+        .from("trip_collaborators")
+        .select("trip_id")
+        .eq("user_id", user.id)
+        .eq("status", "accepted");
+
+      let collabTrips = [];
+      if (collabs && collabs.length > 0) {
+        const collabTripIds = collabs.map((c) => c.trip_id);
+        const { data: sharedTrips } = await supabase
+          .from("trips")
+          .select("*")
+          .in("id", collabTripIds)
+          .order("created_at", { ascending: false });
+        collabTrips = (sharedTrips || []).map((t) => ({ ...t, _isCollaborator: true }));
+      }
+
+      // Combine: own trips first, then collaborated trips
+      setTrips([...(ownTrips || []), ...collabTrips]);
       setLoading(false);
     }
 
@@ -115,9 +135,16 @@ export default function DashboardPage() {
                 className="relative bg-white rounded-xl p-6 shadow-sm border border-sky-100 hover:shadow-md transition-shadow group"
               >
                 <Link href={`/trips/${trip.id}`} className="block">
-                  <h3 className="font-semibold text-sky-900 text-lg mb-1 pr-8">
-                    {trip.title}
-                  </h3>
+                  <div className="flex items-start gap-2 mb-1 pr-8">
+                    <h3 className="font-semibold text-sky-900 text-lg">
+                      {trip.title}
+                    </h3>
+                    {trip._isCollaborator && (
+                      <span className="mt-1 text-xs px-2 py-0.5 rounded-full bg-violet-100 text-violet-700 font-medium whitespace-nowrap">
+                        Shared
+                      </span>
+                    )}
+                  </div>
                   {trip.destination && (
                     <p className="text-slate-500 text-sm mb-3">
                       📍 {trip.destination}
@@ -130,7 +157,7 @@ export default function DashboardPage() {
                     </p>
                   )}
                 </Link>
-                <button
+                {!trip._isCollaborator && <button
                   onClick={(e) => {
                     e.stopPropagation();
                     setDeleteId(trip.id);
@@ -139,7 +166,7 @@ export default function DashboardPage() {
                   title="Delete trip"
                 >
                   <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor" className="w-4 h-4"><path fillRule="evenodd" d="M8.75 1A2.75 2.75 0 0 0 6 3.75v.443c-.795.077-1.584.176-2.365.298a.75.75 0 1 0 .23 1.482l.149-.022.841 10.518A2.75 2.75 0 0 0 7.596 19h4.807a2.75 2.75 0 0 0 2.742-2.53l.841-10.519.149.023a.75.75 0 0 0 .23-1.482A41.03 41.03 0 0 0 14 4.193V3.75A2.75 2.75 0 0 0 11.25 1h-2.5ZM10 4c.84 0 1.673.025 2.5.075V3.75c0-.69-.56-1.25-1.25-1.25h-2.5c-.69 0-1.25.56-1.25 1.25v.325C8.327 4.025 9.16 4 10 4ZM8.58 7.72a.75.75 0 0 0-1.5.06l.3 7.5a.75.75 0 1 0 1.5-.06l-.3-7.5Zm4.34.06a.75.75 0 1 0-1.5-.06l-.3 7.5a.75.75 0 1 0 1.5.06l.3-7.5Z" clipRule="evenodd" /></svg>
-                </button>
+                </button>}
               </div>
             ))}
           </div>
@@ -175,7 +202,7 @@ export default function DashboardPage() {
           </div>
         )}
       </main>
-      <footer className="text-center text-xs text-slate-300 py-4">v2.9.0 — Apr 11 2026</footer>
+      <footer className="text-center text-xs text-slate-300 py-4">v3.0.0 — Apr 11 2026</footer>
     </div>
   );
 }

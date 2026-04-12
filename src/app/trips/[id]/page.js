@@ -14,6 +14,7 @@ import PlanningChecklist from "@/components/PlanningChecklist";
 import PackingList from "@/components/PackingList";
 import TravelDocuments from "@/components/TravelDocuments";
 import TripMap from "@/components/TripMap";
+import TripCollaborators from "@/components/TripCollaborators";
 
 // Helper: generate array of dates for calendar display
 function getCalendarRange(startDate, endDate) {
@@ -76,6 +77,7 @@ export default function TripDetailPage() {
   const [accommodationOptions, setAccommodationOptions] = useState([]);
   const [diningOptions, setDiningOptions] = useState([]);
   const [transportOptions, setTransportOptions] = useState([]);
+  const [currentUser, setCurrentUser] = useState(null);
   const router = useRouter();
   const params = useParams();
 
@@ -88,6 +90,8 @@ export default function TripDetailPage() {
       router.push("/login");
       return;
     }
+
+    setCurrentUser(user);
 
     const { data: tripData, error: tripError } = await supabase
       .from("trips")
@@ -541,6 +545,15 @@ export default function TripDetailPage() {
         {/* Planning Checklist */}
         <PlanningChecklist tripId={params.id} />
 
+        {/* Collaborators */}
+        <TripCollaborators
+          tripId={params.id}
+          tripTitle={trip?.title}
+          userId={currentUser?.id}
+          userEmail={currentUser?.email}
+          tripOwnerId={trip?.user_id}
+        />
+
         {/* Flight Options */}
         <FlightOptions
           tripId={params.id}
@@ -864,7 +877,7 @@ export default function TripDetailPage() {
           />
         )}
       </main>
-      <footer className="text-center text-xs text-slate-300 py-4">v2.9.0 — Apr 11 2026</footer>
+      <footer className="text-center text-xs text-slate-300 py-4">v3.0.0 — Apr 11 2026</footer>
     </div>
   );
 }
