@@ -13,6 +13,7 @@ import BudgetTracker from "@/components/BudgetTracker";
 import PlanningChecklist from "@/components/PlanningChecklist";
 import PackingList from "@/components/PackingList";
 import TravelDocuments from "@/components/TravelDocuments";
+import TripMap from "@/components/TripMap";
 
 // Helper: generate array of dates for calendar display
 function getCalendarRange(startDate, endDate) {
@@ -814,6 +815,16 @@ export default function TripDetailPage() {
           </div>
         )}
 
+        {/* Trip Map */}
+        <TripMap
+          tripDestination={trip?.destination}
+          flightOptions={flightOptions}
+          accommodationOptions={accommodationOptions}
+          activityOptions={activityOptions}
+          diningOptions={diningOptions}
+          transportOptions={transportOptions}
+        />
+
         {/* Budget Tracker */}
         <BudgetTracker
           tripId={params.id}
@@ -851,7 +862,7 @@ export default function TripDetailPage() {
           />
         )}
       </main>
-      <footer className="text-center text-xs text-slate-300 py-4">v2.7.0 — Apr 11 2026</footer>
+      <footer className="text-center text-xs text-slate-300 py-4">v2.8.0 — Apr 11 2026</footer>
     </div>
   );
 }
