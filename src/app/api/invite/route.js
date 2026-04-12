@@ -71,6 +71,9 @@ export async function POST(request) {
       u => u.email?.toLowerCase() === email.toLowerCase()
     );
 
+    // If the invited person already has an account, auto-accept
+    const autoAccept = !!invitedUser;
+
     // Create the invite
     const { data: collaborator, error } = await supabaseAdmin
       .from("trip_collaborators")
@@ -79,7 +82,8 @@ export async function POST(request) {
         user_id: invitedUser?.id || null,
         invited_email: email.toLowerCase(),
         invited_by: invitedBy,
-        status: "pending",
+        status: autoAccept ? "accepted" : "pending",
+        accepted_at: autoAccept ? new Date().toISOString() : null,
       })
       .select()
       .single();
@@ -90,9 +94,12 @@ export async function POST(request) {
     }
 
     return Response.json({
-      message: "Invite created",
+      message: autoAccept
+        ? `${email} has been added — the trip will appear in their dashboard`
+        : `Invite created for ${email} — share the link so they can join`,
       collaborator,
       inviteToken: collaborator.invite_token,
+      autoAccepted: autoAccept,
     });
   } catch (err) {
     console.error("Invite API error:", err);

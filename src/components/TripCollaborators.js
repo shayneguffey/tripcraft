@@ -68,7 +68,7 @@ export default function TripCollaborators({ tripId, tripTitle, userId, userEmail
         return;
       }
 
-      setSuccess(`Invite created for ${email}`);
+      setSuccess(data.message || `Invite created for ${email}`);
       setInviteEmail("");
       setSending(false);
       loadCollaborators();
