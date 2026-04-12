@@ -8,6 +8,7 @@ import FlightOptions from "@/components/FlightOptions";
 import ActivityOptions from "@/components/ActivityOptions";
 import AccommodationOptions from "@/components/AccommodationOptions";
 import DiningOptions from "@/components/DiningOptions";
+import TransportationOptions from "@/components/TransportationOptions";
 
 // Helper: generate array of dates for calendar display
 function getCalendarRange(startDate, endDate) {
@@ -69,6 +70,7 @@ export default function TripDetailPage() {
   const [activityOptions, setActivityOptions] = useState([]);
   const [accommodationOptions, setAccommodationOptions] = useState([]);
   const [diningOptions, setDiningOptions] = useState([]);
+  const [transportOptions, setTransportOptions] = useState([]);
   const router = useRouter();
   const params = useParams();
 
@@ -198,6 +200,16 @@ export default function TripDetailPage() {
 
   function getScheduledDining(dateKey) {
     return diningOptions.filter((d) => d.scheduled_date === dateKey);
+  }
+
+  function getScheduledTransport(dateKey) {
+    return transportOptions.filter((t) => {
+      if (!t.is_selected) return false;
+      if (t.departure_date === dateKey) return true;
+      // Also show on arrival/return date (e.g. car rental dropoff)
+      if (t.arrival_date && t.arrival_date !== t.departure_date && t.arrival_date === dateKey) return true;
+      return false;
+    });
   }
 
   // Drag handlers for adjusting trip date range
@@ -514,6 +526,14 @@ export default function TripDetailPage() {
           onDiningOptionsChange={setDiningOptions}
         />
 
+        {/* Transportation Options */}
+        <TransportationOptions
+          tripId={params.id}
+          tripStart={trip?.start_date}
+          tripEnd={trip?.end_date}
+          onTransportationOptionsChange={setTransportOptions}
+        />
+
         {/* Calendar */}
         {calendarDates.length > 0 ? (
           <div className="bg-white rounded-xl border border-sky-100 shadow-sm overflow-hidden select-none">
@@ -679,6 +699,27 @@ export default function TripDetailPage() {
                             );
                           })()}
 
+                          {/* Scheduled transportation indicators */}
+                          {(() => {
+                            const scheduled = getScheduledTransport(dateKey);
+                            if (scheduled.length === 0) return null;
+                            return (
+                              <div className="mt-1 space-y-0.5">
+                                {scheduled.map((t) => {
+                                  const isReturn = t.arrival_date === dateKey && t.departure_date !== dateKey;
+                                  return (
+                                    <div key={t.id + (isReturn ? "-ret" : "")} className="flex items-center gap-1 bg-violet-100 text-violet-700 rounded px-1 py-0.5">
+                                      <svg className="w-2.5 h-2.5 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24" strokeWidth={2}>
+                                        <path strokeLinecap="round" strokeLinejoin="round" d="M8 7h12m0 0l-4-4m4 4l-4 4m0 6H4m0 0l4 4m-4-4l4-4" />
+                                      </svg>
+                                      <span className="text-[10px] font-medium truncate">{isReturn ? "Return: " : ""}{t.name}</span>
+                                    </div>
+                                  );
+                                })}
+                              </div>
+                            );
+                          })()}
+
                           {/* Day title if exists */}
                           {dayData?.title && (
                             <div className="mt-1 text-xs font-medium text-sky-700 truncate">
@@ -740,7 +781,7 @@ export default function TripDetailPage() {
           />
         )}
       </main>
-      <footer className="text-center text-xs text-slate-300 py-4">v2.2.0 — Apr 11 2026</footer>
+      <footer className="text-center text-xs text-slate-300 py-4">v2.3.0 — Apr 11 2026</footer>
     </div>
   );
 }
