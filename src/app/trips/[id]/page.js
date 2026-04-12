@@ -6,6 +6,8 @@ import { useRouter, useParams } from "next/navigation";
 import Link from "next/link";
 import FlightOptions from "@/components/FlightOptions";
 import ActivityOptions from "@/components/ActivityOptions";
+import AccommodationOptions from "@/components/AccommodationOptions";
+import DiningOptions from "@/components/DiningOptions";
 
 // Helper: generate array of dates for calendar display
 function getCalendarRange(startDate, endDate) {
@@ -65,6 +67,8 @@ export default function TripDetailPage() {
   const [editValue2, setEditValue2] = useState(""); // for end date when editing dates
   const [flightOptions, setFlightOptions] = useState([]);
   const [activityOptions, setActivityOptions] = useState([]);
+  const [accommodationOptions, setAccommodationOptions] = useState([]);
+  const [diningOptions, setDiningOptions] = useState([]);
   const router = useRouter();
   const params = useParams();
 
@@ -182,6 +186,18 @@ export default function TripDetailPage() {
 
   function getScheduledActivities(dateKey) {
     return activityOptions.filter((a) => a.scheduled_date === dateKey);
+  }
+
+  function getScheduledAccommodations(dateKey) {
+    return accommodationOptions.filter((a) => {
+      if (!a.is_selected || !a.check_in_date) return false;
+      const checkOut = a.check_out_date || a.check_in_date;
+      return dateKey >= a.check_in_date && dateKey < checkOut;
+    });
+  }
+
+  function getScheduledDining(dateKey) {
+    return diningOptions.filter((d) => d.scheduled_date === dateKey);
   }
 
   // Drag handlers for adjusting trip date range
@@ -482,6 +498,22 @@ export default function TripDetailPage() {
           onActivityOptionsChange={setActivityOptions}
         />
 
+        {/* Accommodation Options */}
+        <AccommodationOptions
+          tripId={params.id}
+          tripStart={trip?.start_date}
+          tripEnd={trip?.end_date}
+          onAccommodationOptionsChange={setAccommodationOptions}
+        />
+
+        {/* Food & Dining Options */}
+        <DiningOptions
+          tripId={params.id}
+          tripStart={trip?.start_date}
+          tripEnd={trip?.end_date}
+          onDiningOptionsChange={setDiningOptions}
+        />
+
         {/* Calendar */}
         {calendarDates.length > 0 ? (
           <div className="bg-white rounded-xl border border-sky-100 shadow-sm overflow-hidden select-none">
@@ -608,6 +640,45 @@ export default function TripDetailPage() {
                             );
                           })()}
 
+                          {/* Scheduled accommodation indicators */}
+                          {(() => {
+                            const scheduled = getScheduledAccommodations(dateKey);
+                            if (scheduled.length === 0) return null;
+                            return (
+                              <div className="mt-1 space-y-0.5">
+                                {scheduled.map((a) => (
+                                  <div key={a.id} className="flex items-center gap-1 bg-sky-100 text-sky-700 rounded px-1 py-0.5">
+                                    <svg className="w-2.5 h-2.5 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24" strokeWidth={2}>
+                                      <path strokeLinecap="round" strokeLinejoin="round" d="M3 12l2-2m0 0l7-7 7 7M5 10v10a1 1 0 001 1h3m10-11l2 2m-2-2v10a1 1 0 01-1 1h-3m-4 0h4" />
+                                    </svg>
+                                    <span className="text-[10px] font-medium truncate">{a.name}</span>
+                                  </div>
+                                ))}
+                              </div>
+                            );
+                          })()}
+
+                          {/* Scheduled dining indicators */}
+                          {(() => {
+                            const scheduled = getScheduledDining(dateKey);
+                            if (scheduled.length === 0) return null;
+                            return (
+                              <div className="mt-1 space-y-0.5">
+                                {scheduled.slice(0, 2).map((d) => (
+                                  <div key={d.id} className="flex items-center gap-1 bg-orange-100 text-orange-700 rounded px-1 py-0.5">
+                                    <svg className="w-2.5 h-2.5 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24" strokeWidth={2}>
+                                      <path strokeLinecap="round" strokeLinejoin="round" d="M12 6v6l4 2m6-2a9 9 0 11-18 0 9 9 0 0118 0z" />
+                                    </svg>
+                                    <span className="text-[10px] font-medium truncate">{d.name}</span>
+                                  </div>
+                                ))}
+                                {scheduled.length > 2 && (
+                                  <div className="text-[10px] text-orange-500">+{scheduled.length - 2} more</div>
+                                )}
+                              </div>
+                            );
+                          })()}
+
                           {/* Day title if exists */}
                           {dayData?.title && (
                             <div className="mt-1 text-xs font-medium text-sky-700 truncate">
@@ -669,7 +740,7 @@ export default function TripDetailPage() {
           />
         )}
       </main>
-      <footer className="text-center text-xs text-slate-300 py-4">v2.1.0 — Apr 11 2026</footer>
+      <footer className="text-center text-xs text-slate-300 py-4">v2.2.0 — Apr 11 2026</footer>
     </div>
   );
 }
