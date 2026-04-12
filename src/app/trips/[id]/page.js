@@ -10,6 +10,8 @@ import AccommodationOptions from "@/components/AccommodationOptions";
 import DiningOptions from "@/components/DiningOptions";
 import TransportationOptions from "@/components/TransportationOptions";
 import BudgetTracker from "@/components/BudgetTracker";
+import PlanningChecklist from "@/components/PlanningChecklist";
+import PackingList from "@/components/PackingList";
 
 // Helper: generate array of dates for calendar display
 function getCalendarRange(startDate, endDate) {
@@ -534,6 +536,9 @@ export default function TripDetailPage() {
           </div>
         </div>
 
+        {/* Planning Checklist */}
+        <PlanningChecklist tripId={params.id} />
+
         {/* Flight Options */}
         <FlightOptions
           tripId={params.id}
@@ -819,6 +824,16 @@ export default function TripDetailPage() {
           transportOptions={transportOptions}
         />
 
+        {/* Packing List */}
+        <PackingList
+          tripId={params.id}
+          tripDestination={trip?.destination}
+          tripStartDate={trip?.start_date}
+          tripEndDate={trip?.end_date}
+          activityOptions={activityOptions}
+          accommodationOptions={accommodationOptions}
+        />
+
         {/* Day Detail Popout */}
         {selectedDay && (
           <DayPopout
@@ -832,7 +847,7 @@ export default function TripDetailPage() {
           />
         )}
       </main>
-      <footer className="text-center text-xs text-slate-300 py-4">v2.5.0 — Apr 11 2026</footer>
+      <footer className="text-center text-xs text-slate-300 py-4">v2.6.0 — Apr 11 2026</footer>
     </div>
   );
 }
