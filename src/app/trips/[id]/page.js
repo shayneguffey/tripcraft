@@ -12,6 +12,7 @@ import TransportationOptions from "@/components/TransportationOptions";
 import BudgetTracker from "@/components/BudgetTracker";
 import PlanningChecklist from "@/components/PlanningChecklist";
 import PackingList from "@/components/PackingList";
+import TravelDocuments from "@/components/TravelDocuments";
 
 // Helper: generate array of dates for calendar display
 function getCalendarRange(startDate, endDate) {
@@ -834,6 +835,9 @@ export default function TripDetailPage() {
           accommodationOptions={accommodationOptions}
         />
 
+        {/* Travel Documents */}
+        <TravelDocuments tripId={params.id} />
+
         {/* Day Detail Popout */}
         {selectedDay && (
           <DayPopout
@@ -847,7 +851,7 @@ export default function TripDetailPage() {
           />
         )}
       </main>
-      <footer className="text-center text-xs text-slate-300 py-4">v2.6.0 — Apr 11 2026</footer>
+      <footer className="text-center text-xs text-slate-300 py-4">v2.7.0 — Apr 11 2026</footer>
     </div>
   );
 }
