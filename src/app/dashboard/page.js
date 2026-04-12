@@ -248,7 +248,7 @@ export default function DashboardPage() {
             <span className="w-2 h-2 rounded-full bg-sky-500"></span>
             Planning
           </h2>
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+          <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-5">
             {planningTrips.map((trip, i) => (
               <TripCard
                 key={trip.id}
@@ -265,7 +265,7 @@ export default function DashboardPage() {
                   setCreating(true);
                   setTimeout(() => titleRef.current?.focus(), 100);
                 }}
-                className="group relative rounded-2xl border-2 border-dashed border-sky-200 hover:border-sky-400 bg-white/50 hover:bg-sky-50/50 transition-all min-h-[220px] flex flex-col items-center justify-center gap-3 cursor-pointer"
+                className="group relative rounded-2xl border-2 border-dashed border-sky-200 hover:border-sky-400 bg-white/50 hover:bg-sky-50/50 transition-all aspect-[3/4] flex flex-col items-center justify-center gap-3 cursor-pointer"
               >
                 <div className="w-12 h-12 rounded-full bg-sky-100 group-hover:bg-sky-200 flex items-center justify-center transition-colors">
                   <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor" className="w-6 h-6 text-sky-600">
@@ -359,7 +359,7 @@ export default function DashboardPage() {
               <span className="w-2 h-2 rounded-full bg-slate-300"></span>
               Past Trips
             </h2>
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+            <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-5">
               {pastTrips.map((trip, i) => (
                 <TripCard
                   key={trip.id}
@@ -439,7 +439,7 @@ function TripCard({ trip, index, onDelete, isPast }) {
   return (
     <Link href={`/trips/${trip.id}`} className="block group">
       <div
-        className={`relative rounded-2xl overflow-hidden min-h-[220px] flex flex-col justify-end shadow-sm hover:shadow-xl transition-all duration-300 ${isPast ? "opacity-75 hover:opacity-100" : ""}`}
+        className={`relative rounded-2xl overflow-hidden aspect-[3/4] flex flex-col justify-end shadow-sm hover:shadow-xl transition-all duration-300 ${isPast ? "opacity-75 hover:opacity-100" : ""}`}
       >
         {/* Background image or gradient */}
         {hasImage ? (
@@ -453,8 +453,8 @@ function TripCard({ trip, index, onDelete, isPast }) {
           />
         )}
 
-        {/* Dark overlay for text readability */}
-        <div className="absolute inset-0 bg-gradient-to-t from-black/70 via-black/20 to-transparent" />
+        {/* Dark gradient overlay — strong fade from bottom for text contrast */}
+        <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-black/30 to-black/5" />
 
         {/* Shared badge */}
         {trip._isCollaborator && (
