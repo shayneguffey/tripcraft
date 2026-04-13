@@ -1,0 +1,364 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>TripCraft Travel Globe Preview</title>
+<style>
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+  body {
+    font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+    background: #0a0e27;
+    color: white;
+    overflow: hidden;
+    height: 100vh;
+  }
+  #globe-container {
+    width: 100%;
+    height: 100vh;
+    position: relative;
+  }
+  .overlay-info {
+    position: absolute;
+    top: 20px;
+    left: 20px;
+    z-index: 10;
+  }
+  .overlay-info h1 {
+    font-size: 24px;
+    font-weight: 700;
+    margin-bottom: 4px;
+  }
+  .overlay-info p {
+    font-size: 14px;
+    opacity: 0.6;
+  }
+  .legend {
+    position: absolute;
+    bottom: 20px;
+    left: 20px;
+    z-index: 10;
+    display: flex;
+    gap: 16px;
+    font-size: 13px;
+  }
+  .legend-item {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+  }
+  .legend-dot {
+    width: 10px;
+    height: 10px;
+    border-radius: 50%;
+  }
+  .stats {
+    position: absolute;
+    top: 20px;
+    right: 20px;
+    z-index: 10;
+    text-align: right;
+  }
+  .stats .number {
+    font-size: 36px;
+    font-weight: 700;
+    color: #38bdf8;
+  }
+  .stats .label {
+    font-size: 12px;
+    opacity: 0.5;
+    text-transform: uppercase;
+    letter-spacing: 1px;
+  }
+  .tooltip {
+    position: absolute;
+    background: rgba(15, 23, 42, 0.9);
+    backdrop-filter: blur(8px);
+    border: 1px solid rgba(56, 189, 248, 0.3);
+    border-radius: 12px;
+    padding: 12px 16px;
+    font-size: 13px;
+    pointer-events: none;
+    z-index: 20;
+    display: none;
+    max-width: 200px;
+  }
+  .tooltip .city { font-weight: 700; font-size: 15px; color: #38bdf8; }
+  .tooltip .trip { opacity: 0.7; margin-top: 2px; }
+  .tooltip .date { opacity: 0.5; font-size: 11px; margin-top: 4px; }
+</style>
+</head>
+<body>
+<div id="globe-container">
+  <div class="overlay-info">
+    <h1>Your Travel Globe</h1>
+    <p>Spin to explore your adventures</p>
+  </div>
+  <div class="stats">
+    <div><span class="number">5</span></div>
+    <div class="label">Countries visited</div>
+    <div style="margin-top: 12px;"><span class="number" style="font-size: 28px;">8</span></div>
+    <div class="label">Cities explored</div>
+  </div>
+  <div class="legend">
+    <div class="legend-item">
+      <div class="legend-dot" style="background: #38bdf8;"></div>
+      <span>Visited</span>
+    </div>
+    <div class="legend-item">
+      <div class="legend-dot" style="background: #f472b6;"></div>
+      <span>Wish List</span>
+    </div>
+    <div class="legend-item">
+      <div class="legend-dot" style="background: #fbbf24;"></div>
+      <span>Planning</span>
+    </div>
+  </div>
+  <div class="tooltip" id="tooltip"></div>
+</div>
+
+<script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
+<script>
+// Sample data - visited places
+const VISITED = [
+  { lat: 47.6, lng: -122.3, city: "Seattle", trip: "Olympic Peninsula 2026", date: "Jun 2026", color: 0xfbbf24 },
+  { lat: -17.8, lng: 177.9, city: "Fiji", trip: "Fiji Islands", date: "May 2026", color: 0xfbbf24 },
+  { lat: 48.8566, lng: 2.3522, city: "Paris", trip: "Europe 2024", date: "Sep 2024", color: 0x38bdf8 },
+  { lat: 41.0082, lng: 28.9784, city: "Istanbul", trip: "Turkey 2023", date: "Oct 2023", color: 0x38bdf8 },
+  { lat: 35.6762, lng: 139.6503, city: "Tokyo", trip: "Japan 2023", date: "Apr 2023", color: 0x38bdf8 },
+  { lat: 13.7563, lng: 100.5018, city: "Bangkok", trip: "Thailand 2022", date: "Dec 2022", color: 0x38bdf8 },
+  { lat: -33.8688, lng: 151.2093, city: "Sydney", trip: "Australia 2024", date: "Mar 2024", color: 0x38bdf8 },
+  { lat: 64.1466, lng: -21.9426, city: "Reykjavik", trip: "Wish List", date: "", color: 0xf472b6 },
+  { lat: -13.1631, lng: -72.545, city: "Machu Picchu", trip: "Wish List", date: "", color: 0xf472b6 },
+  { lat: 27.1751, lng: 78.0421, city: "Taj Mahal", trip: "Wish List", date: "", color: 0xf472b6 },
+];
+
+// Scene setup
+const scene = new THREE.Scene();
+const camera = new THREE.PerspectiveCamera(45, window.innerWidth / window.innerHeight, 0.1, 1000);
+camera.position.z = 3;
+
+const renderer = new THREE.WebGLRenderer({ antialias: true, alpha: true });
+renderer.setSize(window.innerWidth, window.innerHeight);
+renderer.setPixelRatio(window.devicePixelRatio);
+document.getElementById('globe-container').appendChild(renderer.domElement);
+
+// Globe
+const globeGeom = new THREE.SphereGeometry(1, 64, 64);
+const globeMat = new THREE.MeshPhongMaterial({
+  color: 0x1a2744,
+  emissive: 0x0a1628,
+  specular: 0x2563eb,
+  shininess: 15,
+  transparent: true,
+  opacity: 0.95,
+});
+const globe = new THREE.Mesh(globeGeom, globeMat);
+scene.add(globe);
+
+// Wireframe overlay for "grid" look
+const wireGeom = new THREE.SphereGeometry(1.002, 36, 18);
+const wireMat = new THREE.MeshBasicMaterial({
+  color: 0x1e3a5f,
+  wireframe: true,
+  transparent: true,
+  opacity: 0.15,
+});
+const wireframe = new THREE.Mesh(wireGeom, wireMat);
+scene.add(wireframe);
+
+// Atmosphere glow
+const atmosGeom = new THREE.SphereGeometry(1.08, 64, 64);
+const atmosMat = new THREE.MeshBasicMaterial({
+  color: 0x38bdf8,
+  transparent: true,
+  opacity: 0.05,
+  side: THREE.BackSide,
+});
+scene.add(new THREE.Mesh(atmosGeom, atmosMat));
+
+// Lights
+const ambientLight = new THREE.AmbientLight(0x444466, 0.8);
+scene.add(ambientLight);
+const dirLight = new THREE.DirectionalLight(0xffffff, 1);
+dirLight.position.set(5, 3, 5);
+scene.add(dirLight);
+
+// Convert lat/lng to 3D position
+function latLngToVec3(lat, lng, radius) {
+  const phi = (90 - lat) * (Math.PI / 180);
+  const theta = (lng + 180) * (Math.PI / 180);
+  return new THREE.Vector3(
+    -radius * Math.sin(phi) * Math.cos(theta),
+    radius * Math.cos(phi),
+    radius * Math.sin(phi) * Math.sin(theta)
+  );
+}
+
+// Create pins
+const pins = [];
+VISITED.forEach((place) => {
+  const pos = latLngToVec3(place.lat, place.lng, 1.02);
+
+  // Pin head (sphere)
+  const pinGeom = new THREE.SphereGeometry(0.02, 16, 16);
+  const pinMat = new THREE.MeshBasicMaterial({ color: place.color });
+  const pin = new THREE.Mesh(pinGeom, pinMat);
+  pin.position.copy(pos);
+  pin.userData = place;
+  scene.add(pin);
+  pins.push(pin);
+
+  // Glow ring
+  const ringGeom = new THREE.RingGeometry(0.025, 0.04, 32);
+  const ringMat = new THREE.MeshBasicMaterial({
+    color: place.color,
+    transparent: true,
+    opacity: 0.3,
+    side: THREE.DoubleSide,
+  });
+  const ring = new THREE.Mesh(ringGeom, ringMat);
+  ring.position.copy(pos);
+  ring.lookAt(new THREE.Vector3(0, 0, 0));
+  scene.add(ring);
+
+  // Connecting line from surface to pin
+  const surfacePos = latLngToVec3(place.lat, place.lng, 1.0);
+  const lineGeom = new THREE.BufferGeometry().setFromPoints([surfacePos, pos]);
+  const lineMat = new THREE.LineBasicMaterial({
+    color: place.color,
+    transparent: true,
+    opacity: 0.5,
+  });
+  scene.add(new THREE.Line(lineGeom, lineMat));
+});
+
+// Arc lines between visited cities (flight paths)
+const visited = VISITED.filter(p => p.color === 0x38bdf8);
+for (let i = 0; i < visited.length - 1; i++) {
+  const start = latLngToVec3(visited[i].lat, visited[i].lng, 1.0);
+  const end = latLngToVec3(visited[i + 1].lat, visited[i + 1].lng, 1.0);
+  const mid = start.clone().add(end).multiplyScalar(0.5);
+  mid.normalize().multiplyScalar(1.3); // arc height
+
+  const curve = new THREE.QuadraticBezierCurve3(start, mid, end);
+  const points = curve.getPoints(50);
+  const arcGeom = new THREE.BufferGeometry().setFromPoints(points);
+  const arcMat = new THREE.LineBasicMaterial({
+    color: 0x38bdf8,
+    transparent: true,
+    opacity: 0.15,
+  });
+  scene.add(new THREE.Line(arcGeom, arcMat));
+}
+
+// Stars background
+const starsGeom = new THREE.BufferGeometry();
+const starsPositions = [];
+for (let i = 0; i < 2000; i++) {
+  starsPositions.push(
+    (Math.random() - 0.5) * 100,
+    (Math.random() - 0.5) * 100,
+    (Math.random() - 0.5) * 100
+  );
+}
+starsGeom.setAttribute('position', new THREE.Float32BufferAttribute(starsPositions, 3));
+const starsMat = new THREE.PointsMaterial({ color: 0xffffff, size: 0.05 });
+scene.add(new THREE.Points(starsGeom, starsMat));
+
+// Mouse interaction
+let isDragging = false;
+let previousMouse = { x: 0, y: 0 };
+let rotationVelocity = { x: 0, y: 0 };
+const raycaster = new THREE.Raycaster();
+const mouse = new THREE.Vector2();
+const tooltip = document.getElementById('tooltip');
+
+renderer.domElement.addEventListener('mousedown', (e) => {
+  isDragging = true;
+  previousMouse = { x: e.clientX, y: e.clientY };
+});
+
+renderer.domElement.addEventListener('mousemove', (e) => {
+  if (isDragging) {
+    const dx = e.clientX - previousMouse.x;
+    const dy = e.clientY - previousMouse.y;
+    rotationVelocity.x = dy * 0.005;
+    rotationVelocity.y = dx * 0.005;
+    previousMouse = { x: e.clientX, y: e.clientY };
+  }
+
+  // Tooltip on hover
+  mouse.x = (e.clientX / window.innerWidth) * 2 - 1;
+  mouse.y = -(e.clientY / window.innerHeight) * 2 + 1;
+  raycaster.setFromCamera(mouse, camera);
+  const intersects = raycaster.intersectObjects(pins);
+  if (intersects.length > 0) {
+    const place = intersects[0].object.userData;
+    tooltip.style.display = 'block';
+    tooltip.style.left = e.clientX + 15 + 'px';
+    tooltip.style.top = e.clientY - 10 + 'px';
+    tooltip.innerHTML = `
+      <div class="city">${place.city}</div>
+      <div class="trip">${place.trip}</div>
+      ${place.date ? `<div class="date">${place.date}</div>` : ''}
+    `;
+    document.body.style.cursor = 'pointer';
+  } else {
+    tooltip.style.display = 'none';
+    document.body.style.cursor = isDragging ? 'grabbing' : 'grab';
+  }
+});
+
+renderer.domElement.addEventListener('mouseup', () => { isDragging = false; });
+renderer.domElement.addEventListener('mouseleave', () => { isDragging = false; });
+
+// Zoom
+renderer.domElement.addEventListener('wheel', (e) => {
+  camera.position.z = Math.max(1.8, Math.min(5, camera.position.z + e.deltaY * 0.002));
+});
+
+// Animate
+function animate() {
+  requestAnimationFrame(animate);
+
+  // Auto rotation when not dragging
+  if (!isDragging) {
+    globe.rotation.y += 0.002;
+    wireframe.rotation.y += 0.002;
+    rotationVelocity.x *= 0.95;
+    rotationVelocity.y *= 0.95;
+  }
+
+  globe.rotation.x += rotationVelocity.x;
+  globe.rotation.y += rotationVelocity.y;
+  wireframe.rotation.x = globe.rotation.x;
+  wireframe.rotation.y = globe.rotation.y;
+
+  // Rotate pins with globe
+  pins.forEach(pin => {
+    const place = pin.userData;
+    const pos = latLngToVec3(place.lat, place.lng, 1.02);
+    pos.applyEuler(globe.rotation);
+    pin.position.copy(pos);
+  });
+
+  // Pulse pins
+  const t = Date.now() * 0.003;
+  pins.forEach((pin, i) => {
+    pin.scale.setScalar(1 + Math.sin(t + i) * 0.2);
+  });
+
+  renderer.render(scene, camera);
+}
+animate();
+
+// Resize
+window.addEventListener('resize', () => {
+  camera.aspect = window.innerWidth / window.innerHeight;
+  camera.updateProjectionMatrix();
+  renderer.setSize(window.innerWidth, window.innerHeight);
+});
+</script>
+</body>
+</html>

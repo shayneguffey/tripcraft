@@ -171,8 +171,6 @@ export default function DashboardPage() {
   const [user, setUser] = useState(null);
   const [trips, setTrips] = useState([]);
   const [loading, setLoading] = useState(true);
-  const [deleteId, setDeleteId] = useState(null);
-  const [archiveId, setArchiveId] = useState(null);
   const [creating, setCreating] = useState(false);
   const [newTitle, setNewTitle] = useState("");
   const [newDest, setNewDest] = useState("");
@@ -184,7 +182,14 @@ export default function DashboardPage() {
   const [showCalendar, setShowCalendar] = useState(false);
   // Image cycling: tripId -> { images: [], index: 0 }
   const [imageOptions, setImageOptions] = useState({});
+  // Wish list
+  const [wishList, setWishList] = useState([]);
+  const [addingWish, setAddingWish] = useState(false);
+  const [wishDest, setWishDest] = useState("");
+  const [wishNotes, setWishNotes] = useState("");
+  const [savingWish, setSavingWish] = useState(false);
   const titleRef = useRef(null);
+  const wishRef = useRef(null);
   const router = useRouter();
 
   useEffect(() => {
@@ -228,7 +233,23 @@ export default function DashboardPage() {
 
     const allTrips = [...(ownTrips || []), ...collabTrips];
     setTrips(allTrips);
+
+    // Load wish list
+    const { data: wishes } = await supabase
+      .from("wish_list")
+      .select("*")
+      .eq("user_id", user.id)
+      .order("created_at", { ascending: false });
+    setWishList(wishes || []);
+
     setLoading(false);
+
+    // Fetch cover images for wish list items missing one
+    for (const wish of (wishes || [])) {
+      if (!wish.cover_image && wish.destination) {
+        fetchWishCoverImage(wish.id, wish.destination);
+      }
+    }
 
     // Fetch cover images for trips missing one
     for (const trip of allTrips) {
@@ -298,25 +319,10 @@ export default function DashboardPage() {
     router.push("/");
   }
 
-  async function handleDeleteTrip(tripId) {
-    await supabase.from("trips").delete().eq("id", tripId);
-    setTrips((prev) => prev.filter((t) => t.id !== tripId));
-    setDeleteId(null);
-  }
-
   async function handleArchiveTrip(tripId) {
-    // Set end_date to yesterday to move it to past
-    const yesterday = new Date();
-    yesterday.setDate(yesterday.getDate() - 1);
-    const dateStr = yesterday.toISOString().split("T")[0];
-
-    const trip = trips.find((t) => t.id === tripId);
     await supabase
       .from("trips")
-      .update({
-        end_date: trip?.end_date || dateStr,
-        archived: true,
-      })
+      .update({ archived: true })
       .eq("id", tripId);
 
     setTrips((prev) =>
@@ -324,7 +330,6 @@ export default function DashboardPage() {
         t.id === tripId ? { ...t, archived: true } : t
       )
     );
-    setArchiveId(null);
   }
 
   async function handleUnarchiveTrip(tripId) {
@@ -390,6 +395,78 @@ export default function DashboardPage() {
     setShowCalendar(false);
   }
 
+  async function handleAddWish(e) {
+    e.preventDefault();
+    if (!wishDest.trim()) return;
+    setSavingWish(true);
+
+    const { data, error } = await supabase
+      .from("wish_list")
+      .insert({
+        user_id: user.id,
+        destination: wishDest.trim(),
+        notes: wishNotes.trim() || null,
+      })
+      .select()
+      .single();
+
+    if (!error && data) {
+      setWishList((prev) => [data, ...prev]);
+      // Fetch cover image
+      fetchWishCoverImage(data.id, data.destination);
+    }
+    setWishDest("");
+    setWishNotes("");
+    setAddingWish(false);
+    setSavingWish(false);
+  }
+
+  async function fetchWishCoverImage(wishId, destination) {
+    try {
+      const res = await fetch(
+        `/api/cover-image?destination=${encodeURIComponent(destination)}&count=1`
+      );
+      const data = await res.json();
+      if (data.images && data.images.length > 0) {
+        await supabase
+          .from("wish_list")
+          .update({ cover_image: data.images[0] })
+          .eq("id", wishId);
+        setWishList((prev) =>
+          prev.map((w) => (w.id === wishId ? { ...w, cover_image: data.images[0] } : w))
+        );
+      }
+    } catch (err) {
+      // fallback gradient
+    }
+  }
+
+  async function handleRemoveWish(wishId) {
+    await supabase.from("wish_list").delete().eq("id", wishId);
+    setWishList((prev) => prev.filter((w) => w.id !== wishId));
+  }
+
+  async function handleConvertWishToTrip(wish) {
+    // Create a new trip from the wish list item
+    const { data, error } = await supabase
+      .from("trips")
+      .insert({
+        user_id: user.id,
+        title: wish.destination,
+        destination: wish.destination,
+        cover_image: wish.cover_image || null,
+      })
+      .select()
+      .single();
+
+    if (!error && data) {
+      // Remove from wish list
+      await supabase.from("wish_list").delete().eq("id", wish.id);
+      setWishList((prev) => prev.filter((w) => w.id !== wish.id));
+      router.push(`/trips/${data.id}`);
+    }
+  }
+
   // Split trips
   const today = new Date().toISOString().split("T")[0];
   const planningTrips = trips.filter(
@@ -444,8 +521,7 @@ export default function DashboardPage() {
                 key={trip.id}
                 trip={trip}
                 index={i}
-                onDelete={(id) => setDeleteId(id)}
-                onArchive={(id) => setArchiveId(id)}
+                onArchive={(id) => handleArchiveTrip(id)}
                 imageOptions={imageOptions[trip.id]}
                 onCycleImage={(dir) => cycleImage(trip.id, dir)}
               />
@@ -564,8 +640,8 @@ export default function DashboardPage() {
                   key={trip.id}
                   trip={trip}
                   index={i + planningTrips.length}
-                  onDelete={(id) => setDeleteId(id)}
-                  onUnarchive={(id) => handleUnarchiveTrip(id)}
+                  onArchive={(id) => handleArchiveTrip(id)}
+                  onUnarchive={trip.archived ? (id) => handleUnarchiveTrip(id) : undefined}
                   imageOptions={imageOptions[trip.id]}
                   onCycleImage={(dir) => cycleImage(trip.id, dir)}
                   isPast
@@ -574,6 +650,126 @@ export default function DashboardPage() {
             </div>
           </section>
         )}
+
+        {/* ─── Travel Wish List ─────────────────────────────── */}
+        <section className="mb-12">
+          <h2 className="text-lg font-semibold text-slate-600 mb-4 flex items-center gap-2">
+            <span className="w-2 h-2 rounded-full bg-pink-400"></span>
+            Travel Wish List
+          </h2>
+          <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4">
+            {wishList.map((wish, i) => (
+              <div key={wish.id} className="relative group">
+                <div className="relative rounded-2xl overflow-hidden aspect-[4/3] flex flex-col justify-end shadow-sm hover:shadow-lg transition-all duration-300">
+                  {/* Background */}
+                  {wish.cover_image ? (
+                    <div
+                      className="absolute inset-0 bg-cover bg-center transition-transform duration-500 group-hover:scale-105"
+                      style={{ backgroundImage: `url(${wish.cover_image})` }}
+                    />
+                  ) : (
+                    <div className={`absolute inset-0 bg-gradient-to-br ${getGradient(i)} transition-transform duration-500 group-hover:scale-105`} />
+                  )}
+
+                  {/* Gradient */}
+                  <div
+                    className="absolute inset-0"
+                    style={{
+                      background: "linear-gradient(to top, rgba(0,0,0,0.9) 0%, rgba(0,0,0,0.5) 40%, transparent 100%)",
+                    }}
+                  />
+
+                  {/* Content */}
+                  <div className="relative z-10 p-3">
+                    <h3 className="font-bold text-white text-base leading-tight">
+                      {wish.destination}
+                    </h3>
+                    {wish.notes && (
+                      <p className="text-white/60 text-xs mt-0.5 line-clamp-2">{wish.notes}</p>
+                    )}
+                  </div>
+                </div>
+
+                {/* Hover actions */}
+                <div className="absolute top-2 right-2 z-20 flex gap-1.5 opacity-0 group-hover:opacity-100 transition-all">
+                  <button
+                    onClick={() => handleConvertWishToTrip(wish)}
+                    className="w-7 h-7 rounded-full bg-black/30 hover:bg-sky-600 text-white/70 hover:text-white flex items-center justify-center backdrop-blur-sm"
+                    title="Start planning this trip"
+                  >
+                    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 16 16" fill="currentColor" className="w-3 h-3">
+                      <path d="M8.75 3.75a.75.75 0 0 0-1.5 0v3.5h-3.5a.75.75 0 0 0 0 1.5h3.5v3.5a.75.75 0 0 0 1.5 0v-3.5h3.5a.75.75 0 0 0 0-1.5h-3.5v-3.5Z" />
+                    </svg>
+                  </button>
+                  <button
+                    onClick={() => handleRemoveWish(wish.id)}
+                    className="w-7 h-7 rounded-full bg-black/30 hover:bg-red-500 text-white/70 hover:text-white flex items-center justify-center backdrop-blur-sm"
+                    title="Remove from wish list"
+                  >
+                    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 16 16" fill="currentColor" className="w-3 h-3">
+                      <path d="M5.28 4.22a.75.75 0 0 0-1.06 1.06L6.94 8l-2.72 2.72a.75.75 0 1 0 1.06 1.06L8 9.06l2.72 2.72a.75.75 0 1 0 1.06-1.06L9.06 8l2.72-2.72a.75.75 0 0 0-1.06-1.06L8 6.94 5.28 4.22Z" />
+                    </svg>
+                  </button>
+                </div>
+              </div>
+            ))}
+
+            {/* Add Wish Card */}
+            {!addingWish ? (
+              <button
+                onClick={() => {
+                  setAddingWish(true);
+                  setTimeout(() => wishRef.current?.focus(), 100);
+                }}
+                className="group rounded-2xl border-2 border-dashed border-pink-200 hover:border-pink-400 bg-white/50 hover:bg-pink-50/50 transition-all aspect-[4/3] flex flex-col items-center justify-center gap-2 cursor-pointer"
+              >
+                <div className="w-10 h-10 rounded-full bg-pink-100 group-hover:bg-pink-200 flex items-center justify-center transition-colors">
+                  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor" className="w-5 h-5 text-pink-500">
+                    <path d="M9.653 16.915l-.005-.003-.019-.01a20.759 20.759 0 01-1.162-.682 22.045 22.045 0 01-2.582-1.9C4.045 12.733 2 10.352 2 7.5a4.5 4.5 0 018-2.828A4.5 4.5 0 0118 7.5c0 2.852-2.044 5.233-3.885 6.82a22.049 22.049 0 01-3.744 2.582l-.019.01-.005.003h-.002a.723.723 0 01-.692 0h-.002z" />
+                  </svg>
+                </div>
+                <span className="text-sm font-medium text-pink-600">Add Destination</span>
+              </button>
+            ) : (
+              <div className="rounded-2xl border-2 border-pink-300 bg-white shadow-lg overflow-hidden">
+                <form onSubmit={handleAddWish} className="p-4">
+                  <input
+                    ref={wishRef}
+                    type="text"
+                    value={wishDest}
+                    onChange={(e) => setWishDest(e.target.value)}
+                    placeholder="Where do you dream of going?"
+                    className="w-full text-sm font-semibold text-pink-900 placeholder-slate-300 border-none outline-none mb-2 bg-transparent"
+                    required
+                  />
+                  <textarea
+                    value={wishNotes}
+                    onChange={(e) => setWishNotes(e.target.value)}
+                    placeholder="Notes (optional)"
+                    rows={2}
+                    className="w-full text-xs text-slate-600 placeholder-slate-300 border border-slate-200 rounded-lg px-2 py-1.5 mb-3 resize-none focus:outline-none focus:ring-1 focus:ring-pink-300"
+                  />
+                  <div className="flex gap-2">
+                    <button
+                      type="submit"
+                      disabled={savingWish}
+                      className="flex-1 bg-pink-500 text-white py-2 rounded-lg text-sm font-semibold hover:bg-pink-600 transition-colors disabled:opacity-50"
+                    >
+                      {savingWish ? "Adding..." : "Add"}
+                    </button>
+                    <button
+                      type="button"
+                      onClick={() => { setAddingWish(false); setWishDest(""); setWishNotes(""); }}
+                      className="px-3 py-2 border border-slate-200 text-slate-500 rounded-lg text-sm hover:bg-slate-50 transition-colors"
+                    >
+                      Cancel
+                    </button>
+                  </div>
+                </form>
+              </div>
+            )}
+          </div>
+        </section>
 
         {/* Empty state */}
         {trips.length === 0 && !creating && (
@@ -588,51 +784,15 @@ export default function DashboardPage() {
           </div>
         )}
 
-        {/* Delete Confirmation Modal */}
-        {deleteId && (
-          <div className="fixed inset-0 bg-black/30 flex items-center justify-center z-50 p-4" onClick={() => setDeleteId(null)}>
-            <div className="bg-white rounded-2xl shadow-xl border border-red-100 w-full max-w-sm" onClick={(e) => e.stopPropagation()}>
-              <div className="px-6 py-5 text-center">
-                <div className="text-4xl mb-3">⚠️</div>
-                <h2 className="text-lg font-bold text-slate-900 mb-2">Delete this trip?</h2>
-                <p className="text-sm text-slate-500 mb-6">
-                  This will permanently delete the trip and all its data.
-                </p>
-                <div className="flex gap-3">
-                  <button onClick={() => setDeleteId(null)} className="flex-1 px-4 py-2.5 border border-slate-300 text-slate-600 rounded-lg hover:bg-slate-50 text-sm font-medium">
-                    Cancel
-                  </button>
-                  <button onClick={() => handleDeleteTrip(deleteId)} className="flex-1 px-4 py-2.5 bg-red-600 text-white rounded-lg hover:bg-red-700 text-sm font-medium">
-                    Delete
-                  </button>
-                </div>
-              </div>
-            </div>
-          </div>
-        )}
-
-        {/* Archive Confirmation Modal */}
-        {archiveId && (
-          <div className="fixed inset-0 bg-black/30 flex items-center justify-center z-50 p-4" onClick={() => setArchiveId(null)}>
-            <div className="bg-white rounded-2xl shadow-xl border border-slate-200 w-full max-w-sm" onClick={(e) => e.stopPropagation()}>
-              <div className="px-6 py-5 text-center">
-                <div className="text-4xl mb-3">📦</div>
-                <h2 className="text-lg font-bold text-slate-900 mb-2">Move to Past Trips?</h2>
-                <p className="text-sm text-slate-500 mb-6">
-                  This trip will be moved to your Past Trips section. You can bring it back anytime.
-                </p>
-                <div className="flex gap-3">
-                  <button onClick={() => setArchiveId(null)} className="flex-1 px-4 py-2.5 border border-slate-300 text-slate-600 rounded-lg hover:bg-slate-50 text-sm font-medium">
-                    Cancel
-                  </button>
-                  <button onClick={() => handleArchiveTrip(archiveId)} className="flex-1 px-4 py-2.5 bg-slate-700 text-white rounded-lg hover:bg-slate-800 text-sm font-medium">
-                    Move to Past
-                  </button>
-                </div>
-              </div>
-            </div>
-          </div>
-        )}
+        {/* Link to Archived Trips */}
+        <div className="text-center mt-4">
+          <Link
+            href="/archived"
+            className="text-sm text-slate-400 hover:text-slate-600 transition-colors"
+          >
+            View Archived Trips
+          </Link>
+        </div>
       </main>
       <footer className="text-center text-xs text-slate-300 py-4">
         v3.2.0 — Apr 12 2026
@@ -642,7 +802,7 @@ export default function DashboardPage() {
 }
 
 // ─── Trip Card ────────────────────────────────────────────
-function TripCard({ trip, index, onDelete, onArchive, onUnarchive, isPast, imageOptions, onCycleImage }) {
+function TripCard({ trip, index, onArchive, onUnarchive, isPast, imageOptions, onCycleImage }) {
   const hasImage = !!trip.cover_image;
   const gradient = getGradient(index);
   const hasMultipleImages = imageOptions && imageOptions.images && imageOptions.images.length > 1;
@@ -665,11 +825,11 @@ function TripCard({ trip, index, onDelete, onArchive, onUnarchive, isPast, image
             />
           )}
 
-          {/* Strong gradient overlay — dark bottom half fading to clear */}
+          {/* Strong gradient overlay — opaque at bottom, clear at top */}
           <div
             className="absolute inset-0"
             style={{
-              background: "linear-gradient(to top, rgba(0,0,0,0.85) 0%, rgba(0,0,0,0.55) 35%, rgba(0,0,0,0.15) 60%, rgba(0,0,0,0.02) 100%)",
+              background: "linear-gradient(to top, rgba(0,0,0,0.95) 0%, rgba(0,0,0,0.8) 25%, rgba(0,0,0,0.4) 50%, rgba(0,0,0,0.1) 75%, transparent 100%)",
             }}
           />
 
@@ -699,67 +859,57 @@ function TripCard({ trip, index, onDelete, onArchive, onUnarchive, isPast, image
         </div>
       </Link>
 
-      {/* Image cycling arrows — show on hover when multiple images available */}
+      {/* Image cycling arrows — always visible when multiple images available */}
       {hasMultipleImages && (
         <>
           <button
             onClick={(e) => { e.preventDefault(); e.stopPropagation(); onCycleImage(-1); }}
-            className="absolute left-2 top-1/2 -translate-y-1/2 z-20 w-7 h-7 rounded-full bg-black/40 hover:bg-black/60 text-white flex items-center justify-center opacity-0 group-hover:opacity-100 transition-all backdrop-blur-sm"
+            className="absolute left-2 top-[40%] -translate-y-1/2 z-20 w-8 h-8 rounded-full bg-black/50 hover:bg-black/70 text-white flex items-center justify-center transition-colors backdrop-blur-sm"
             title="Previous image"
           >
-            <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 16 16" fill="currentColor" className="w-3.5 h-3.5"><path fillRule="evenodd" d="M9.78 4.22a.75.75 0 0 1 0 1.06L7.06 8l2.72 2.72a.75.75 0 1 1-1.06 1.06L5.47 8.53a.75.75 0 0 1 0-1.06l3.25-3.25a.75.75 0 0 1 1.06 0Z" clipRule="evenodd" /></svg>
+            <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 16 16" fill="currentColor" className="w-4 h-4"><path fillRule="evenodd" d="M9.78 4.22a.75.75 0 0 1 0 1.06L7.06 8l2.72 2.72a.75.75 0 1 1-1.06 1.06L5.47 8.53a.75.75 0 0 1 0-1.06l3.25-3.25a.75.75 0 0 1 1.06 0Z" clipRule="evenodd" /></svg>
           </button>
           <button
             onClick={(e) => { e.preventDefault(); e.stopPropagation(); onCycleImage(1); }}
-            className="absolute right-2 top-1/2 -translate-y-1/2 z-20 w-7 h-7 rounded-full bg-black/40 hover:bg-black/60 text-white flex items-center justify-center opacity-0 group-hover:opacity-100 transition-all backdrop-blur-sm"
+            className="absolute right-2 top-[40%] -translate-y-1/2 z-20 w-8 h-8 rounded-full bg-black/50 hover:bg-black/70 text-white flex items-center justify-center transition-colors backdrop-blur-sm"
             title="Next image"
           >
-            <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 16 16" fill="currentColor" className="w-3.5 h-3.5"><path fillRule="evenodd" d="M6.22 4.22a.75.75 0 0 1 1.06 0l3.25 3.25a.75.75 0 0 1 0 1.06l-3.25 3.25a.75.75 0 0 1-1.06-1.06L8.94 8 6.22 5.28a.75.75 0 0 1 0-1.06Z" clipRule="evenodd" /></svg>
+            <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 16 16" fill="currentColor" className="w-4 h-4"><path fillRule="evenodd" d="M6.22 4.22a.75.75 0 0 1 1.06 0l3.25 3.25a.75.75 0 0 1 0 1.06l-3.25 3.25a.75.75 0 0 1-1.06-1.06L8.94 8 6.22 5.28a.75.75 0 0 1 0-1.06Z" clipRule="evenodd" /></svg>
           </button>
           {/* Image counter dots */}
-          <div className="absolute bottom-[4.5rem] left-0 right-0 z-20 flex justify-center gap-1 opacity-0 group-hover:opacity-100 transition-all">
+          <div className="absolute bottom-[4.5rem] left-0 right-0 z-20 flex justify-center gap-1.5">
             {imageOptions.images.map((_, i) => (
               <div
                 key={i}
-                className={`w-1.5 h-1.5 rounded-full ${i === imageOptions.index ? "bg-white" : "bg-white/40"}`}
+                className={`w-2 h-2 rounded-full border border-white/50 ${i === imageOptions.index ? "bg-white" : "bg-white/20"}`}
               />
             ))}
           </div>
         </>
       )}
 
-      {/* Action buttons — top right, on hover */}
-      <div className="absolute top-3 right-3 z-20 flex gap-1.5 opacity-0 group-hover:opacity-100 transition-all">
-        {/* Archive/Unarchive button */}
-        {!trip._isCollaborator && !isPast && onArchive && (
-          <button
-            onClick={(e) => { e.preventDefault(); e.stopPropagation(); onArchive(trip.id); }}
-            className="w-7 h-7 rounded-full bg-black/30 hover:bg-slate-600 text-white/70 hover:text-white flex items-center justify-center backdrop-blur-sm"
-            title="Move to past"
-          >
-            <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 16 16" fill="currentColor" className="w-3 h-3"><path d="M2 3a1 1 0 0 1 1-1h10a1 1 0 0 1 1 1v1a1 1 0 0 1-1 1H3a1 1 0 0 1-1-1V3Z" /><path fillRule="evenodd" d="M13 6H3v5a2 2 0 0 0 2 2h6a2 2 0 0 0 2-2V6Zm-5.5 2a.5.5 0 0 0 0 1h1a.5.5 0 0 0 0-1h-1Z" clipRule="evenodd" /></svg>
-          </button>
-        )}
-        {isPast && onUnarchive && !trip._isCollaborator && (
-          <button
-            onClick={(e) => { e.preventDefault(); e.stopPropagation(); onUnarchive(trip.id); }}
-            className="w-7 h-7 rounded-full bg-black/30 hover:bg-sky-600 text-white/70 hover:text-white flex items-center justify-center backdrop-blur-sm"
-            title="Move back to planning"
-          >
-            <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 16 16" fill="currentColor" className="w-3 h-3"><path fillRule="evenodd" d="M8 1a.75.75 0 0 1 .75.75v6.5a.75.75 0 0 1-1.5 0v-6.5A.75.75 0 0 1 8 1ZM4.11 3.05a.75.75 0 0 1 0 1.06L2.56 5.66A.75.75 0 0 1 1.5 5.66l1.55-1.55a.75.75 0 0 1 1.06 0Zm7.78 0a.75.75 0 0 1 1.06 0l1.55 1.55a.75.75 0 0 1-1.06 1.06l-1.55-1.55a.75.75 0 0 1 0-1.06ZM7.25 12a.75.75 0 0 1 .75-.75h.01a.75.75 0 0 1 0 1.5H8a.75.75 0 0 1-.75-.75Zm-4-4a.75.75 0 0 1 .75-.75h.01a.75.75 0 0 1 0 1.5H4a.75.75 0 0 1-.75-.75Zm8 0a.75.75 0 0 1 .75-.75h.01a.75.75 0 0 1 0 1.5H12a.75.75 0 0 1-.75-.75Z" clipRule="evenodd" /></svg>
-          </button>
-        )}
-        {/* Delete button */}
-        {!trip._isCollaborator && (
-          <button
-            onClick={(e) => { e.preventDefault(); e.stopPropagation(); onDelete(trip.id); }}
-            className="w-7 h-7 rounded-full bg-black/30 hover:bg-red-500 text-white/70 hover:text-white flex items-center justify-center backdrop-blur-sm"
-            title="Delete trip"
-          >
-            <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 16 16" fill="currentColor" className="w-3 h-3"><path d="M5.28 4.22a.75.75 0 0 0-1.06 1.06L6.94 8l-2.72 2.72a.75.75 0 1 0 1.06 1.06L8 9.06l2.72 2.72a.75.75 0 1 0 1.06-1.06L9.06 8l2.72-2.72a.75.75 0 0 0-1.06-1.06L8 6.94 5.28 4.22Z" /></svg>
-          </button>
-        )}
-      </div>
+      {/* Action buttons — always visible at top right */}
+      {!trip._isCollaborator && (
+        <div className="absolute top-3 right-3 z-20 flex gap-1.5">
+          {onArchive && !trip.archived && (
+            <button
+              onClick={(e) => { e.preventDefault(); e.stopPropagation(); onArchive(trip.id); }}
+              className="px-2.5 py-1 rounded-full bg-black/50 hover:bg-slate-600 text-white/80 hover:text-white text-[11px] font-medium flex items-center gap-1 backdrop-blur-sm transition-colors"
+            >
+              <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 16 16" fill="currentColor" className="w-3 h-3"><path d="M2 3a1 1 0 0 1 1-1h10a1 1 0 0 1 1 1v1a1 1 0 0 1-1 1H3a1 1 0 0 1-1-1V3Z" /><path fillRule="evenodd" d="M13 6H3v5a2 2 0 0 0 2 2h6a2 2 0 0 0 2-2V6Zm-5.5 2a.5.5 0 0 0 0 1h1a.5.5 0 0 0 0-1h-1Z" clipRule="evenodd" /></svg>
+              Archive
+            </button>
+          )}
+          {onUnarchive && trip.archived && (
+            <button
+              onClick={(e) => { e.preventDefault(); e.stopPropagation(); onUnarchive(trip.id); }}
+              className="px-2.5 py-1 rounded-full bg-black/50 hover:bg-sky-600 text-white/80 hover:text-white text-[11px] font-medium flex items-center gap-1 backdrop-blur-sm transition-colors"
+            >
+              Restore
+            </button>
+          )}
+        </div>
+      )}
     </div>
   );
 }
