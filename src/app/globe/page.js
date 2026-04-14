@@ -41,7 +41,81 @@ const GEO_CACHE = {
   "swiss alps": [46.56, 7.98], "amalfi coast": [40.63, 14.60],
   "dubrovnik": [42.65, 18.09], "patagonia": [-48.50, -72.50],
   "petra": [30.33, 35.44], "angkor wat": [13.41, 103.87],
+  "puerto vallarta": [20.65, -105.23], "portland": [45.52, -122.68],
+  "madrid": [40.42, -3.70], "austin": [30.27, -97.74], "nashville": [36.16, -86.78],
+  "new orleans": [29.95, -90.07], "boston": [42.36, -71.06], "washington dc": [38.91, -77.04],
+  "san diego": [32.72, -117.16], "las vegas": [36.17, -115.14], "honolulu": [21.31, -157.86],
+  "anchorage": [61.22, -149.90], "phoenix": [33.45, -112.07], "orlando": [28.54, -81.38],
+  "savannah": [32.08, -81.09], "charleston": [32.78, -79.93],
+  "london": [51.51, -0.13], "edinburgh": [55.95, -3.19], "dublin": [53.35, -6.26],
+  "florence": [43.77, 11.25], "venice": [45.44, 12.34], "milan": [45.46, 9.19],
+  "nice": [43.71, 7.26], "lyon": [45.76, 4.84], "marseille": [43.30, 5.37],
+  "seville": [37.39, -5.98], "granada": [37.18, -3.60], "malaga": [36.72, -4.42],
+  "porto": [41.16, -8.63], "budapest": [47.50, 19.04], "krakow": [50.06, 19.94],
+  "copenhagen": [55.68, 12.57], "stockholm": [59.33, 18.07], "oslo": [59.91, 10.75],
+  "helsinki": [60.17, 24.94], "zurich": [47.38, 8.54], "geneva": [46.20, 6.14],
+  "munich": [48.14, 11.58], "bruges": [51.21, 3.22], "brussels": [50.85, 4.35],
+  "cartagena": [10.39, -75.51], "medellín": [6.25, -75.56], "medellin": [6.25, -75.56],
+  "cusco": [-13.52, -71.97], "playa del carmen": [20.63, -87.08],
+  "tulum": [20.21, -87.43], "oaxaca": [17.07, -96.73], "guadalajara": [20.67, -103.35],
+  "cabo san lucas": [22.89, -109.91], "cabo": [22.89, -109.91],
 };
+
+// Map destinations to countries
+const COUNTRY_MAP = {
+  "paris": "France", "london": "United Kingdom", "tokyo": "Japan", "kyoto": "Japan",
+  "new york": "United States", "rome": "Italy", "amalfi coast": "Italy",
+  "bangkok": "Thailand", "sydney": "Australia", "istanbul": "Turkey",
+  "dubai": "United Arab Emirates", "barcelona": "Spain", "amsterdam": "Netherlands",
+  "singapore": "Singapore", "berlin": "Germany", "prague": "Czech Republic",
+  "vienna": "Austria", "lisbon": "Portugal", "athens": "Greece", "santorini": "Greece",
+  "cairo": "Egypt", "mexico city": "Mexico", "cancun": "Mexico",
+  "buenos aires": "Argentina", "patagonia": "Argentina",
+  "rio de janeiro": "Brazil", "cape town": "South Africa", "johannesburg": "South Africa",
+  "marrakech": "Morocco", "reykjavik": "Iceland", "iceland": "Iceland",
+  "machu picchu": "Peru", "lima": "Peru", "bali": "Indonesia",
+  "fiji": "Fiji", "maldives": "Maldives", "hawaii": "United States",
+  "seattle": "United States", "los angeles": "United States", "san francisco": "United States",
+  "chicago": "United States", "miami": "United States", "denver": "United States",
+  "nairobi": "Kenya", "mumbai": "India", "delhi": "India",
+  "beijing": "China", "shanghai": "China", "hong kong": "China",
+  "seoul": "South Korea", "taipei": "Taiwan", "hanoi": "Vietnam",
+  "kuala lumpur": "Malaysia", "manila": "Philippines",
+  "auckland": "New Zealand", "queenstown": "New Zealand",
+  "vancouver": "Canada", "toronto": "Canada", "montreal": "Canada",
+  "havana": "Cuba", "bogota": "Colombia",
+  "dominican republic": "Dominican Republic", "punta cana": "Dominican Republic",
+  "jamaica": "Jamaica", "costa rica": "Costa Rica",
+  "olympic national park": "United States", "olympic peninsula": "United States",
+  "switzerland": "Switzerland", "swiss alps": "Switzerland",
+  "dubrovnik": "Croatia", "petra": "Jordan", "angkor wat": "Cambodia",
+  "puerto vallarta": "Mexico", "portland": "United States", "madrid": "Spain",
+  "austin": "United States", "nashville": "United States", "new orleans": "United States",
+  "boston": "United States", "washington dc": "United States", "san diego": "United States",
+  "las vegas": "United States", "honolulu": "United States", "anchorage": "United States",
+  "phoenix": "United States", "orlando": "United States", "savannah": "United States",
+  "charleston": "United States", "edinburgh": "United Kingdom", "dublin": "Ireland",
+  "florence": "Italy", "venice": "Italy", "milan": "Italy",
+  "nice": "France", "lyon": "France", "marseille": "France",
+  "seville": "Spain", "granada": "Spain", "malaga": "Spain",
+  "porto": "Portugal", "budapest": "Hungary", "krakow": "Poland",
+  "copenhagen": "Denmark", "stockholm": "Sweden", "oslo": "Norway",
+  "helsinki": "Finland", "zurich": "Switzerland", "geneva": "Switzerland",
+  "munich": "Germany", "bruges": "Belgium", "brussels": "Belgium",
+  "cartagena": "Colombia", "medellín": "Colombia", "medellin": "Colombia",
+  "cusco": "Peru", "playa del carmen": "Mexico", "tulum": "Mexico",
+  "oaxaca": "Mexico", "guadalajara": "Mexico", "cabo san lucas": "Mexico", "cabo": "Mexico",
+};
+
+function getCountry(destination) {
+  if (!destination) return null;
+  const lower = destination.toLowerCase().trim();
+  if (COUNTRY_MAP[lower]) return COUNTRY_MAP[lower];
+  for (const [key, country] of Object.entries(COUNTRY_MAP)) {
+    if (lower.includes(key) || key.includes(lower)) return country;
+  }
+  return null;
+}
 
 function geocode(destination) {
   if (!destination) return null;
@@ -67,6 +141,8 @@ export default function GlobePage() {
 
   useEffect(() => {
     loadTrips();
+    // If Three.js was already loaded from a previous visit, set it immediately
+    if (window.THREE) setThreeLoaded(true);
   }, []);
 
   async function loadTrips() {
@@ -74,24 +150,58 @@ export default function GlobePage() {
     if (!user) { router.push("/login"); return; }
     setUser(user);
 
-    const { data: ownTrips } = await supabase
-      .from("trips").select("*").eq("user_id", user.id)
-      .eq("archived", false);
+    // Parallel fetch: own trips + collaborator IDs at the same time
+    const [ownResult, collabResult] = await Promise.all([
+      supabase.from("trips").select("*").eq("user_id", user.id).eq("archived", false),
+      supabase.from("trip_collaborators").select("trip_id")
+        .eq("user_id", user.id).eq("status", "accepted"),
+    ]);
 
-    const { data: collabs } = await supabase
-      .from("trip_collaborators").select("trip_id")
-      .eq("user_id", user.id).eq("status", "accepted");
+    const ownTrips = ownResult.data || [];
+    const collabs = collabResult.data || [];
 
     let collabTrips = [];
-    if (collabs && collabs.length > 0) {
+    if (collabs.length > 0) {
       const ids = collabs.map((c) => c.trip_id);
       const { data: shared } = await supabase
         .from("trips").select("*").in("id", ids).eq("archived", false);
       collabTrips = shared || [];
     }
 
-    setTrips([...(ownTrips || []), ...collabTrips]);
+    const allTrips = [...ownTrips, ...collabTrips];
+
+    // Show trips immediately — don't wait for activity locations
+    setTrips(allTrips);
     setLoading(false);
+
+    // Then fetch activity locations in background for country count
+    const traveledTrips = allTrips.filter((t) => t.status === "traveled");
+    if (traveledTrips.length > 0) {
+      const tIds = traveledTrips.map((t) => t.id);
+      const { data: days } = await supabase
+        .from("days").select("id, trip_id").in("trip_id", tIds);
+      if (days && days.length > 0) {
+        const dayIds = days.map((d) => d.id);
+        const { data: activities } = await supabase
+          .from("activities").select("location, day_id").in("day_id", dayIds);
+        if (activities) {
+          const dayToTrip = {};
+          days.forEach((d) => { dayToTrip[d.id] = d.trip_id; });
+          const tripActivityLocations = {};
+          activities.forEach((a) => {
+            if (a.location) {
+              const tid = dayToTrip[a.day_id];
+              if (!tripActivityLocations[tid]) tripActivityLocations[tid] = [];
+              tripActivityLocations[tid].push(a.location);
+            }
+          });
+          // Update trips with activity locations (triggers re-render for country count)
+          setTrips((prev) => prev.map((t) => ({
+            ...t, _activityLocations: tripActivityLocations[t.id] || t._activityLocations || [],
+          })));
+        }
+      }
+    }
   }
 
   async function handleSignOut() {
@@ -99,9 +209,9 @@ export default function GlobePage() {
     router.push("/");
   }
 
-  // Initialize Three.js globe once both data and script are loaded
+  // Initialize Three.js globe as soon as script loads (don't wait for trip data)
   useEffect(() => {
-    if (!threeLoaded || loading || !containerRef.current || globeRef.current) return;
+    if (!threeLoaded || !containerRef.current || globeRef.current) return;
 
     const THREE = window.THREE;
     if (!THREE) return;
@@ -120,125 +230,49 @@ export default function GlobePage() {
     renderer.setPixelRatio(window.devicePixelRatio);
     container.appendChild(renderer.domElement);
 
-    // Globe with Earth texture
+    // Globe with vintage Earth texture
     const globeGeom = new THREE.SphereGeometry(1, 64, 64);
     const textureLoader = new THREE.TextureLoader();
+
+    // Load earth texture — vintage tint via material color (no pixel processing)
     const earthTexture = textureLoader.load(
       "https://unpkg.com/three-globe@2.24.4/example/img/earth-blue-marble.jpg"
     );
     const bumpTexture = textureLoader.load(
       "https://unpkg.com/three-globe@2.24.4/example/img/earth-topology.png"
     );
+    // Material color multiplies with texture — warm parchment tone creates vintage look instantly
     const globeMat = new THREE.MeshPhongMaterial({
       map: earthTexture,
       bumpMap: bumpTexture,
-      bumpScale: 0.03,
-      specular: new THREE.Color(0x333333),
-      shininess: 15,
+      bumpScale: 0.04,
+      color: new THREE.Color(0xddc8a0),   // warm parchment tint
+      emissive: new THREE.Color(0x1a0f05), // subtle warm self-glow
+      specular: new THREE.Color(0x443322),
+      shininess: 8,
     });
     const globe = new THREE.Mesh(globeGeom, globeMat);
     scene.add(globe);
 
-    // Atmosphere glow
-    const glowGeom = new THREE.SphereGeometry(1.12, 64, 64);
-    const glowMat = new THREE.MeshBasicMaterial({
-      color: 0x4dc9f6,
-      transparent: true,
-      opacity: 0.08,
-      side: THREE.BackSide,
-    });
-    scene.add(new THREE.Mesh(glowGeom, glowMat));
-
-    // Lights — tuned for Earth texture visibility
-    const ambient = new THREE.AmbientLight(0x888899, 0.8);
+    // Lights — warm amber tones for vintage feel
+    const ambient = new THREE.AmbientLight(0xc9a87c, 0.7);
     scene.add(ambient);
-    const dir = new THREE.DirectionalLight(0xffffff, 1.0);
+    const dir = new THREE.DirectionalLight(0xffeedd, 0.9);
     dir.position.set(5, 3, 5);
     scene.add(dir);
-    const fill = new THREE.DirectionalLight(0x8899bb, 0.3);
+    const fill = new THREE.DirectionalLight(0xaa8866, 0.25);
     fill.position.set(-5, -2, -3);
     scene.add(fill);
 
-    // Stars
+    // Sparse warm-toned stars (like aged paper specks)
     const starsGeom = new THREE.BufferGeometry();
     const starVerts = [];
-    for (let i = 0; i < 2000; i++) {
+    for (let i = 0; i < 1200; i++) {
       starVerts.push((Math.random() - 0.5) * 40, (Math.random() - 0.5) * 40, (Math.random() - 0.5) * 40);
     }
     starsGeom.setAttribute("position", new THREE.Float32BufferAttribute(starVerts, 3));
-    const starsMat = new THREE.PointsMaterial({ color: 0xffffff, size: 0.02 });
+    const starsMat = new THREE.PointsMaterial({ color: 0xffe8cc, size: 0.015 });
     scene.add(new THREE.Points(starsGeom, starsMat));
-
-    // Convert lat/lng to 3D position
-    function latLngToVec3(lat, lng, r) {
-      const phi = (90 - lat) * (Math.PI / 180);
-      const theta = (lng + 180) * (Math.PI / 180);
-      return new THREE.Vector3(
-        -r * Math.sin(phi) * Math.cos(theta),
-        r * Math.cos(phi),
-        r * Math.sin(phi) * Math.sin(theta)
-      );
-    }
-
-    // Status colors
-    const STATUS_COLORS = {
-      planning: 0xfbbf24,  // amber
-      traveled: 0x38bdf8,  // sky blue
-      wish: 0xf472b6,      // pink
-    };
-
-    // Add pins for trips
-    const pins = [];
-    for (const trip of trips) {
-      const coords = geocode(trip.destination);
-      if (!coords) continue;
-
-      const color = STATUS_COLORS[trip.status] || STATUS_COLORS.planning;
-      const pos = latLngToVec3(coords[0], coords[1], 1.02);
-
-      // Pin sphere
-      const pinGeom = new THREE.SphereGeometry(0.03, 16, 16);
-      const pinMat = new THREE.MeshBasicMaterial({ color });
-      const pin = new THREE.Mesh(pinGeom, pinMat);
-      pin.position.copy(pos);
-      globe.add(pin);
-
-      // Glow ring
-      const ringGeom = new THREE.RingGeometry(0.035, 0.055, 32);
-      const ringMat = new THREE.MeshBasicMaterial({
-        color, transparent: true, opacity: 0.4, side: THREE.DoubleSide,
-      });
-      const ring = new THREE.Mesh(ringGeom, ringMat);
-      ring.position.copy(pos);
-      ring.lookAt(new THREE.Vector3(0, 0, 0));
-      globe.add(ring);
-
-      // Stalk
-      const stalkPos = latLngToVec3(coords[0], coords[1], 1.0);
-      const stalkGeom = new THREE.CylinderGeometry(0.003, 0.003, 0.02, 8);
-      const stalkMat = new THREE.MeshBasicMaterial({ color, transparent: true, opacity: 0.6 });
-      const stalk = new THREE.Mesh(stalkGeom, stalkMat);
-      stalk.position.copy(stalkPos.clone().lerp(pos, 0.5));
-      stalk.lookAt(new THREE.Vector3(0, 0, 0));
-      stalk.rotateX(Math.PI / 2);
-      globe.add(stalk);
-
-      pins.push({ mesh: pin, ring, trip, coords, color });
-    }
-
-    // Draw arcs between "traveled" trips
-    const traveled = pins.filter((p) => p.trip.status === "traveled");
-    for (let i = 0; i < traveled.length - 1; i++) {
-      const a = latLngToVec3(traveled[i].coords[0], traveled[i].coords[1], 1.0);
-      const b = latLngToVec3(traveled[i + 1].coords[0], traveled[i + 1].coords[1], 1.0);
-      const mid = a.clone().add(b).multiplyScalar(0.5).normalize().multiplyScalar(1.3);
-      const curve = new THREE.QuadraticBezierCurve3(a, mid, b);
-      const curveGeom = new THREE.TubeGeometry(curve, 32, 0.004, 8, false);
-      const curveMat = new THREE.MeshBasicMaterial({
-        color: 0x38bdf8, transparent: true, opacity: 0.35,
-      });
-      globe.add(new THREE.Mesh(curveGeom, curveMat));
-    }
 
     // Drag rotation
     let isDragging = false;
@@ -268,6 +302,7 @@ export default function GlobePage() {
     const tooltip = document.getElementById("globe-tooltip");
     const raycaster = new THREE.Raycaster();
     const mouse = new THREE.Vector2();
+    let pins = [];
 
     renderer.domElement.addEventListener("mousemove", (e) => {
       const rect = renderer.domElement.getBoundingClientRect();
@@ -282,9 +317,9 @@ export default function GlobePage() {
           tooltip.style.left = e.clientX + 15 + "px";
           tooltip.style.top = e.clientY - 10 + "px";
           tooltip.innerHTML = `
-            <div style="font-weight:700;font-size:15px;color:#38bdf8;">${pin.trip.destination || "Unknown"}</div>
+            <div style="font-weight:700;font-size:15px;color:#d4a574;">${pin.trip.destination || "Unknown"}</div>
             <div style="opacity:0.7;margin-top:2px;">${pin.trip.title}</div>
-            <div style="opacity:0.5;font-size:11px;margin-top:4px;">${pin.trip.status || "planning"}</div>
+            <div style="opacity:0.5;font-size:11px;margin-top:4px;font-style:italic;">${pin.trip.status || "planning"}</div>
           `;
           found = true;
           break;
@@ -299,19 +334,12 @@ export default function GlobePage() {
       animId = requestAnimationFrame(animate);
 
       if (!isDragging) {
-        globe.rotation.y += 0.002;
+        globe.rotation.y += 0.0002;
         rotVel.x *= 0.95;
         rotVel.y *= 0.95;
         globe.rotation.y += rotVel.x;
         globe.rotation.x += rotVel.y;
       }
-
-      // Pin pulse
-      const t = Date.now() * 0.003;
-      pins.forEach((p, i) => {
-        const s = 1 + Math.sin(t + i) * 0.15;
-        p.ring.scale.set(s, s, s);
-      });
 
       renderer.render(scene, camera);
     }
@@ -327,7 +355,8 @@ export default function GlobePage() {
     }
     window.addEventListener("resize", onResize);
 
-    globeRef.current = { renderer, animId };
+    // Store scene objects so the trips effect can add pins later
+    globeRef.current = { renderer, animId, globe, pins, THREE };
 
     return () => {
       cancelAnimationFrame(animId);
@@ -336,24 +365,160 @@ export default function GlobePage() {
         renderer.domElement.parentNode.removeChild(renderer.domElement);
       }
       renderer.dispose();
+      globeRef.current = null;
     };
-  }, [threeLoaded, loading, trips]);
+  }, [threeLoaded]);
+
+  // Add/update pins when trip data arrives (separate from globe init)
+  useEffect(() => {
+    if (!globeRef.current || trips.length === 0) return;
+    const { globe, THREE } = globeRef.current;
+
+    // Convert lat/lng to 3D position
+    function latLngToVec3(lat, lng, r) {
+      const phi = (90 - lat) * (Math.PI / 180);
+      const theta = (lng + 180) * (Math.PI / 180);
+      return new THREE.Vector3(
+        -r * Math.sin(phi) * Math.cos(theta),
+        r * Math.cos(phi),
+        r * Math.sin(phi) * Math.sin(theta)
+      );
+    }
+
+    // Create surface-fixed text label (mesh plane, not sprite)
+    function makeTextLabel(text, dateStr) {
+      const canvas = document.createElement("canvas");
+      const ctx = canvas.getContext("2d");
+      const fontSize = 28;
+      const dateSize = 18;
+      const hasDate = !!dateStr;
+      const pad = 10;
+
+      ctx.font = `700 ${fontSize}px Georgia, serif`;
+      const nameW = ctx.measureText(text).width;
+      let dateW = 0;
+      if (hasDate) {
+        ctx.font = `400 ${dateSize}px Georgia, serif`;
+        dateW = ctx.measureText(dateStr).width;
+      }
+      const w = Math.max(nameW, dateW) + pad * 2;
+      const h = hasDate ? fontSize + dateSize + pad * 2 + 4 : fontSize + pad * 2;
+      canvas.width = w;
+      canvas.height = h;
+
+      ctx.font = `700 ${fontSize}px Georgia, serif`;
+      ctx.shadowColor = "rgba(0,0,0,0.8)";
+      ctx.shadowBlur = 4;
+      ctx.shadowOffsetX = 1;
+      ctx.shadowOffsetY = 1;
+      ctx.fillStyle = "#ffffff";
+      ctx.textAlign = "center";
+      ctx.textBaseline = "top";
+      ctx.fillText(text, w / 2, pad);
+
+      if (hasDate) {
+        ctx.font = `400 ${dateSize}px Georgia, serif`;
+        ctx.fillStyle = "#ffffff";
+        ctx.fillText(dateStr, w / 2, pad + fontSize + 4);
+      }
+      ctx.shadowColor = "transparent";
+      ctx.shadowBlur = 0;
+
+      const tex = new THREE.CanvasTexture(canvas);
+      tex.needsUpdate = true;
+      const mat = new THREE.MeshBasicMaterial({ map: tex, transparent: true, side: THREE.DoubleSide, depthWrite: false });
+      const planeGeom = new THREE.PlaneGeometry(w / 1400, h / 1400);
+      return new THREE.Mesh(planeGeom, mat);
+    }
+
+    function formatLabelDate(startStr) {
+      if (!startStr) return "";
+      const s = new Date(startStr + "T00:00:00");
+      return s.toLocaleDateString("en-US", { month: "short", year: "numeric" });
+    }
+
+    const STATUS_COLORS = {
+      planning: 0x6b4e00,  // deep saturated gold
+      traveled: 0x002040,  // deep saturated blue
+      wish: 0x004010,      // deep saturated green
+    };
+
+    // Clear old pins if re-rendering
+    const oldPins = globeRef.current.pins || [];
+    oldPins.forEach((p) => {
+      globe.remove(p.mesh);
+      if (p.ring) globe.remove(p.ring);
+      globe.remove(p.label);
+    });
+    // Also clear old arcs
+    globe.children.filter((c) => c._isArc).forEach((c) => globe.remove(c));
+
+    const pins = [];
+    for (const trip of trips) {
+      const coords = geocode(trip.destination);
+      if (!coords) continue;
+
+      const color = STATUS_COLORS[trip.status] || STATUS_COLORS.planning;
+      const pos = latLngToVec3(coords[0], coords[1], 1.005);
+
+      const pinGeom = new THREE.SphereGeometry(0.008, 10, 10);
+      const pinMat = new THREE.MeshBasicMaterial({ color });
+      const pin = new THREE.Mesh(pinGeom, pinMat);
+      pin.position.copy(pos);
+      globe.add(pin);
+
+      const labelText = trip.destination || trip.title || "Trip";
+      const dateStr = formatLabelDate(trip.start_date);
+      const label = makeTextLabel(labelText, dateStr);
+      const labelPos = latLngToVec3(coords[0], coords[1], 1.02);
+      label.position.copy(labelPos);
+      label.lookAt(labelPos.clone().multiplyScalar(2));
+      globe.add(label);
+
+      pins.push({ mesh: pin, label, trip, coords, color });
+    }
+
+    // Draw arcs between "traveled" trips
+    const traveled = pins.filter((p) => p.trip.status === "traveled");
+    for (let i = 0; i < traveled.length - 1; i++) {
+      const a = latLngToVec3(traveled[i].coords[0], traveled[i].coords[1], 1.0);
+      const b = latLngToVec3(traveled[i + 1].coords[0], traveled[i + 1].coords[1], 1.0);
+      const mid = a.clone().add(b).multiplyScalar(0.5).normalize().multiplyScalar(1.3);
+      const curve = new THREE.QuadraticBezierCurve3(a, mid, b);
+      const curveGeom = new THREE.TubeGeometry(curve, 32, 0.004, 8, false);
+      const curveMat = new THREE.MeshBasicMaterial({
+        color: 0x002040, transparent: true, opacity: 0.4,
+      });
+      const arcMesh = new THREE.Mesh(curveGeom, curveMat);
+      arcMesh._isArc = true;
+      globe.add(arcMesh);
+    }
+
+    globeRef.current.pins = pins;
+  }, [trips]);
 
   // Compute stats
   const traveledCount = trips.filter((t) => t.status === "traveled").length;
   const planningCount = trips.filter((t) => t.status === "planning" || !t.status).length;
   const wishCount = trips.filter((t) => t.status === "wish").length;
 
-  if (loading) {
-    return (
-      <div className="flex min-h-screen items-center justify-center" style={{ background: "#0a0e27" }}>
-        <div className="text-center">
-          <div className="text-4xl mb-3 animate-bounce">🌍</div>
-          <p className="text-slate-400">Loading your globe...</p>
-        </div>
-      </div>
-    );
-  }
+  // Country count — from traveled trip destinations + their activity locations
+  // Also include planning trips so the stat is visible even without "traveled" status
+  const countriesSet = new Set();
+  trips.forEach((t) => {
+    if (t.status === "traveled" || t.status === "planning" || !t.status) {
+      const c = getCountry(t.destination);
+      if (c) countriesSet.add(c);
+      // Also check activity locations within the trip
+      if (t._activityLocations) {
+        t._activityLocations.forEach((loc) => {
+          const ac = getCountry(loc);
+          if (ac) countriesSet.add(ac);
+        });
+      }
+    }
+  });
+  const countryCount = countriesSet.size;
 
   return (
     <>
@@ -361,7 +526,7 @@ export default function GlobePage() {
         src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"
         onLoad={() => setThreeLoaded(true)}
       />
-      <div className="min-h-screen relative" style={{ background: "#0a0e27" }}>
+      <div className="min-h-screen relative" style={{ background: "#1a1408" }}>
         {/* Header bar */}
         <div className="absolute top-0 left-0 right-0 z-20 max-w-6xl mx-auto px-6 pt-6 pb-4 flex items-center justify-between">
           {/* View toggle */}
@@ -377,7 +542,8 @@ export default function GlobePage() {
             </Link>
             <Link
               href="/globe"
-              className="w-8 h-8 rounded-lg bg-sky-500/30 text-sky-300 flex items-center justify-center backdrop-blur-sm"
+              className="w-8 h-8 rounded-lg flex items-center justify-center backdrop-blur-sm"
+              style={{ background: "rgba(212,165,116,0.3)", color: "#d4a574" }}
               title="Globe view"
             >
               <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 16 16" fill="currentColor" className="w-4 h-4">
@@ -405,15 +571,15 @@ export default function GlobePage() {
             {showAccount && (
               <>
                 <div className="fixed inset-0 z-30" onClick={() => setShowAccount(false)} />
-                <div className="absolute right-0 top-10 z-40 w-56 bg-slate-800 rounded-xl shadow-xl border border-slate-700 py-2 overflow-hidden">
-                  <div className="px-4 py-2 border-b border-slate-700">
-                    <p className="text-xs text-slate-400">Signed in as</p>
+                <div className="absolute right-0 top-10 z-40 w-56 rounded-xl shadow-xl py-2 overflow-hidden" style={{ background: "rgba(30,22,12,0.95)", border: "1px solid rgba(212,165,116,0.2)" }}>
+                  <div className="px-4 py-2" style={{ borderBottom: "1px solid rgba(212,165,116,0.15)" }}>
+                    <p className="text-xs" style={{ color: "rgba(212,165,116,0.5)" }}>Signed in as</p>
                     <p className="text-sm text-white font-medium truncate">{user?.email}</p>
                   </div>
-                  <Link href="/archived" className="block px-4 py-2.5 text-sm text-slate-300 hover:bg-slate-700 transition-colors" onClick={() => setShowAccount(false)}>
+                  <Link href="/archived" className="block px-4 py-2.5 text-sm transition-colors" style={{ color: "rgba(212,165,116,0.7)" }} onClick={() => setShowAccount(false)}>
                     Archived Trips
                   </Link>
-                  <button onClick={handleSignOut} className="w-full text-left px-4 py-2.5 text-sm text-slate-300 hover:bg-slate-700 transition-colors">
+                  <button onClick={handleSignOut} className="w-full text-left px-4 py-2.5 text-sm transition-colors" style={{ color: "rgba(212,165,116,0.7)" }}>
                     Sign Out
                   </button>
                 </div>
@@ -424,37 +590,29 @@ export default function GlobePage() {
 
         {/* Stats overlay */}
         <div className="absolute top-20 right-8 z-10 text-right">
-          <div className="text-4xl font-bold text-sky-400">{traveledCount}</div>
-          <div className="text-[11px] text-white/40 uppercase tracking-widest">Traveled</div>
-          <div className="text-2xl font-bold text-amber-400 mt-3">{planningCount}</div>
-          <div className="text-[11px] text-white/40 uppercase tracking-widest">Planning</div>
-          {wishCount > 0 && (
-            <>
-              <div className="text-2xl font-bold text-pink-400 mt-3">{wishCount}</div>
-              <div className="text-[11px] text-white/40 uppercase tracking-widest">Wish List</div>
-            </>
-          )}
+          <div className="text-4xl font-bold" style={{ color: "#d4a574" }}>{countryCount}</div>
+          <div className="text-[11px] uppercase tracking-widest" style={{ color: "rgba(212,165,116,0.5)" }}>Countries</div>
         </div>
 
         {/* Legend */}
-        <div className="absolute bottom-6 left-8 z-10 flex gap-4 text-sm text-white/70">
+        <div className="absolute bottom-6 left-8 z-10 flex gap-4 text-sm" style={{ color: "rgba(212,165,116,0.7)" }}>
           <div className="flex items-center gap-2">
-            <div className="w-2.5 h-2.5 rounded-full bg-sky-400"></div>
+            <div className="w-2.5 h-2.5 rounded-full" style={{ background: "#002040" }}></div>
             <span>Traveled</span>
           </div>
           <div className="flex items-center gap-2">
-            <div className="w-2.5 h-2.5 rounded-full bg-amber-400"></div>
+            <div className="w-2.5 h-2.5 rounded-full" style={{ background: "#6b4e00" }}></div>
             <span>Planning</span>
           </div>
           <div className="flex items-center gap-2">
-            <div className="w-2.5 h-2.5 rounded-full bg-pink-400"></div>
+            <div className="w-2.5 h-2.5 rounded-full" style={{ background: "#004010" }}></div>
             <span>Wish List</span>
           </div>
         </div>
 
         {/* Globe subtitle */}
         <div className="absolute bottom-6 right-8 z-10 text-right">
-          <p className="text-xs text-white/30">Drag to spin · Scroll to zoom</p>
+          <p className="text-xs" style={{ color: "rgba(212,165,116,0.35)" }}>Drag to spin · Scroll to zoom</p>
         </div>
 
         {/* Tooltip */}
@@ -462,9 +620,9 @@ export default function GlobePage() {
           id="globe-tooltip"
           className="fixed z-50 hidden pointer-events-none rounded-xl px-4 py-3 text-sm max-w-[200px]"
           style={{
-            background: "rgba(15, 23, 42, 0.9)",
+            background: "rgba(30, 22, 12, 0.92)",
             backdropFilter: "blur(8px)",
-            border: "1px solid rgba(56, 189, 248, 0.3)",
+            border: "1px solid rgba(212, 165, 116, 0.3)",
           }}
         ></div>
 

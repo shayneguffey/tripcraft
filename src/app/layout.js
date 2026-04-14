@@ -22,6 +22,10 @@ export default function RootLayout({ children }) {
       lang="en"
       className={`${geistSans.variable} ${geistMono.variable} h-full antialiased`}
     >
+      <head>
+        <link rel="preload" href="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js" as="script" />
+        <link rel="preload" href="https://unpkg.com/three-globe@2.24.4/example/img/earth-blue-marble.jpg" as="image" />
+      </head>
       <body className="min-h-full flex flex-col">{children}</body>
     </html>
   );
