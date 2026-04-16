@@ -56,7 +56,7 @@ export default function NewTripPage() {
       setError(error.message);
       setLoading(false);
     } else {
-      router.push("/dashboard");
+      router.push("/trips");
     }
   }
 
@@ -70,10 +70,10 @@ export default function NewTripPage() {
             <span className="text-xl font-bold text-sky-900">TripCraft</span>
           </Link>
           <Link
-            href="/dashboard"
+            href="/trips"
             className="text-sm text-sky-700 hover:text-sky-900"
           >
-            ← Back to Dashboard
+            ← Back to Trips
           </Link>
         </div>
       </header>
@@ -207,7 +207,7 @@ export default function NewTripPage() {
               {loading ? "Creating..." : "Create Trip"}
             </button>
             <Link
-              href="/dashboard"
+              href="/trips"
               className="px-6 py-2.5 border-2 border-sky-200 text-sky-700 rounded-lg font-semibold hover:bg-sky-50 transition-colors text-center"
             >
               Cancel

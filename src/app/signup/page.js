@@ -18,7 +18,7 @@ export default function SignupPage() {
   useEffect(() => {
     const { data: listener } = supabase.auth.onAuthStateChange((event) => {
       if (event === "SIGNED_IN") {
-        router.push("/dashboard");
+        router.push("/trips");
       }
     });
     return () => listener?.subscription?.unsubscribe();
@@ -50,7 +50,7 @@ export default function SignupPage() {
       setError(error.message);
       setLoading(false);
     } else {
-      router.push("/dashboard");
+      router.push("/trips");
     }
   }
 

@@ -26,7 +26,7 @@ export default function AuthCallbackPage() {
           localStorage.removeItem("pending_invite_token");
           router.push(`/invite/${pendingInvite}`);
         } else {
-          router.push("/dashboard");
+          router.push("/trips");
         }
       } else {
         // No session yet — wait for auth state change
@@ -37,7 +37,7 @@ export default function AuthCallbackPage() {
               localStorage.removeItem("pending_invite_token");
               router.push(`/invite/${pendingInvite}`);
             } else {
-              router.push("/dashboard");
+              router.push("/trips");
             }
             listener?.subscription?.unsubscribe();
           }

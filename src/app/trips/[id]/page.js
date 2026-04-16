@@ -100,7 +100,7 @@ export default function TripDetailPage() {
       .single();
 
     if (tripError || !tripData) {
-      router.push("/dashboard");
+      router.push("/trips");
       return;
     }
 
@@ -338,10 +338,10 @@ export default function TripDetailPage() {
             <span className="text-xl font-bold text-sky-900">TripCraft</span>
           </Link>
           <Link
-            href="/dashboard"
+            href="/trips"
             className="text-sm text-sky-700 hover:text-sky-900"
           >
-            ← Back to Dashboard
+            ← Back to Trips
           </Link>
         </div>
       </header>

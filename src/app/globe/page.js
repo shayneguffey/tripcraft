@@ -532,7 +532,7 @@ export default function GlobePage() {
           {/* View toggle */}
           <div className="flex items-center gap-2">
             <Link
-              href="/dashboard"
+              href="/trips"
               className="w-8 h-8 rounded-lg bg-white/10 text-white/50 flex items-center justify-center backdrop-blur-sm hover:bg-white/20 hover:text-white transition-colors"
               title="Card view"
             >

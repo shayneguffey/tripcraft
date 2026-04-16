@@ -38,6 +38,37 @@ function getGradient(index) {
   return GRADIENTS[index % GRADIENTS.length];
 }
 
+const STATUS_OPTIONS = [
+  { key: "planning", label: "Planning", activeBg: "rgba(74,150,90,0.45)", hoverBg: "rgba(74,150,90,0.25)" },
+  { key: "traveled", label: "Traveled", activeBg: "rgba(60,120,180,0.45)", hoverBg: "rgba(60,120,180,0.25)" },
+  { key: "wish", label: "Wish", activeBg: "rgba(210,170,50,0.45)", hoverBg: "rgba(210,170,50,0.25)" },
+];
+
+function StatusPill({ label, isActive, activeBg, hoverBg, onClick }) {
+  const [pillHover, setPillHover] = useState(false);
+
+  const bg = isActive ? activeBg : pillHover ? hoverBg : "rgba(255,255,255,0.6)";
+  const color = isActive || pillHover ? "rgba(80,65,50,0.95)" : "rgba(80,65,50,0.55)";
+  const ring = isActive ? "1px solid rgba(80,65,50,0.35)" : "1px solid rgba(80,65,50,0.18)";
+
+  return (
+    <button
+      onClick={onClick}
+      onMouseEnter={() => setPillHover(true)}
+      onMouseLeave={() => setPillHover(false)}
+      className="w-[4.2rem] py-[2px] rounded-full text-[9px] font-semibold text-center backdrop-blur-sm"
+      style={{
+        background: bg,
+        color: color,
+        outline: ring,
+        transition: "background 0.2s, color 0.2s, outline 0.2s",
+      }}
+    >
+      {label}
+    </button>
+  );
+}
+
 export default function ArchivedPage() {
   const [user, setUser] = useState(null);
   const [trips, setTrips] = useState([]);
@@ -81,6 +112,13 @@ export default function ArchivedPage() {
     setTrips((prev) => prev.filter((t) => t.id !== tripId));
   }
 
+  async function handleStatusChange(tripId, newStatus) {
+    const trip = trips.find((t) => t.id === tripId);
+    const status = trip?.status === newStatus ? "planning" : newStatus;
+    await supabase.from("trips").update({ status }).eq("id", tripId);
+    setTrips((prev) => prev.map((t) => t.id === tripId ? { ...t, status } : t));
+  }
+
   async function handleDelete(tripId) {
     await supabase.from("trips").delete().eq("id", tripId);
     setTrips((prev) => prev.filter((t) => t.id !== tripId));
@@ -103,7 +141,7 @@ export default function ArchivedPage() {
       {/* Header */}
       <header className="w-full border-b border-slate-200 bg-white/80 backdrop-blur-sm">
         <div className="max-w-5xl mx-auto px-6 py-4 flex items-center justify-between">
-          <Link href="/dashboard" className="flex items-center gap-2 text-slate-500 hover:text-slate-700 transition-colors">
+          <Link href="/trips" className="flex items-center gap-2 text-slate-500 hover:text-slate-700 transition-colors">
             <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 16 16" fill="currentColor" className="w-4 h-4">
               <path fillRule="evenodd" d="M9.78 4.22a.75.75 0 0 1 0 1.06L7.06 8l2.72 2.72a.75.75 0 1 1-1.06 1.06L5.47 8.53a.75.75 0 0 1 0-1.06l3.25-3.25a.75.75 0 0 1 1.06 0Z" clipRule="evenodd" />
             </svg>
@@ -122,9 +160,9 @@ export default function ArchivedPage() {
           <div className="text-center py-16">
             <div className="text-5xl mb-4">📦</div>
             <h2 className="text-xl font-semibold text-slate-600 mb-2">No archived trips</h2>
-            <p className="text-slate-400 mb-6">Trips you archive from your dashboard will appear here.</p>
+            <p className="text-slate-400 mb-6">Trips you archive from your trips will appear here.</p>
             <Link
-              href="/dashboard"
+              href="/trips"
               className="inline-flex items-center gap-2 px-4 py-2 rounded-lg bg-sky-600 text-white text-sm font-medium hover:bg-sky-700 transition-colors"
             >
               Back to My Trips
@@ -182,6 +220,20 @@ export default function ArchivedPage() {
                       </div>
                     </div>
                   </Link>
+
+                  {/* Status pills */}
+                  <div className="absolute bottom-3 right-3 z-20 flex flex-col gap-[3px]">
+                    {STATUS_OPTIONS.map((opt) => (
+                      <StatusPill
+                        key={opt.key}
+                        label={opt.label}
+                        isActive={(trip.status || "planning") === opt.key}
+                        activeBg={opt.activeBg}
+                        hoverBg={opt.hoverBg}
+                        onClick={(e) => { e.preventDefault(); e.stopPropagation(); handleStatusChange(trip.id, opt.key); }}
+                      />
+                    ))}
+                  </div>
 
                   {/* Action buttons on hover */}
                   <div className="absolute top-3 right-3 z-20 flex gap-1.5 opacity-0 group-hover:opacity-100 transition-all">

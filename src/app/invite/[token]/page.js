@@ -93,10 +93,10 @@ export default function InviteAcceptPage() {
             <h1 className="text-xl font-bold text-slate-900 mb-2">Invalid Invite</h1>
             <p className="text-slate-500 mb-6">{error}</p>
             <Link
-              href="/dashboard"
+              href="/trips"
               className="inline-block bg-sky-600 text-white px-6 py-2.5 rounded-lg font-semibold hover:bg-sky-700 transition-colors"
             >
-              Go to Dashboard
+              Go to Trips
             </Link>
           </div>
         </div>
@@ -144,10 +144,10 @@ export default function InviteAcceptPage() {
           </button>
 
           <Link
-            href="/dashboard"
+            href="/trips"
             className="block text-sm text-slate-500 hover:text-slate-700"
           >
-            No thanks, go to dashboard
+            No thanks, go to trips
           </Link>
         </div>
       </div>

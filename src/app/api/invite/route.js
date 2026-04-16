@@ -95,7 +95,7 @@ export async function POST(request) {
 
     return Response.json({
       message: autoAccept
-        ? `${email} has been added — the trip will appear in their dashboard`
+        ? `${email} has been added — the trip will appear in their trips`
         : `Invite created for ${email} — share the link so they can join`,
       collaborator,
       inviteToken: collaborator.invite_token,
