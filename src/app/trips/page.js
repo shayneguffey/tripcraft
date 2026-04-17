@@ -6,6 +6,7 @@ import { useRouter } from "next/navigation";
 import Link from "next/link";
 import GlobeCanvas from "@/components/GlobeCanvas";
 import MapPatternBg from "@/components/MapPatternBg";
+import FlightPathLoader from "@/components/FlightPathLoader";
 
 // Format trip dates: "Jun 5-12, 2026" or "Jun 5 - Jul 3, 2026"
 function formatTripDates(startStr, endStr) {
@@ -203,12 +204,20 @@ function StatusPill({ label, isActive, activeBg, hoverBg, onClick }) {
 }
 
 // ─── Trip Card ────────────────────────────────────────────
-function TripCard({ trip, index, imageOptions, onCycleImage, onStatusChange, onArchive, onFieldUpdate }) {
+const STATUS_EDGE_COLORS = {
+  planning: "rgba(74,150,90,1)",
+  traveled: "rgba(60,120,180,1)",
+  wish: "rgba(210,170,50,1)",
+};
+
+function TripCard({ trip, index, imageOptions, onCycleImage, onLoadImageOptions, onStatusChange, onArchive, onFieldUpdate }) {
   const [hovered, setHovered] = useState(false);
   const hasImage = !!trip.cover_image;
   const gradient = getGradient(index);
   const hasMultipleImages = imageOptions && imageOptions.images && imageOptions.images.length > 1;
+  const canCycleImages = hasImage && trip.destination;
   const status = trip.status || "planning";
+  const edgeColor = STATUS_EDGE_COLORS[status] || STATUS_EDGE_COLORS.planning;
 
   return (
     <div
@@ -218,7 +227,13 @@ function TripCard({ trip, index, imageOptions, onCycleImage, onStatusChange, onA
     >
       {/* Card body — clickable link */}
       <Link href={`/trips/${trip.id}`} className="block">
-        <div className="relative rounded-2xl overflow-hidden aspect-[3/4] flex flex-col shadow-sm hover:shadow-xl transition-all duration-300">
+        <div
+          className="relative rounded-2xl overflow-hidden aspect-[3/4] flex flex-col shadow-sm hover:shadow-xl transition-all duration-300"
+          style={{
+            borderBottom: `8px solid ${edgeColor}`,
+            transition: "border-color 0.4s, box-shadow 0.3s",
+          }}
+        >
           {/* Image area — top ~72% of card */}
           <div className="relative flex-1 overflow-hidden">
             {hasImage ? (
@@ -304,7 +319,7 @@ function TripCard({ trip, index, imageOptions, onCycleImage, onStatusChange, onA
       </div>
 
       {/* Image cycling arrows — hover only, outside Link */}
-      {hasMultipleImages && hovered && (
+      {canCycleImages && hovered && (
         <>
           <button
             onClick={(e) => { e.preventDefault(); e.stopPropagation(); onCycleImage(-1); }}
@@ -424,11 +439,13 @@ export default function DashboardPage() {
     setTrips(all);
     setLoading(false);
 
-    // Fetch cover images in parallel (not sequentially)
-    const imagePromises = all
-      .filter((trip) => trip.destination)
-      .map((trip) => fetchCoverImages(trip.id, trip.destination, !trip.cover_image));
-    Promise.all(imagePromises);
+    // Only fetch images for trips that don't have a cover image yet
+    const tripsNeedingImages = all.filter((trip) => trip.destination && !trip.cover_image);
+    if (tripsNeedingImages.length > 0) {
+      const imagePromises = tripsNeedingImages
+        .map((trip) => fetchCoverImages(trip.id, trip.destination, true));
+      Promise.all(imagePromises);
+    }
   }
 
   async function fetchCoverImages(tripId, destination, saveFirst = false) {
@@ -448,7 +465,19 @@ export default function DashboardPage() {
     } catch (err) {}
   }
 
+  async function loadImageOptions(tripId) {
+    // Only fetch if we haven't already loaded options for this trip
+    if (imageOptions[tripId]) return;
+    const trip = trips.find((t) => t.id === tripId);
+    if (!trip?.destination) return;
+    await fetchCoverImages(tripId, trip.destination, false);
+  }
+
   async function cycleImage(tripId, direction) {
+    // Load image options on first cycle attempt if not yet loaded
+    if (!imageOptions[tripId]) {
+      await loadImageOptions(tripId);
+    }
     const opts = imageOptions[tripId];
     if (!opts || opts.images.length <= 1) return;
     let idx = opts.index + direction;
@@ -515,14 +544,7 @@ export default function DashboardPage() {
   }
 
   if (loading) {
-    return (
-      <div className="flex min-h-screen items-center justify-center bg-gradient-to-b from-sky-50 to-white">
-        <div className="text-center">
-          <div className="text-4xl mb-3 animate-bounce">✈️</div>
-          <p className="text-slate-500">Loading your trips...</p>
-        </div>
-      </div>
-    );
+    return <FlightPathLoader />;
   }
 
   return (
@@ -647,6 +669,7 @@ export default function DashboardPage() {
               index={i}
               imageOptions={imageOptions[trip.id]}
               onCycleImage={(dir) => cycleImage(trip.id, dir)}
+              onLoadImageOptions={() => loadImageOptions(trip.id)}
               onStatusChange={handleStatusChange}
               onArchive={handleArchiveTrip}
               onFieldUpdate={handleFieldUpdate}

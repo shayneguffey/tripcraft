@@ -202,23 +202,19 @@ export default function GlobeCanvas({ trips = [], interactive = true }) {
         mouse.x = ((e.clientX - rect.left) / rect.width) * 2 - 1;
         mouse.y = -((e.clientY - rect.top) / rect.height) * 2 + 1;
         raycaster.setFromCamera(mouse, camera);
+        const currentPins = globeRef.current?.pins || [];
         let found = false;
-        for (const pin of pins) {
-          const hits = raycaster.intersectObject(pin.mesh);
+        for (const pin of currentPins) {
+          const hits = raycaster.intersectObject(pin.hitbox || pin.mesh);
           if (hits.length > 0) {
-            tooltip.style.display = "block";
-            tooltip.style.left = e.clientX + 15 + "px";
-            tooltip.style.top = e.clientY - 10 + "px";
-            tooltip.innerHTML = `
-              <div style="font-weight:700;font-size:15px;color:#d4a574;">${pin.trip.destination || "Unknown"}</div>
-              <div style="opacity:0.7;margin-top:2px;">${pin.trip.title}</div>
-              <div style="opacity:0.5;font-size:11px;margin-top:4px;font-style:italic;">${pin.trip.status || "planning"}</div>
-            `;
+            pin.label.visible = true;
             found = true;
             break;
           }
         }
-        if (!found) tooltip.style.display = "none";
+        if (!found) {
+          for (const pin of currentPins) { pin.label.visible = false; }
+        }
       });
     }
 
@@ -280,37 +276,38 @@ export default function GlobeCanvas({ trips = [], interactive = true }) {
     function makeTextLabel(text, dateStr) {
       const canvas = document.createElement("canvas");
       const ctx = canvas.getContext("2d");
-      const fontSize = 28;
-      const dateSize = 18;
+      const fontSize = 40;
+      const dateSize = 26;
+      const fontFamily = "-apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif";
       const hasDate = !!dateStr;
-      const pad = 10;
+      const pad = 14;
 
-      ctx.font = `700 ${fontSize}px Georgia, serif`;
+      ctx.font = `700 ${fontSize}px ${fontFamily}`;
       const nameW = ctx.measureText(text).width;
       let dateW = 0;
       if (hasDate) {
-        ctx.font = `400 ${dateSize}px Georgia, serif`;
+        ctx.font = `400 ${dateSize}px ${fontFamily}`;
         dateW = ctx.measureText(dateStr).width;
       }
       const w = Math.max(nameW, dateW) + pad * 2;
-      const h = hasDate ? fontSize + dateSize + pad * 2 + 4 : fontSize + pad * 2;
+      const h = hasDate ? fontSize + dateSize + pad * 2 + 6 : fontSize + pad * 2;
       canvas.width = w;
       canvas.height = h;
 
-      ctx.font = `700 ${fontSize}px Georgia, serif`;
-      ctx.shadowColor = "rgba(0,0,0,0.8)";
-      ctx.shadowBlur = 4;
-      ctx.shadowOffsetX = 1;
-      ctx.shadowOffsetY = 1;
+      ctx.font = `700 ${fontSize}px ${fontFamily}`;
+      ctx.shadowColor = "rgba(0,0,0,0.9)";
+      ctx.shadowBlur = 6;
+      ctx.shadowOffsetX = 2;
+      ctx.shadowOffsetY = 2;
       ctx.fillStyle = "#ffffff";
       ctx.textAlign = "center";
       ctx.textBaseline = "top";
       ctx.fillText(text, w / 2, pad);
 
       if (hasDate) {
-        ctx.font = `400 ${dateSize}px Georgia, serif`;
+        ctx.font = `400 ${dateSize}px ${fontFamily}`;
         ctx.fillStyle = "#ffffff";
-        ctx.fillText(dateStr, w / 2, pad + fontSize + 4);
+        ctx.fillText(dateStr, w / 2, pad + fontSize + 6);
       }
       ctx.shadowColor = "transparent";
       ctx.shadowBlur = 0;
@@ -328,16 +325,18 @@ export default function GlobeCanvas({ trips = [], interactive = true }) {
       return s.toLocaleDateString("en-US", { month: "short", year: "numeric" });
     }
 
+    // Match trip card status edge colors
     const STATUS_COLORS = {
-      planning: 0x6b4e00,
-      traveled: 0x002040,
-      wish: 0x004010,
+      planning: 0x4a965a,  // green — matches rgba(74,150,90)
+      traveled: 0x3c78b4,  // blue — matches rgba(60,120,180)
+      wish: 0xd2aa32,      // gold — matches rgba(210,170,50)
     };
 
     // Clear old pins
     const oldPins = globeRef.current.pins || [];
     oldPins.forEach((p) => {
       globe.remove(p.mesh);
+      if (p.hitbox) globe.remove(p.hitbox);
       if (p.ring) globe.remove(p.ring);
       globe.remove(p.label);
     });
@@ -351,11 +350,18 @@ export default function GlobeCanvas({ trips = [], interactive = true }) {
       const color = STATUS_COLORS[trip.status] || STATUS_COLORS.planning;
       const pos = latLngToVec3(coords[0], coords[1], 1.005);
 
-      const pinGeom = new THREE.SphereGeometry(0.008, 10, 10);
+      const pinGeom = new THREE.SphereGeometry(0.012, 12, 12);
       const pinMat = new THREE.MeshBasicMaterial({ color });
       const pin = new THREE.Mesh(pinGeom, pinMat);
       pin.position.copy(pos);
       globe.add(pin);
+
+      // Invisible larger hitbox for easier hover detection
+      const hitGeom = new THREE.SphereGeometry(0.04, 8, 8);
+      const hitMat = new THREE.MeshBasicMaterial({ visible: false });
+      const hitbox = new THREE.Mesh(hitGeom, hitMat);
+      hitbox.position.copy(pos);
+      globe.add(hitbox);
 
       const labelText = trip.destination || trip.title || "Trip";
       const dateStr = formatLabelDate(trip.start_date);
@@ -363,9 +369,10 @@ export default function GlobeCanvas({ trips = [], interactive = true }) {
       const labelPos = latLngToVec3(coords[0], coords[1], 1.02);
       label.position.copy(labelPos);
       label.lookAt(labelPos.clone().multiplyScalar(2));
+      label.visible = false; // hidden by default — shown on hover
       globe.add(label);
 
-      pins.push({ mesh: pin, label, trip, coords, color });
+      pins.push({ mesh: pin, hitbox, label, trip, coords, color });
     }
 
     // Arcs between traveled trips
@@ -377,7 +384,7 @@ export default function GlobeCanvas({ trips = [], interactive = true }) {
       const curve = new THREE.QuadraticBezierCurve3(a, mid, b);
       const curveGeom = new THREE.TubeGeometry(curve, 32, 0.004, 8, false);
       const curveMat = new THREE.MeshBasicMaterial({
-        color: 0x002040, transparent: true, opacity: 0.4,
+        color: 0x3c78b4, transparent: true, opacity: 0.4,
       });
       const arcMesh = new THREE.Mesh(curveGeom, curveMat);
       arcMesh._isArc = true;
@@ -394,6 +401,32 @@ export default function GlobeCanvas({ trips = [], interactive = true }) {
         onLoad={handleThreeLoaded}
       />
       <div ref={containerRef} className="w-full h-full" style={{ pointerEvents: interactive ? "auto" : "none", cursor: interactive ? "grab" : "default" }} />
+
+      {/* Status legend — bottom left */}
+      {interactive && (
+        <div
+          className="fixed bottom-8 left-6 z-30 flex flex-col gap-2 px-4 py-3 rounded-xl"
+          style={{
+            background: "rgba(30, 22, 12, 0.75)",
+            backdropFilter: "blur(8px)",
+            border: "1px solid rgba(212, 165, 116, 0.2)",
+          }}
+        >
+          {[
+            { label: "Planning", color: "#4a965a" },
+            { label: "Traveled", color: "#3c78b4" },
+            { label: "Wish", color: "#d2aa32" },
+          ].map((item) => (
+            <div key={item.label} className="flex items-center gap-2">
+              <span
+                className="inline-block w-3 h-3 rounded-full"
+                style={{ backgroundColor: item.color }}
+              />
+              <span className="text-xs text-white/80 font-medium">{item.label}</span>
+            </div>
+          ))}
+        </div>
+      )}
     </>
   );
 }

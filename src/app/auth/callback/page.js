@@ -8,19 +8,30 @@ export default function AuthCallbackPage() {
   const router = useRouter();
 
   useEffect(() => {
-    // Supabase will handle the OAuth code exchange automatically
-    // via the URL hash fragment. We just need to wait for the session.
+    const isPopup = window.opener && window.opener !== window;
+
     async function handleCallback() {
       const { data: { session }, error } = await supabase.auth.getSession();
 
       if (error) {
         console.error("Auth callback error:", error);
-        router.push("/login?error=auth_failed");
+        if (isPopup) {
+          window.close();
+        } else {
+          router.push("/login?error=auth_failed");
+        }
         return;
       }
 
-      if (session) {
-        // Check if there's a pending invite to accept
+      function onSignedIn() {
+        if (isPopup) {
+          // Close the popup — the parent page's onAuthStateChange listener
+          // will detect the sign-in and redirect to /trips
+          window.close();
+          return;
+        }
+
+        // Normal redirect flow
         const pendingInvite = localStorage.getItem("pending_invite_token");
         if (pendingInvite) {
           localStorage.removeItem("pending_invite_token");
@@ -28,18 +39,16 @@ export default function AuthCallbackPage() {
         } else {
           router.push("/trips");
         }
+      }
+
+      if (session) {
+        onSignedIn();
       } else {
         // No session yet — wait for auth state change
         const { data: listener } = supabase.auth.onAuthStateChange((event, session) => {
           if (event === "SIGNED_IN" && session) {
-            const pendingInvite = localStorage.getItem("pending_invite_token");
-            if (pendingInvite) {
-              localStorage.removeItem("pending_invite_token");
-              router.push(`/invite/${pendingInvite}`);
-            } else {
-              router.push("/trips");
-            }
             listener?.subscription?.unsubscribe();
+            onSignedIn();
           }
         });
       }
