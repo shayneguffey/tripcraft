@@ -9,6 +9,7 @@ import ActivityOptions from "@/components/ActivityOptions";
 import AccommodationOptions from "@/components/AccommodationOptions";
 import DiningOptions from "@/components/DiningOptions";
 import TransportationOptions from "@/components/TransportationOptions";
+import TimeSelectPopup, { to12h, to24h, formatTime12h as formatTime12hShared } from "@/components/TimeSelectPopup";
 import BudgetTracker from "@/components/BudgetTracker";
 import PlanningChecklist from "@/components/PlanningChecklist";
 import PackingList from "@/components/PackingList";
@@ -16,6 +17,10 @@ import TravelDocuments from "@/components/TravelDocuments";
 import MapPatternBg from "@/components/MapPatternBg";
 import TripMap from "@/components/TripMap";
 import TripCollaborators from "@/components/TripCollaborators";
+import InlineConfirm from "@/components/InlineConfirm";
+import CATEGORY_COLORS from "@/lib/categoryColors";
+import DateRangePicker from "@/components/DateRangePicker";
+import FlightPathLoader from "@/components/FlightPathLoader";
 
 // Helper: generate array of dates for calendar display
 function getCalendarRange(startDate, endDate) {
@@ -97,6 +102,8 @@ export default function TripDetailPage() {
   const [itinerarySelections, setItinerarySelections] = useState([]);
   const [editingItineraryTravelers, setEditingItineraryTravelers] = useState(false);
   const [itineraryTravelersValue, setItineraryTravelersValue] = useState("");
+  const [confirmDeleteItinerary, setConfirmDeleteItinerary] = useState(null);
+  const [editingItineraryDates, setEditingItineraryDates] = useState(false);
   const router = useRouter();
   const params = useParams();
 
@@ -191,11 +198,16 @@ export default function TripDetailPage() {
       setItinerarySelections([]);
     }
 
-    // Fetch days keyed by date
-    const { data: daysData } = await supabase
-      .from("days")
-      .select("*")
-      .eq("trip_id", params.id);
+    // Fetch days keyed by date — filtered by active itinerary if available
+    const activeItinId = itins.length > 0
+      ? (itins.find((i) => i.id === activeItineraryId)?.id || itins[0].id)
+      : null;
+
+    let daysQuery = supabase.from("days").select("*").eq("trip_id", params.id);
+    if (activeItinId) {
+      daysQuery = daysQuery.eq("itinerary_id", activeItinId);
+    }
+    const { data: daysData } = await daysQuery;
 
     const daysMap = {};
     (daysData || []).forEach((d) => {
@@ -219,6 +231,26 @@ export default function TripDetailPage() {
       });
       setActivities(grouped);
     }
+
+    // Fetch option tables so parent state stays fresh (needed for DayPopout time edits)
+    const [
+      { data: flightData },
+      { data: activityData },
+      { data: accommodationData },
+      { data: diningData },
+      { data: transportData },
+    ] = await Promise.all([
+      supabase.from("flight_options").select("*").eq("trip_id", params.id).order("sort_order", { ascending: true }),
+      supabase.from("activity_options").select("*").eq("trip_id", params.id).order("sort_order", { ascending: true }),
+      supabase.from("accommodation_options").select("*").eq("trip_id", params.id).order("sort_order", { ascending: true }),
+      supabase.from("dining_options").select("*").eq("trip_id", params.id).order("sort_order", { ascending: true }),
+      supabase.from("transportation_options").select("*").eq("trip_id", params.id).order("sort_order", { ascending: true }),
+    ]);
+    setFlightOptions(flightData || []);
+    setActivityOptions(activityData || []);
+    setAccommodationOptions(accommodationData || []);
+    setDiningOptions(diningData || []);
+    setTransportOptions(transportData || []);
 
     setLoading(false);
   }, [params.id, router]);
@@ -305,16 +337,23 @@ export default function TripDetailPage() {
       setItineraries((prev) => [...prev, newItin]);
       setActiveItineraryId(newItin.id);
       setItinerarySelections([]);
+      setDays({}); // Clear day headers — new itinerary starts fresh
     }
   }
 
   async function switchItinerary(id) {
+    // Fetch both selections and days in parallel, then batch state updates
+    const [selectionsRes, daysRes] = await Promise.all([
+      supabase.from("itinerary_selections").select("*").eq("itinerary_id", id),
+      supabase.from("days").select("*").eq("trip_id", params.id).eq("itinerary_id", id),
+    ]);
+    const daysMap = {};
+    (daysRes.data || []).forEach((d) => { daysMap[d.date] = d; });
+
+    // Batch all state updates together to trigger a single re-render
     setActiveItineraryId(id);
-    const { data: selectionsData } = await supabase
-      .from("itinerary_selections")
-      .select("*")
-      .eq("itinerary_id", id);
-    setItinerarySelections(selectionsData || []);
+    setItinerarySelections(selectionsRes.data || []);
+    setDays(daysMap);
   }
 
   async function saveItineraryTitle(id) {
@@ -352,9 +391,9 @@ export default function TripDetailPage() {
     setEditingItineraryTravelers(false);
   }
 
-  async function deleteItinerary(id) {
+  async function deleteItineraryConfirmed(id) {
     if (itineraries.length <= 1) return;
-    if (!confirm("Delete this itinerary version?")) return;
+    setConfirmDeleteItinerary(null);
     await supabase.from("itineraries").delete().eq("id", id);
     const remaining = itineraries.filter((i) => i.id !== id);
     setItineraries(remaining);
@@ -413,9 +452,19 @@ export default function TripDetailPage() {
   async function saveDayHeader(dateKey) {
     const existing = days[dateKey];
     if (existing) {
-      await supabase.from("days").update({ title: dayHeaderValue || null }).eq("id", existing.id);
+      // Update existing day — also ensure itinerary_id is set
+      const updates = { title: dayHeaderValue || null };
+      if (activeItineraryId && !existing.itinerary_id) {
+        updates.itinerary_id = activeItineraryId;
+      }
+      await supabase.from("days").update(updates).eq("id", existing.id);
     } else if (dayHeaderValue.trim()) {
-      await supabase.from("days").insert({ trip_id: params.id, date: dateKey, title: dayHeaderValue || null });
+      await supabase.from("days").insert({
+        trip_id: params.id,
+        date: dateKey,
+        title: dayHeaderValue || null,
+        itinerary_id: activeItineraryId || null,
+      });
     }
     setEditingDayHeader(null);
     setDayHeaderValue("");
@@ -468,6 +517,16 @@ export default function TripDetailPage() {
       if (t.arrival_date && t.arrival_date !== t.departure_date && t.arrival_date === dateKey) return true;
       return false;
     });
+  }
+
+  // Save date range from the inline date picker
+  async function handleDatePickerSave(newStart, newEnd) {
+    setEditingItineraryDates(false);
+    if (activeItineraryId) {
+      updateItineraryDates(newStart, newEnd);
+    } else {
+      updateTripDates(newStart, newEnd);
+    }
   }
 
   // Update itinerary date range in database
@@ -548,15 +607,7 @@ export default function TripDetailPage() {
   }
 
   if (loading) {
-    return (
-      <div className="flex min-h-screen items-center justify-center relative" style={{ background: "linear-gradient(to bottom, rgba(210,195,172,0.7) 0%, rgba(222,210,190,0.6) 50%, rgba(210,195,172,0.7) 100%)" }}>
-        <MapPatternBg tileSize={280} opacity={1} />
-        <div className="text-center relative z-10">
-          <div className="w-8 h-8 mx-auto mb-4 border-[3px] border-stone-400 border-t-[#da7b4a] rounded-full animate-spin" />
-          <p className="text-stone-500 text-sm font-medium tracking-wide">Loading trip...</p>
-        </div>
-      </div>
-    );
+    return <FlightPathLoader text="Loading trip..." />;
   }
 
   const { start: effectiveStart, end: effectiveEnd } = calendarStartDate
@@ -628,8 +679,8 @@ export default function TripDetailPage() {
 
         {/* Trip Header with inline editing */}
         <div className="mb-8 space-y-2">
-          {/* Title */}
-          <div className="flex items-center gap-2 group">
+          {/* Title — click to edit */}
+          <div className="min-h-[44px]">
             {editingField === "title" ? (
               <input
                 type="text"
@@ -638,26 +689,23 @@ export default function TripDetailPage() {
                 onBlur={() => saveField("title")}
                 onKeyDown={(e) => handleFieldKeyDown(e, "title")}
                 autoFocus
-                className="text-3xl font-bold text-sky-900 bg-white border border-sky-300 rounded-lg px-2 py-1 focus:outline-none focus:ring-2 focus:ring-sky-500 w-full max-w-xl"
+                className="text-3xl font-bold text-stone-800 bg-white border border-stone-300 rounded-lg px-2 py-1 focus:outline-none focus:ring-2 focus:ring-[#da7b4a]/50 focus:border-transparent w-full max-w-xl"
               />
             ) : (
-              <>
-                <h1 className="text-3xl font-bold text-sky-900">{trip.title}</h1>
-                <button
-                  onClick={() => startEditing("title")}
-                  className="text-stone-400 hover:text-[#da7b4a] opacity-0 group-hover:opacity-100 transition-all"
-                  title="Edit title"
-                >
-                  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor" className="w-4 h-4"><path d="m5.433 13.917 1.262-3.155A4 4 0 0 1 7.58 9.42l6.92-6.918a2.121 2.121 0 0 1 3 3l-6.92 6.918c-.383.383-.84.685-1.343.886l-3.154 1.262a.5.5 0 0 1-.65-.65Z" /><path d="M3.5 5.75c0-.69.56-1.25 1.25-1.25H10A.75.75 0 0 0 10 3H4.75A2.75 2.75 0 0 0 2 5.75v9.5A2.75 2.75 0 0 0 4.75 18h9.5A2.75 2.75 0 0 0 17 15.25V10a.75.75 0 0 0-1.5 0v5.25c0 .69-.56 1.25-1.25 1.25h-9.5c-.69 0-1.25-.56-1.25-1.25v-9.5Z" /></svg>
-                </button>
-              </>
+              <h1
+                onClick={() => startEditing("title")}
+                className="text-3xl font-bold text-stone-800 cursor-text hover:text-[#da7b4a] transition-colors px-2 py-1"
+                title="Click to edit trip name"
+              >
+                {trip.title || "Untitled Trip"}
+              </h1>
             )}
           </div>
 
-          {/* Destination */}
-          <div className="flex items-center gap-2 group">
+          {/* Destination — click to edit */}
+          <div className="min-h-[28px]">
             {editingField === "destination" ? (
-              <div className="flex items-center gap-1">
+              <div className="flex items-center gap-1.5">
                 <svg className="w-4 h-4 text-stone-400 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24" strokeWidth={2}><path strokeLinecap="round" strokeLinejoin="round" d="M15 10.5a3 3 0 11-6 0 3 3 0 016 0z" /><path strokeLinecap="round" strokeLinejoin="round" d="M19.5 10.5c0 7.142-7.5 11.25-7.5 11.25S4.5 17.642 4.5 10.5a7.5 7.5 0 1115 0z" /></svg>
                 <input
                   type="text"
@@ -667,23 +715,18 @@ export default function TripDetailPage() {
                   onKeyDown={(e) => handleFieldKeyDown(e, "destination")}
                   autoFocus
                   placeholder="Enter destination"
-                  className="text-slate-500 bg-white border border-sky-300 rounded-lg px-2 py-1 focus:outline-none focus:ring-2 focus:ring-sky-500"
+                  className="text-stone-500 bg-white border border-stone-300 rounded-lg px-2 py-1 focus:outline-none focus:ring-2 focus:ring-[#da7b4a]/50 focus:border-transparent"
                 />
               </div>
             ) : (
-              <>
-                <div className="flex items-center gap-1.5 text-stone-500">
-                  <svg className="w-4 h-4 text-stone-400 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24" strokeWidth={2}><path strokeLinecap="round" strokeLinejoin="round" d="M15 10.5a3 3 0 11-6 0 3 3 0 016 0z" /><path strokeLinecap="round" strokeLinejoin="round" d="M19.5 10.5c0 7.142-7.5 11.25-7.5 11.25S4.5 17.642 4.5 10.5a7.5 7.5 0 1115 0z" /></svg>
-                  {trip.destination || <span className="italic text-stone-400">No destination set</span>}
-                </div>
-                <button
-                  onClick={() => startEditing("destination")}
-                  className="text-stone-400 hover:text-[#da7b4a] opacity-0 group-hover:opacity-100 transition-all"
-                  title="Edit destination"
-                >
-                  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor" className="w-4 h-4"><path d="m5.433 13.917 1.262-3.155A4 4 0 0 1 7.58 9.42l6.92-6.918a2.121 2.121 0 0 1 3 3l-6.92 6.918c-.383.383-.84.685-1.343.886l-3.154 1.262a.5.5 0 0 1-.65-.65Z" /><path d="M3.5 5.75c0-.69.56-1.25 1.25-1.25H10A.75.75 0 0 0 10 3H4.75A2.75 2.75 0 0 0 2 5.75v9.5A2.75 2.75 0 0 0 4.75 18h9.5A2.75 2.75 0 0 0 17 15.25V10a.75.75 0 0 0-1.5 0v5.25c0 .69-.56 1.25-1.25 1.25h-9.5c-.69 0-1.25-.56-1.25-1.25v-9.5Z" /></svg>
-                </button>
-              </>
+              <div
+                onClick={() => startEditing("destination")}
+                className="flex items-center gap-1.5 text-stone-500 cursor-text hover:text-[#da7b4a] transition-colors px-2 py-1"
+                title="Click to edit destination"
+              >
+                <svg className="w-4 h-4 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24" strokeWidth={2}><path strokeLinecap="round" strokeLinejoin="round" d="M15 10.5a3 3 0 11-6 0 3 3 0 016 0z" /><path strokeLinecap="round" strokeLinejoin="round" d="M19.5 10.5c0 7.142-7.5 11.25-7.5 11.25S4.5 17.642 4.5 10.5a7.5 7.5 0 1115 0z" /></svg>
+                {trip.destination || <span className="italic text-stone-400">No destination set</span>}
+              </div>
             )}
           </div>
 
@@ -702,10 +745,11 @@ export default function TripDetailPage() {
                   }`}
                   style={{
                     background: isActive ? "#da7b4a" : "rgba(195,178,155,0.35)",
-                    borderTop: isActive ? "2px solid #b5552a" : "1px solid rgba(180,165,140,0.3)",
+                    borderTop: isActive ? "2px solid #b5552a" : "2px solid transparent",
                     borderLeft: isActive ? "1px solid #b5552a" : "1px solid rgba(180,165,140,0.3)",
                     borderRight: isActive ? "1px solid #b5552a" : "1px solid rgba(180,165,140,0.3)",
-                    borderBottom: isActive ? "none" : "1px solid rgba(180,165,140,0.3)",
+                    borderBottom: isActive ? "2px solid transparent" : "2px solid rgba(180,165,140,0.3)",
+                    marginBottom: -2,
                   }}
                   onClick={() => switchItinerary(itin.id)}
                 >
@@ -738,7 +782,7 @@ export default function TripDetailPage() {
                   {/* Delete button — only if more than 1 itinerary */}
                   {itineraries.length > 1 && isActive && editingItineraryTitle !== itin.id && (
                     <button
-                      onClick={(e) => { e.stopPropagation(); deleteItinerary(itin.id); }}
+                      onClick={(e) => { e.stopPropagation(); setConfirmDeleteItinerary(itin.id); }}
                       className="ml-1 w-4 h-4 flex items-center justify-center rounded-full text-white/60 hover:text-white hover:bg-white/20 transition-colors"
                       title="Delete itinerary"
                     >
@@ -747,6 +791,12 @@ export default function TripDetailPage() {
                       </svg>
                     </button>
                   )}
+                  <InlineConfirm
+                    open={confirmDeleteItinerary === itin.id}
+                    message="Delete this itinerary?"
+                    onConfirm={() => deleteItineraryConfirmed(itin.id)}
+                    onCancel={() => setConfirmDeleteItinerary(null)}
+                  />
                 </div>
               );
             })}
@@ -780,26 +830,43 @@ export default function TripDetailPage() {
                         onBlur={() => saveCalendarItineraryTitle()}
                         onKeyDown={(e) => { if (e.key === "Enter") saveCalendarItineraryTitle(); if (e.key === "Escape") setEditingCalendarTitle(false); }}
                         autoFocus
-                        className="text-lg font-bold text-stone-800 bg-white border border-stone-300 rounded-lg px-2 py-0.5 focus:outline-none focus:ring-2 focus:ring-[#da7b4a]/50 w-64 min-h-[32px]"
+                        className="text-lg font-bold text-stone-800 bg-white border border-stone-300 rounded-lg px-2 py-0.5 focus:outline-none focus:ring-2 focus:ring-inset focus:ring-[#da7b4a]/50 w-64 min-h-[32px]"
                       />
                     ) : (
                       <div
                         onClick={() => { setEditingCalendarTitle(true); setCalendarTitleValue(activeItinerary?.title || "Itinerary 1"); }}
-                        className="text-lg font-bold text-stone-800 cursor-text hover:text-[#da7b4a] transition-colors min-h-[32px] px-2 py-0.5"
+                        className="text-lg font-bold text-stone-800 uppercase cursor-text hover:text-[#da7b4a] transition-colors min-h-[32px] px-2 py-0.5 border border-transparent"
                         title="Click to edit itinerary name"
                       >
                         {activeItinerary?.title || "Itinerary 1"}
                       </div>
                     )}
                   </div>
-                  {/* Date range */}
-                  {effectiveStart && effectiveEnd && (
-                    <div className="text-xs text-stone-400 mt-0.5">
-                      {new Date(effectiveStart + "T00:00:00").toLocaleDateString("en-US", { month: "long", day: "numeric", year: "numeric" })}
-                      {" — "}
-                      {new Date(effectiveEnd + "T00:00:00").toLocaleDateString("en-US", { month: "long", day: "numeric", year: "numeric" })}
+                  {/* Date range — clickable to open date picker */}
+                  <div className="relative mt-0.5 min-h-[16px]">
+                    <div
+                      onClick={() => setEditingItineraryDates(true)}
+                      className="text-xs text-stone-400 cursor-pointer hover:text-[#da7b4a] transition-colors inline-flex items-center gap-1"
+                      title="Click to edit dates"
+                    >
+                      <svg className="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24" strokeWidth={2}><path strokeLinecap="round" strokeLinejoin="round" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" /></svg>
+                      {effectiveStart && effectiveEnd ? (
+                        <>
+                          {new Date(effectiveStart + "T00:00:00").toLocaleDateString("en-US", { month: "long", day: "numeric", year: "numeric" })}
+                          {" — "}
+                          {new Date(effectiveEnd + "T00:00:00").toLocaleDateString("en-US", { month: "long", day: "numeric", year: "numeric" })}
+                        </>
+                      ) : "Set dates"}
                     </div>
-                  )}
+                    {editingItineraryDates && (
+                      <DateRangePicker
+                        startDate={effectiveStart || null}
+                        endDate={effectiveEnd || null}
+                        onSave={handleDatePickerSave}
+                        onCancel={() => setEditingItineraryDates(false)}
+                      />
+                    )}
+                  </div>
                   {/* Travelers */}
                   <div className="flex items-center gap-1 mt-0.5">
                     {editingItineraryTravelers ? (
@@ -831,7 +898,7 @@ export default function TripDetailPage() {
                 </div>
 
                 {/* Right: Description — inline editable */}
-                <div className="flex-1 min-w-0 min-h-[32px]">
+                <div className="flex-1 min-w-0 min-h-[60px]">
                   {editingItineraryDesc ? (
                     <textarea
                       value={itineraryDescValue}
@@ -841,12 +908,12 @@ export default function TripDetailPage() {
                       autoFocus
                       rows={3}
                       placeholder="Add a description for this itinerary..."
-                      className="w-full text-sm text-stone-600 bg-white border border-stone-300 rounded-lg px-2 py-1 focus:outline-none focus:ring-2 focus:ring-[#da7b4a]/50 resize-y min-h-[32px]"
+                      className="w-full text-sm text-stone-600 bg-white border border-stone-300 rounded-lg px-2 py-1 focus:outline-none focus:ring-2 focus:ring-inset focus:ring-[#da7b4a]/50 resize-y min-h-[32px]"
                     />
                   ) : (
                     <div
                       onClick={() => { setEditingItineraryDesc(true); setItineraryDescValue(activeItinerary?.description || ""); }}
-                      className={`text-sm px-2 py-1 rounded-lg cursor-text min-h-[32px] whitespace-pre-wrap transition-colors ${
+                      className={`text-sm px-2 py-1 rounded-lg cursor-text min-h-[32px] whitespace-pre-wrap transition-colors border border-transparent ${
                         activeItinerary?.description
                           ? "text-stone-600"
                           : "text-stone-300 italic hover:bg-stone-50"
@@ -858,9 +925,10 @@ export default function TripDetailPage() {
                   )}
                 </div>
 
-                {/* Far right: Calendar month range */}
-                <div className="flex-shrink-0 text-sm font-medium text-stone-400 tracking-wide text-right self-center">
-                  {getCalendarTitle()}
+                {/* Far right: Calendar View label + month range */}
+                <div className="flex-shrink-0 text-right self-center">
+                  <div className="text-[10px] font-semibold text-stone-400 uppercase tracking-widest mb-0.5">Calendar View</div>
+                  <div className="text-sm font-medium text-stone-400 tracking-wide">{getCalendarTitle()}</div>
                 </div>
               </div>
             </div>
@@ -906,8 +974,11 @@ export default function TripDetailPage() {
                           onMouseLeave={() => setHoveredDay(null)}
                           onMouseDown={(e) => handleMouseDown(dateKey, e)}
                         >
-                          {/* Date number + hover add button */}
-                          <div className="flex items-center justify-between mb-0.5">
+                          {/* Date number + hover add button — entire row clickable to open day detail */}
+                          <div
+                            className="flex items-center justify-between mb-0.5 cursor-pointer"
+                            onClick={(e) => { if (inRange) { e.stopPropagation(); setSelectedDay(dateKey); } }}
+                          >
                             <span
                               className={`
                                 text-xs font-medium leading-none
@@ -919,23 +990,22 @@ export default function TripDetailPage() {
                             </span>
                             <div className="flex items-center gap-0.5">
                               {(isStart || isEnd) && (
-                                <span className="text-stone-400 cursor-ew-resize text-[10px] font-bold" title={`Drag to adjust trip ${isStart ? "start" : "end"}`}>{"\u27F7"}</span>
+                                <span className="text-stone-400 cursor-ew-resize text-[10px] font-bold" title={`Drag to adjust trip ${isStart ? "start" : "end"}`} onClick={(e) => e.stopPropagation()}>{"\u27F7"}</span>
                               )}
                               {inRange && (
-                                <button
-                                  onClick={(e) => { e.stopPropagation(); setSelectedDay(dateKey); }}
+                                <div
                                   className={`w-4 h-4 rounded-full flex items-center justify-center text-stone-400 hover:text-[#da7b4a] hover:bg-[#da7b4a]/10 transition-all ${hoveredDay === dateKey ? "opacity-100" : "opacity-0"}`}
-                                  title="Add event"
+                                  title="View day details"
                                 >
                                   <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 16 16" fill="currentColor" className="w-3 h-3"><path d="M8.75 3.75a.75.75 0 0 0-1.5 0v3.5h-3.5a.75.75 0 0 0 0 1.5h3.5v3.5a.75.75 0 0 0 1.5 0v-3.5h3.5a.75.75 0 0 0 0-1.5h-3.5v-3.5Z" /></svg>
-                                </button>
+                                </div>
                               )}
                             </div>
                           </div>
 
                           {/* Day Header — inline editable */}
                           {inRange && (
-                            <div className="mb-0.5">
+                            <div className="mb-2 flex items-center min-h-[18px]">
                               {editingDayHeader === dateKey ? (
                                 <input
                                   type="text"
@@ -945,12 +1015,12 @@ export default function TripDetailPage() {
                                   onKeyDown={(e) => { if (e.key === "Enter") saveDayHeader(dateKey); if (e.key === "Escape") setEditingDayHeader(null); }}
                                   autoFocus
                                   placeholder="Day title..."
-                                  className="w-full text-[10px] font-semibold px-1 py-0.5 border border-stone-300 rounded text-stone-700 bg-white focus:outline-none focus:ring-1 focus:ring-[#da7b4a]"
+                                  className="w-full text-[10px] font-semibold px-1 py-0.5 border border-stone-300 rounded text-stone-700 bg-white focus:outline-none focus:ring-1 focus:ring-inset focus:ring-[#da7b4a]"
                                 />
                               ) : (
                                 <div
                                   onClick={(e) => { e.stopPropagation(); setEditingDayHeader(dateKey); setDayHeaderValue(dayData?.title || ""); }}
-                                  className={`text-[10px] font-semibold px-1 py-0.5 rounded cursor-text truncate min-h-[16px] bg-white/80 ${
+                                  className={`w-full text-[10px] font-semibold px-1 py-0.5 rounded cursor-text truncate min-h-[16px] bg-white/80 border border-transparent ${
                                     dayData?.title ? "text-stone-700" : "text-transparent"
                                   }`}
                                   title={dayData?.title || "Click to add day title"}
@@ -972,22 +1042,43 @@ export default function TripDetailPage() {
                                 return { ...t, _type: "transportation", _time: t.departure_time || null, _name: `${isReturnT ? "\u21A9 " : ""}${t.name}` };
                               });
 
-                              const allEvents = [...flightsArr, ...acts, ...dining, ...transport];
+                              // Day events (activities from the day detail card)
+                              const dayEvts = dayActivities.map(a => ({ ...a, _type: "dayEvent", _time: a.start_time?.slice(0,5) || null, _name: a.title }));
+
+                              const allEvents = [...flightsArr, ...acts, ...dining, ...transport, ...dayEvts];
                               const timed = allEvents.filter(e => e._time).sort((a, b) => a._time.localeCompare(b._time));
                               const untimed = allEvents.filter(e => !e._time);
-                              const sorted = [...timed, ...untimed];
+
+                              // Apply saved untimed order from dayData
+                              const savedOrder = dayData?.untimed_order;
+                              if (savedOrder && Array.isArray(savedOrder)) {
+                                untimed.sort((a, b) => {
+                                  const aKey = a.id ? `${a._type === "dayEvent" ? "user" : a._type}-${a.id}` : null;
+                                  const bKey = b.id ? `${b._type === "dayEvent" ? "user" : b._type}-${b.id}` : null;
+                                  const aIdx = aKey ? savedOrder.indexOf(aKey) : -1;
+                                  const bIdx = bKey ? savedOrder.indexOf(bKey) : -1;
+                                  if (aIdx === -1 && bIdx === -1) return 0;
+                                  if (aIdx === -1) return 1;
+                                  if (bIdx === -1) return -1;
+                                  return aIdx - bIdx;
+                                });
+                              }
+
+                              const sorted = [...untimed, ...timed];
 
                               const colorMap = {
-                                flight: "bg-emerald-100 text-emerald-700",
-                                activity: "bg-yellow-100 text-yellow-700",
-                                dining: "bg-orange-100 text-orange-700",
-                                transportation: "bg-violet-100 text-violet-700",
+                                flight: `${CATEGORY_COLORS.flight.bgMedium} ${CATEGORY_COLORS.flight.text}`,
+                                activity: `${CATEGORY_COLORS.activity.bgMedium} ${CATEGORY_COLORS.activity.text}`,
+                                dayEvent: `${CATEGORY_COLORS.dayEvent.bgMedium} ${CATEGORY_COLORS.dayEvent.text}`,
+                                dining: `${CATEGORY_COLORS.dining.bgMedium} ${CATEGORY_COLORS.dining.text}`,
+                                transportation: `${CATEGORY_COLORS.transportation.bgMedium} ${CATEGORY_COLORS.transportation.text}`,
                               };
                               const iconMap = {
                                 flight: <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor" className="w-2.5 h-2.5 flex-shrink-0"><path d="M3.105 2.288a.75.75 0 0 0-.826.95l1.414 4.926A1.5 1.5 0 0 0 5.135 9.25h6.115a.75.75 0 0 1 0 1.5H5.135a1.5 1.5 0 0 0-1.442 1.086l-1.414 4.926a.75.75 0 0 0 .826.95 28.897 28.897 0 0 0 15.293-7.154.75.75 0 0 0 0-1.115A28.897 28.897 0 0 0 3.105 2.289Z" /></svg>,
                                 activity: <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor" className="w-2.5 h-2.5 flex-shrink-0"><path fillRule="evenodd" d="M8.157 2.176a1.5 1.5 0 0 0-1.147 0l-4.084 1.69A1.5 1.5 0 0 0 2 5.25v10.877a1.5 1.5 0 0 0 2.074 1.386l3.51-1.452 4.26 1.762a1.5 1.5 0 0 0 1.147 0l4.084-1.69A1.5 1.5 0 0 0 18 14.75V3.873a1.5 1.5 0 0 0-2.074-1.386l-3.51 1.452-4.26-1.762ZM7.58 5a.75.75 0 0 1 .75.75v6.5a.75.75 0 0 1-1.5 0v-6.5A.75.75 0 0 1 7.58 5Zm5.59 2a.75.75 0 0 1 .75.75v6.5a.75.75 0 0 1-1.5 0v-6.5a.75.75 0 0 1 .75-.75Z" clipRule="evenodd" /></svg>,
                                 dining: <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={2} stroke="currentColor" className="w-2.5 h-2.5 flex-shrink-0"><path strokeLinecap="round" strokeLinejoin="round" d="M12 8.25v-1.5m0 1.5c-1.355 0-2.697.056-4.024.166C6.845 8.51 6 9.473 6 10.608v2.513m6-4.871c1.355 0 2.697.056 4.024.166C17.155 8.51 18 9.473 18 10.608v2.513M15 8.25v-1.5m-6 1.5v-1.5m12 9.75-1.5.75a3.354 3.354 0 0 1-3 0 3.354 3.354 0 0 0-3 0 3.354 3.354 0 0 1-3 0 3.354 3.354 0 0 0-3 0 3.354 3.354 0 0 1-3 0L3 16.5m15-3.379a48.474 48.474 0 0 0-6-.371c-2.032 0-4.034.126-6 .371m12 0c.39.049.777.102 1.163.16 1.07.16 1.837 1.094 1.837 2.175v5.169c0 .621-.504 1.125-1.125 1.125H4.125A1.125 1.125 0 0 1 3 20.625v-5.17c0-1.08.768-2.014 1.837-2.174A47.78 47.78 0 0 1 6 13.12M12.265 3.11a.375.375 0 1 1-.53 0L12 2.845l.265.265Z" /></svg>,
                                 transportation: <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={2} stroke="currentColor" className="w-2.5 h-2.5 flex-shrink-0"><path strokeLinecap="round" strokeLinejoin="round" d="M7.5 21 3 16.5m0 0L7.5 12M3 16.5h13.5m0-13.5L21 7.5m0 0L16.5 12M21 7.5H7.5" /></svg>,
+                                dayEvent: <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor" className="w-2.5 h-2.5 flex-shrink-0"><path d="M5.127 3.502 5.25 3.5h9.5c.041 0 .082 0 .123.002A2.251 2.251 0 0 0 12.75 2h-5.5a2.25 2.25 0 0 0-2.123 1.502ZM1 10.25A2.25 2.25 0 0 1 3.25 8h13.5A2.25 2.25 0 0 1 19 10.25v5.5A2.25 2.25 0 0 1 16.75 18H3.25A2.25 2.25 0 0 1 1 15.75v-5.5ZM3.25 6.5c-.04 0-.082 0-.123.002A2.25 2.25 0 0 1 5.25 5h9.5c.98 0 1.814.627 2.123 1.502a3.819 3.819 0 0 0-.123-.002H3.25Z" /></svg>,
                               };
 
                               return sorted.map((evt, i) => (
@@ -1002,7 +1093,7 @@ export default function TripDetailPage() {
                                 >
                                   {iconMap[evt._type]}
                                   <span className="text-[10px] font-medium truncate">
-                                    {evt._time ? `${evt._time.slice(0,5)} ` : ""}{evt._name}
+                                    {evt._time ? `${formatTime12hShared(evt._time.slice(0,5))} ` : ""}{evt._name}
                                   </span>
                                 </div>
                               ));
@@ -1120,7 +1211,7 @@ export default function TripDetailPage() {
                   : "1px solid rgba(180,165,140,0.3)",
               }}
             >
-              <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor" className="w-4 h-4"><path d="M10.75 10.818v2.614A3.13 3.13 0 0 0 11.888 13c.482-.315.612-.648.612-.875 0-.227-.13-.56-.612-.875a3.13 3.13 0 0 0-1.138-.432ZM8.33 8.62c.053.055.115.11.184.164.208.16.46.284.736.363V6.603c-.481.042-.89.19-1.15.412-.268.228-.348.486-.348.706 0 .345.181.636.578.899Z" /><path fillRule="evenodd" d="M18 10a8 8 0 1 1-16 0 8 8 0 0 1 16 0Zm-8-6a.75.75 0 0 1 .75.75v.316a3.78 3.78 0 0 1 1.653.713c.426.33.744.74.925 1.2a.75.75 0 0 1-1.395.55 1.517 1.517 0 0 0-.377-.482 2.28 2.28 0 0 0-.806-.372v2.264l.338.139c.49.202.95.44 1.305.774.373.352.628.806.628 1.399 0 .625-.323 1.15-.79 1.53a3.63 3.63 0 0 1-1.481.676v.316a.75.75 0 0 1-1.5 0v-.316a3.78 3.78 0 0 1-1.653-.713 3.166 3.166 0 0 1-.925-1.2.75.75 0 0 1 1.395-.55c.094.24.23.44.377.482.22.166.506.293.806.372V8.68l-.338-.14c-.49-.2-.95-.438-1.305-.773C6.345 7.415 6.1 6.961 6.1 6.368c0-.625.323-1.15.79-1.53a3.63 3.63 0 0 1 1.481-.676V3.846A.75.75 0 0 1 10 4.001Z" clipRule="evenodd" /></svg>
+              <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24" strokeWidth={2}><path strokeLinecap="round" strokeLinejoin="round" d="M17 9V7a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2m2 4h10a2 2 0 002-2v-6a2 2 0 00-2-2H9a2 2 0 00-2 2v6a2 2 0 002 2zm7-5a2 2 0 11-4 0 2 2 0 014 0z" /></svg>
               Budget
             </button>
           </div>
@@ -1303,6 +1394,14 @@ export default function TripDetailPage() {
             inRange={effectiveStart && effectiveEnd && selectedDay >= effectiveStart && selectedDay <= effectiveEnd}
             onClose={() => setSelectedDay(null)}
             onUpdate={loadTrip}
+            calendarEvents={{
+              flights: getFlightsOnDate(selectedDay),
+              activities: getScheduledActivities(selectedDay),
+              dining: getScheduledDining(selectedDay),
+              transport: getScheduledTransport(selectedDay),
+              accommodations: getScheduledAccommodations(selectedDay),
+            }}
+            activeItineraryId={activeItineraryId}
           />
         )}
         {eventPopup && (
@@ -1322,11 +1421,11 @@ export default function TripDetailPage() {
 
 function EventPopup({ type, data, dateKey, rect, onClose }) {
   const colors = {
-    flight: { bg: "bg-emerald-50", border: "border-emerald-200", text: "text-emerald-800", label: "Flight" },
-    activity: { bg: "bg-yellow-50", border: "border-yellow-200", text: "text-yellow-800", label: "Activity" },
-    accommodation: { bg: "bg-sky-50", border: "border-sky-200", text: "text-sky-800", label: "Accommodation" },
-    dining: { bg: "bg-orange-50", border: "border-orange-200", text: "text-orange-800", label: "Dining" },
-    transportation: { bg: "bg-violet-50", border: "border-violet-200", text: "text-violet-800", label: "Transportation" },
+    flight: { bg: CATEGORY_COLORS.flight.bg, border: CATEGORY_COLORS.flight.border, text: CATEGORY_COLORS.flight.text, label: "Flight" },
+    activity: { bg: CATEGORY_COLORS.activity.bg, border: CATEGORY_COLORS.activity.border, text: CATEGORY_COLORS.activity.text, label: "Activity" },
+    accommodation: { bg: CATEGORY_COLORS.accommodation.bg, border: CATEGORY_COLORS.accommodation.border, text: CATEGORY_COLORS.accommodation.text, label: "Accommodation" },
+    dining: { bg: CATEGORY_COLORS.dining.bg, border: CATEGORY_COLORS.dining.border, text: CATEGORY_COLORS.dining.text, label: "Dining" },
+    transportation: { bg: CATEGORY_COLORS.transportation.bg, border: CATEGORY_COLORS.transportation.border, text: CATEGORY_COLORS.transportation.text, label: "Transportation" },
   };
   const c = colors[type] || colors.activity;
 
@@ -1385,43 +1484,43 @@ function getCategoryInfo(value) {
   return CATEGORIES.find((c) => c.value === value) || { value: "other", label: "Other", icon: "📌" };
 }
 
-function DayPopout({ dateKey, tripId, dayData, activities, inRange, onClose, onUpdate }) {
+function DayPopout({ dateKey, tripId, dayData, activities, inRange, onClose, onUpdate, calendarEvents, activeItineraryId }) {
   const [title, setTitle] = useState(dayData?.title || "");
+  const [editingTitle, setEditingTitle] = useState(false);
   const [notes, setNotes] = useState(dayData?.notes || "");
-  const [showAddForm, setShowAddForm] = useState(false);
-  const [newTitle, setNewTitle] = useState("");
-  const [newStartTime, setNewStartTime] = useState("");
-  const [newEndTime, setNewEndTime] = useState("");
-  const [newLocation, setNewLocation] = useState("");
-  const [newCategory, setNewCategory] = useState("sightseeing");
-  const [newNotes, setNewNotes] = useState("");
-  const [editingActivity, setEditingActivity] = useState(null);
+  const [editingNotes, setEditingNotes] = useState(false);
+  const [addingEvent, setAddingEvent] = useState(false);
   const [saving, setSaving] = useState(false);
   const [dragIndex, setDragIndex] = useState(null);
 
+  const dayOfWeek = new Date(dateKey + "T00:00:00").toLocaleDateString("en-US", { weekday: "long" });
   const dateFormatted = new Date(dateKey + "T00:00:00").toLocaleDateString("en-US", {
-    weekday: "long",
-    month: "long",
-    day: "numeric",
-    year: "numeric",
+    month: "long", day: "numeric", year: "numeric",
   });
 
-  async function handleSaveDay() {
-    setSaving(true);
+  async function handleSaveTitle() {
+    setEditingTitle(false);
     if (dayData) {
-      await supabase
-        .from("days")
-        .update({ title: title || null, notes: notes || null })
-        .eq("id", dayData.id);
-    } else {
+      await supabase.from("days").update({ title: title || null }).eq("id", dayData.id);
+    } else if (title.trim()) {
       await supabase.from("days").insert({
-        trip_id: tripId,
-        date: dateKey,
-        title: title || null,
-        notes: notes || null,
+        trip_id: tripId, date: dateKey, title: title || null, notes: notes || null,
+        itinerary_id: activeItineraryId || null,
       });
     }
-    setSaving(false);
+    onUpdate();
+  }
+
+  async function handleSaveNotes() {
+    setEditingNotes(false);
+    if (dayData) {
+      await supabase.from("days").update({ notes: notes || null }).eq("id", dayData.id);
+    } else if (notes.trim()) {
+      await supabase.from("days").insert({
+        trip_id: tripId, date: dateKey, title: title || null, notes: notes || null,
+        itinerary_id: activeItineraryId || null,
+      });
+    }
     onUpdate();
   }
 
@@ -1430,54 +1529,41 @@ function DayPopout({ dateKey, tripId, dayData, activities, inRange, onClose, onU
     const { data } = await supabase
       .from("days")
       .insert({
-        trip_id: tripId,
-        date: dateKey,
-        title: title || null,
-        notes: notes || null,
+        trip_id: tripId, date: dateKey, title: title || null, notes: notes || null,
+        itinerary_id: activeItineraryId || null,
       })
       .select()
       .single();
     return data.id;
   }
 
-  async function handleAddActivity(e) {
-    e.preventDefault();
-    if (!newTitle.trim()) return;
-
+  async function saveNewEvent(data) {
+    if (!data || !data.title.trim()) {
+      setAddingEvent(false);
+      return;
+    }
     const dayId = await ensureDayExists();
-
     await supabase.from("activities").insert({
       day_id: dayId,
-      title: newTitle.trim(),
-      start_time: newStartTime || null,
-      end_time: newEndTime || null,
-      location: newLocation || null,
-      category: newCategory,
-      notes: newNotes || null,
+      title: data.title.trim(),
+      start_time: data.start_time || null,
+      end_time: data.end_time || null,
+      location: data.location || null,
+      category: "other",
+      notes: data.notes || null,
       sort_order: activities.length,
     });
-
-    setNewTitle("");
-    setNewStartTime("");
-    setNewEndTime("");
-    setNewLocation("");
-    setNewCategory("sightseeing");
-    setNewNotes("");
-    setShowAddForm(false);
+    setAddingEvent(false);
     onUpdate();
   }
 
   async function handleUpdateActivity(activityId, updates) {
     await supabase.from("activities").update(updates).eq("id", activityId);
-    setEditingActivity(null);
     onUpdate();
   }
 
   async function handleToggleActivity(activityId, currentChecked) {
-    await supabase
-      .from("activities")
-      .update({ is_checked: !currentChecked })
-      .eq("id", activityId);
+    await supabase.from("activities").update({ is_checked: !currentChecked }).eq("id", activityId);
     onUpdate();
   }
 
@@ -1486,261 +1572,260 @@ function DayPopout({ dateKey, tripId, dayData, activities, inRange, onClose, onU
     onUpdate();
   }
 
-  // Sort activities by sort_order first (to respect manual reordering), then start_time
+  async function handleOptionTimeChange(table, recordId, timeField, newTime, endTimeField, newEndTime) {
+    const updates = { [timeField]: newTime || null };
+    if (endTimeField) updates[endTimeField] = newEndTime || null;
+    await supabase.from(table).update(updates).eq("id", recordId);
+    onUpdate();
+  }
+
+  // Sort user activities: untimed first (by sort_order), then timed chronologically
   const sortedActivities = [...activities].sort((a, b) => {
-    if (a.sort_order !== b.sort_order) return a.sort_order - b.sort_order;
-    if (a.start_time && b.start_time) return a.start_time.localeCompare(b.start_time);
-    if (a.start_time) return -1;
-    if (b.start_time) return 1;
-    return 0;
+    const aTime = a.start_time || null;
+    const bTime = b.start_time || null;
+    if (aTime && bTime) return aTime.localeCompare(bTime);
+    if (!aTime && !bTime) return (a.sort_order || 0) - (b.sort_order || 0);
+    if (!aTime) return -1; // untimed first
+    return 1;
   });
 
-  async function handleReorder(fromIndex, toIndex) {
-    if (fromIndex === toIndex) return;
-    const reordered = [...sortedActivities];
-    const [moved] = reordered.splice(fromIndex, 1);
-    reordered.splice(toIndex, 0, moved);
-    // Update sort_order in DB for each activity
-    const updates = reordered.map((act, i) =>
-      supabase.from("activities").update({ sort_order: i }).eq("id", act.id)
-    );
-    await Promise.all(updates);
+  async function handleUntimedReorder(fromIdx, toIdx, items) {
+    if (fromIdx === toIdx) return;
+    const reordered = [...items];
+    const [moved] = reordered.splice(fromIdx, 1);
+    reordered.splice(toIdx, 0, moved);
+    const newOrder = reordered.map(item => item.sortKey);
+    // Save the order to the day record
+    const dayId = await ensureDayExists();
+    await supabase.from("days").update({ untimed_order: newOrder }).eq("id", dayId);
     onUpdate();
+  }
+
+  // Build itinerary events list from calendarEvents prop
+  const itineraryEvents = [];
+  const accommodationEvents = [];
+  const colorMap = {
+    flight: { bg: CATEGORY_COLORS.flight.bg, border: CATEGORY_COLORS.flight.border, text: CATEGORY_COLORS.flight.text, dot: CATEGORY_COLORS.flight.dot },
+    activity: { bg: CATEGORY_COLORS.activity.bg, border: CATEGORY_COLORS.activity.border, text: CATEGORY_COLORS.activity.text, dot: CATEGORY_COLORS.activity.dot },
+    dining: { bg: CATEGORY_COLORS.dining.bg, border: CATEGORY_COLORS.dining.border, text: CATEGORY_COLORS.dining.text, dot: CATEGORY_COLORS.dining.dot },
+    transportation: { bg: CATEGORY_COLORS.transportation.bg, border: CATEGORY_COLORS.transportation.border, text: CATEGORY_COLORS.transportation.text, dot: CATEGORY_COLORS.transportation.dot },
+    accommodation: { bg: CATEGORY_COLORS.accommodation.bg, border: CATEGORY_COLORS.accommodation.border, text: CATEGORY_COLORS.accommodation.text, dot: CATEGORY_COLORS.accommodation.dot },
+  };
+  if (calendarEvents) {
+    (calendarEvents.flights || []).forEach(f => itineraryEvents.push({ type: "flight", time: f.departure_time?.slice(0,5), endTime: f.arrival_time?.slice(0,5), name: `${f.departure_airport} → ${f.arrival_airport}`, detail: f.airline_name || "", _record: f, _table: "flights", _timeField: "departure_time", _endTimeField: "arrival_time" }));
+    (calendarEvents.activities || []).forEach(a => itineraryEvents.push({ type: "activity", time: a.start_time?.slice(0,5), endTime: a.end_time?.slice(0,5), name: a.name, detail: a.location || "", _record: a, _table: "activity_options", _timeField: "start_time", _endTimeField: "end_time" }));
+    (calendarEvents.dining || []).forEach(d => itineraryEvents.push({ type: "dining", time: d.start_time?.slice(0,5), endTime: d.end_time?.slice(0,5), name: d.name, detail: d.location || "", _record: d, _table: "dining_options", _timeField: "start_time", _endTimeField: "end_time" }));
+    (calendarEvents.transport || []).forEach(t => itineraryEvents.push({ type: "transportation", time: t.departure_time?.slice(0,5), endTime: t.arrival_time?.slice(0,5), name: t.name, detail: "", _record: t, _table: "transportation_options", _timeField: "departure_time", _endTimeField: "arrival_time" }));
+    (calendarEvents.accommodations || []).forEach(a => accommodationEvents.push({ type: "accommodation", time: null, name: a.name, detail: a.location || "" }));
+  }
+  // Build unified event list: option events + user events, sorted together
+  const allDayEvents = [];
+  itineraryEvents.forEach((evt, i) => {
+    const stableKey = evt._record?.id ? `${evt.type}-${evt._record.id}` : `itin-${i}`;
+    allDayEvents.push({ kind: "option", ...evt, sortTime: evt.time || null, sortKey: stableKey });
+  });
+  sortedActivities.forEach((a) => {
+    allDayEvents.push({ kind: "user", activity: a, sortTime: a.start_time?.slice(0, 5) || null, sortKey: `user-${a.id}` });
+  });
+
+  // Sort all events: use saved order if available, otherwise untimed first (by insertion), then timed chronologically
+  const savedOrder = dayData?.untimed_order;
+  let allDayEventsSorted;
+  if (savedOrder && Array.isArray(savedOrder) && savedOrder.length > 0) {
+    // Use saved order for any events present in it; append unseen events at end
+    const ordered = [];
+    const remaining = [...allDayEvents];
+    for (const key of savedOrder) {
+      const idx = remaining.findIndex(e => e.sortKey === key);
+      if (idx !== -1) {
+        ordered.push(remaining.splice(idx, 1)[0]);
+      }
+    }
+    // Append any events not in the saved order: untimed first, then timed chronologically
+    const unseenUntimed = remaining.filter(e => !e.sortTime);
+    const unseenTimed = remaining.filter(e => e.sortTime).sort((a, b) => a.sortTime.localeCompare(b.sortTime));
+    allDayEventsSorted = [...ordered, ...unseenUntimed, ...unseenTimed];
+  } else {
+    // Default: untimed first, then timed chronologically
+    const untimedEvents = allDayEvents.filter(e => !e.sortTime);
+    const timedEvents = allDayEvents.filter(e => e.sortTime).sort((a, b) => a.sortTime.localeCompare(b.sortTime));
+    allDayEventsSorted = [...untimedEvents, ...timedEvents];
   }
 
   return (
     <div className="fixed inset-0 bg-black/30 flex items-center justify-center z-50 p-4" onClick={onClose}>
       <div
-        className="bg-white rounded-2xl shadow-xl border border-sky-100 w-full max-w-xl max-h-[85vh] overflow-y-auto"
+        className="bg-white rounded-2xl shadow-xl border border-stone-200 w-full max-w-xl max-h-[85vh] overflow-y-auto"
         onClick={(e) => e.stopPropagation()}
+        style={{ animation: "cardFadeIn 0.2s ease-out" }}
       >
-        {/* Header */}
-        <div className="flex items-center justify-between px-6 py-4 border-b border-sky-100 bg-sky-50 rounded-t-2xl sticky top-0 z-10">
-          <div>
-            <h2 className="text-lg font-bold text-sky-900">{dateFormatted}</h2>
-            {!inRange && (
-              <span className="text-xs text-amber-600 font-medium">Outside trip dates</span>
+        {/* Header — warm parchment */}
+        <div className="px-6 py-4 border-b border-stone-200/60 rounded-t-2xl sticky top-0 z-10" style={{ background: "rgba(222,210,190,0.5)" }}>
+          <div className="flex items-start justify-between">
+            <div>
+              <div className="text-xs font-medium text-stone-400 uppercase tracking-wide">{dayOfWeek}</div>
+              <div className="text-lg font-bold text-stone-800">{dateFormatted}</div>
+              {!inRange && (
+                <span className="text-[10px] text-amber-600 font-medium">Outside trip dates</span>
+              )}
+            </div>
+            <button onClick={onClose} className="text-stone-400 hover:text-stone-600 transition-colors p-1">
+              <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24" strokeWidth={2}><path strokeLinecap="round" strokeLinejoin="round" d="M6 18L18 6M6 6l12 12" /></svg>
+            </button>
+          </div>
+
+          {/* Inline editable Day Title */}
+          <div className="mt-2 mb-1 flex items-center min-h-[32px]">
+            {editingTitle ? (
+              <input
+                type="text"
+                value={title}
+                onChange={(e) => setTitle(e.target.value)}
+                onBlur={handleSaveTitle}
+                onKeyDown={(e) => { if (e.key === "Enter") handleSaveTitle(); if (e.key === "Escape") setEditingTitle(false); }}
+                autoFocus
+                placeholder="Add a title for this day..."
+                className="w-full text-sm font-semibold text-stone-800 bg-white border border-stone-300 rounded-lg px-2 py-1 focus:outline-none focus:ring-2 focus:ring-inset focus:ring-[#da7b4a]/50 focus:border-transparent"
+              />
+            ) : (
+              <div
+                onClick={() => setEditingTitle(true)}
+                className={`w-full text-sm font-semibold cursor-text px-2 py-1 rounded-lg transition-colors border border-transparent ${
+                  title ? "text-stone-700 hover:text-[#da7b4a]" : "text-stone-400 hover:text-[#da7b4a] italic"
+                }`}
+                title="Click to edit day title"
+              >
+                {title ? title.toUpperCase() : "Add a title for this day..."}
+              </div>
             )}
           </div>
-          <button onClick={onClose} className="text-slate-400 hover:text-slate-600 text-xl">✕</button>
         </div>
 
-        <div className="px-6 py-5 space-y-5">
-          {/* Day Title */}
-          <div>
-            <label className="block text-sm font-medium text-slate-700 mb-1">Day Title</label>
-            <input
-              type="text"
-              value={title}
-              onChange={(e) => setTitle(e.target.value)}
-              onBlur={handleSaveDay}
-              placeholder='e.g. "Beach Day" or "Rainforest Hike"'
-              className="w-full px-3 py-2 border border-slate-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-sky-500 focus:border-transparent text-sm"
-            />
-          </div>
+        <div className="px-6 py-4 space-y-4">
 
-          {/* Notes */}
+          {/* Day Itinerary — header */}
           <div>
-            <label className="block text-sm font-medium text-slate-700 mb-1">Notes</label>
-            <textarea
-              value={notes}
-              onChange={(e) => setNotes(e.target.value)}
-              onBlur={handleSaveDay}
-              rows={2}
-              placeholder="Any notes for this day..."
-              className="w-full px-3 py-2 border border-slate-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-sky-500 focus:border-transparent text-sm"
-            />
-          </div>
+            <div className="flex items-center gap-1.5 mb-2">
+              <svg className="w-3.5 h-3.5 text-stone-400" fill="none" stroke="currentColor" viewBox="0 0 24 24" strokeWidth={2}><path strokeLinecap="round" strokeLinejoin="round" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" /></svg>
+              <span className="text-xs font-medium text-stone-400 uppercase tracking-wide">Day Itinerary</span>
+            </div>
 
-          {/* Activities */}
-          <div>
-            <div className="flex items-center justify-between mb-3">
-              <label className="text-sm font-medium text-slate-700">Activities</label>
-              {!showAddForm && (
+            {/* All events: option events + user events, unified and sorted */}
+            <div className="space-y-1.5">
+              {allDayEventsSorted.map((item, eventIdx) => {
+                const dragProps = {
+                  draggable: true,
+                  onDragStart: (e) => { e.dataTransfer.effectAllowed = "move"; setDragIndex(eventIdx); },
+                  onDragOver: (e) => { e.preventDefault(); e.dataTransfer.dropEffect = "move"; },
+                  onDrop: (e) => { e.preventDefault(); handleUntimedReorder(dragIndex, eventIdx, allDayEventsSorted); setDragIndex(null); },
+                  onDragEnd: () => setDragIndex(null),
+                };
+
+                if (item.kind === "option") {
+                  const c = colorMap[item.type] || colorMap.activity;
+                  const canEditTime = item.type !== "flight" && item._record && item._table && item._timeField;
+                  return (
+                    <div key={item.sortKey} {...dragProps}
+                      className={`cursor-grab active:cursor-grabbing ${dragIndex === eventIdx ? "opacity-50" : ""}`}
+                    >
+                      <OptionEventCard
+                        item={item}
+                        colors={c}
+                        canEditTime={canEditTime}
+                        onTimeChange={canEditTime ? (newTime, newEndTime) => handleOptionTimeChange(item._table, item._record.id, item._timeField, newTime, item._endTimeField, newEndTime) : undefined}
+                        isDraggable={true}
+                      />
+                    </div>
+                  );
+                } else {
+                  return (
+                    <div key={item.sortKey} {...dragProps}
+                      className={`cursor-grab active:cursor-grabbing ${dragIndex === eventIdx ? "opacity-50" : ""}`}
+                    >
+                      <UserEventCard
+                        activity={item.activity}
+                        onUpdate={(updates) => handleUpdateActivity(item.activity.id, updates)}
+                        onDelete={() => handleDeleteActivity(item.activity.id)}
+                        isDraggable={true}
+                      />
+                    </div>
+                  );
+                }
+              })}
+
+              {/* New event card — blank row for adding */}
+              {addingEvent && (
+                <NewEventCard
+                  onSave={(data) => saveNewEvent(data)}
+                  onCancel={() => setAddingEvent(false)}
+                />
+              )}
+
+              {allDayEventsSorted.length === 0 && !addingEvent && accommodationEvents.length === 0 && (
+                <p className="text-sm text-stone-400 italic">No events yet</p>
+              )}
+
+              {/* + Add Event box — dotted outline, like option modules */}
+              {!addingEvent && (
                 <button
-                  onClick={() => setShowAddForm(true)}
-                  className="text-sky-600 hover:text-sky-700 text-sm font-medium"
+                  onClick={() => setAddingEvent(true)}
+                  className="w-full border-2 border-dashed border-stone-300 text-stone-400 text-sm font-medium rounded-lg py-2.5 hover:border-[#da7b4a]/50 hover:text-[#da7b4a] transition-colors"
                 >
-                  + Add Activity
+                  + Add Event
                 </button>
               )}
             </div>
+          </div>
 
-            {/* Activity List */}
-            {sortedActivities.length > 0 && (
-              <div className="space-y-2 mb-4">
-                {sortedActivities.map((activity, idx) => {
-                  const cat = getCategoryInfo(activity.category);
-                  const isEditing = editingActivity === activity.id;
-
-                  if (isEditing) {
-                    return (
-                      <ActivityEditForm
-                        key={activity.id}
-                        activity={activity}
-                        onSave={(updates) => handleUpdateActivity(activity.id, updates)}
-                        onCancel={() => setEditingActivity(null)}
-                      />
-                    );
-                  }
-
+          {/* Accommodations — below itinerary, above notes */}
+          {accommodationEvents.length > 0 && (
+            <div>
+              <div className="flex items-center gap-1.5 mb-2">
+                <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor" className="w-3.5 h-3.5 text-stone-400">
+                  <path d="M.75 15.5a.75.75 0 0 0 1.5 0V13h16v2.5a.75.75 0 0 0 1.5 0v-6a.75.75 0 0 0-1.5 0V11H16V4.5A2.5 2.5 0 0 0 13.5 2h-7A2.5 2.5 0 0 0 4 4.5V11H2.25V9.5a.75.75 0 0 0-1.5 0v6ZM5.5 4.5a1 1 0 0 1 1-1h7a1 1 0 0 1 1 1V11h-9V4.5Z" />
+                </svg>
+                <span className="text-xs font-medium text-stone-400 uppercase tracking-wide">Accommodations</span>
+              </div>
+              <div className="space-y-1.5">
+                {accommodationEvents.map((evt, i) => {
+                  const c = colorMap.accommodation;
                   return (
-                    <div
-                      key={activity.id}
-                      draggable
-                      onDragStart={() => setDragIndex(idx)}
-                      onDragOver={(e) => { e.preventDefault(); }}
-                      onDrop={() => { handleReorder(dragIndex, idx); setDragIndex(null); }}
-                      onDragEnd={() => setDragIndex(null)}
-                      className={`flex items-start gap-3 group p-2 rounded-lg hover:bg-slate-50 transition-colors ${dragIndex === idx ? "opacity-40" : ""}`}
-                    >
-                      <span className="text-slate-300 cursor-grab active:cursor-grabbing mt-1 opacity-0 group-hover:opacity-100 transition-opacity" title="Drag to reorder">
-                        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 16 16" fill="currentColor" className="w-3.5 h-3.5"><circle cx="5" cy="3" r="1.2"/><circle cx="11" cy="3" r="1.2"/><circle cx="5" cy="8" r="1.2"/><circle cx="11" cy="8" r="1.2"/><circle cx="5" cy="13" r="1.2"/><circle cx="11" cy="13" r="1.2"/></svg>
-                      </span>
-                      <input
-                        type="checkbox"
-                        checked={activity.is_checked}
-                        onChange={() => handleToggleActivity(activity.id, activity.is_checked)}
-                        className="w-4 h-4 mt-1 rounded border-slate-300 text-sky-600 focus:ring-sky-500 cursor-pointer"
-                      />
+                    <div key={`accom-${i}`} className={`flex items-center gap-2.5 ${c.bg} border ${c.border} rounded-lg px-3 py-2`}>
+                      <div className={`w-2 h-2 rounded-full ${c.dot} flex-shrink-0`} />
                       <div className="flex-1 min-w-0">
-                        <div className="flex items-center gap-2">
-                          <span className="text-sm" title={cat.label}>{cat.icon}</span>
-                          <span className={`text-sm font-medium ${activity.is_checked ? "line-through text-slate-400" : "text-slate-800"}`}>
-                            {activity.title}
-                          </span>
-                        </div>
-                        <div className="flex flex-wrap gap-x-3 gap-y-1 mt-1">
-                          {activity.start_time && (
-                            <span className="text-xs text-slate-400">
-                              🕐 {activity.start_time.slice(0, 5)}
-                              {activity.end_time && ` – ${activity.end_time.slice(0, 5)}`}
-                            </span>
-                          )}
-                          {activity.location && (
-                            <span className="text-xs text-slate-400">📍 {activity.location}</span>
-                          )}
-                        </div>
-                        {activity.notes && (
-                          <p className="text-xs text-slate-400 mt-1">{activity.notes}</p>
-                        )}
-                      </div>
-                      <div className="flex gap-1 opacity-0 group-hover:opacity-100 transition-all">
-                        <button
-                          onClick={() => setEditingActivity(activity.id)}
-                          className="text-slate-300 hover:text-sky-600 p-1"
-                          title="Edit"
-                        >
-                          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor" className="w-3.5 h-3.5"><path d="m5.433 13.917 1.262-3.155A4 4 0 0 1 7.58 9.42l6.92-6.918a2.121 2.121 0 0 1 3 3l-6.92 6.918c-.383.383-.84.685-1.343.886l-3.154 1.262a.5.5 0 0 1-.65-.65Z" /><path d="M3.5 5.75c0-.69.56-1.25 1.25-1.25H10A.75.75 0 0 0 10 3H4.75A2.75 2.75 0 0 0 2 5.75v9.5A2.75 2.75 0 0 0 4.75 18h9.5A2.75 2.75 0 0 0 17 15.25V10a.75.75 0 0 0-1.5 0v5.25c0 .69-.56 1.25-1.25 1.25h-9.5c-.69 0-1.25-.56-1.25-1.25v-9.5Z" /></svg>
-                        </button>
-                        <button
-                          onClick={() => handleDeleteActivity(activity.id)}
-                          className="text-slate-300 hover:text-red-500 p-1"
-                          title="Delete"
-                        >
-                          ✕
-                        </button>
+                        <span className={`text-sm font-medium ${c.text}`}>{evt.name}</span>
+                        {evt.detail && <span className="text-xs text-stone-400 ml-2">{evt.detail}</span>}
                       </div>
                     </div>
                   );
                 })}
               </div>
-            )}
+            </div>
+          )}
 
-            {/* Add Activity Form */}
-            {showAddForm && (
-              <form onSubmit={handleAddActivity} className="bg-sky-50 rounded-lg p-4 space-y-3 border border-sky-100">
-                <div>
-                  <input
-                    type="text"
-                    value={newTitle}
-                    onChange={(e) => setNewTitle(e.target.value)}
-                    placeholder="Activity name *"
-                    autoFocus
-                    required
-                    className="w-full px-3 py-2 border border-slate-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-sky-500 text-sm bg-white"
-                  />
-                </div>
-                <div className="grid grid-cols-2 gap-3">
-                  <div>
-                    <label className="block text-xs text-slate-500 mb-1">Start Time</label>
-                    <input
-                      type="time"
-                      value={newStartTime}
-                      onChange={(e) => setNewStartTime(e.target.value)}
-                      className="w-full px-3 py-1.5 border border-slate-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-sky-500 text-sm bg-white"
-                    />
-                  </div>
-                  <div>
-                    <label className="block text-xs text-slate-500 mb-1">End Time</label>
-                    <input
-                      type="time"
-                      value={newEndTime}
-                      onChange={(e) => setNewEndTime(e.target.value)}
-                      className="w-full px-3 py-1.5 border border-slate-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-sky-500 text-sm bg-white"
-                    />
-                  </div>
-                </div>
-                <div>
-                  <input
-                    type="text"
-                    value={newLocation}
-                    onChange={(e) => setNewLocation(e.target.value)}
-                    placeholder="Location (optional)"
-                    className="w-full px-3 py-1.5 border border-slate-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-sky-500 text-sm bg-white"
-                  />
-                </div>
-                <div>
-                  <label className="block text-xs text-slate-500 mb-1">Category</label>
-                  <select
-                    value={newCategory}
-                    onChange={(e) => setNewCategory(e.target.value)}
-                    className="w-full px-3 py-1.5 border border-slate-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-sky-500 text-sm bg-white"
-                  >
-                    {CATEGORIES.map((cat) => (
-                      <option key={cat.value} value={cat.value}>
-                        {cat.icon} {cat.label}
-                      </option>
-                    ))}
-                  </select>
-                </div>
-                <div>
-                  <textarea
-                    value={newNotes}
-                    onChange={(e) => setNewNotes(e.target.value)}
-                    placeholder="Notes (optional)"
-                    rows={2}
-                    className="w-full px-3 py-1.5 border border-slate-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-sky-500 text-sm bg-white"
-                  />
-                </div>
-                <div className="flex gap-2">
-                  <button
-                    type="submit"
-                    className="flex-1 bg-sky-600 text-white py-2 rounded-lg text-sm font-semibold hover:bg-sky-700 transition-colors"
-                  >
-                    Add Activity
-                  </button>
-                  <button
-                    type="button"
-                    onClick={() => {
-                      setShowAddForm(false);
-                      setNewTitle("");
-                      setNewStartTime("");
-                      setNewEndTime("");
-                      setNewLocation("");
-                      setNewCategory("sightseeing");
-                      setNewNotes("");
-                    }}
-                    className="px-4 py-2 text-sm text-slate-500 hover:text-slate-700"
-                  >
-                    Cancel
-                  </button>
-                </div>
-              </form>
-            )}
-
-            {sortedActivities.length === 0 && !showAddForm && (
-              <p className="text-sm text-slate-400 italic">No activities yet — add something to this day!</p>
+          {/* Notes — at the bottom, inline editable like itinerary description */}
+          <div className="pt-2 border-t border-stone-100">
+            {editingNotes ? (
+              <textarea
+                value={notes}
+                onChange={(e) => setNotes(e.target.value)}
+                onBlur={handleSaveNotes}
+                onKeyDown={(e) => { if (e.key === "Escape") { setEditingNotes(false); setNotes(dayData?.notes || ""); } }}
+                autoFocus
+                rows={3}
+                placeholder="Add notes for this day..."
+                className="w-full px-3 py-2 border border-stone-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-inset focus:ring-[#da7b4a]/50 focus:border-transparent text-sm text-stone-700 bg-white resize-none"
+              />
+            ) : (
+              <div
+                onClick={() => setEditingNotes(true)}
+                className={`text-sm px-3 py-2 rounded-lg cursor-text transition-colors min-h-[40px] border border-transparent ${
+                  notes ? "text-stone-600 hover:text-[#da7b4a]" : "text-stone-400 hover:text-[#da7b4a] italic"
+                }`}
+                title="Click to edit notes"
+              >
+                {notes || "Add notes for this day..."}
+              </div>
             )}
           </div>
         </div>
@@ -1749,79 +1834,300 @@ function DayPopout({ dateKey, tripId, dayData, activities, inRange, onClose, onU
   );
 }
 
-function ActivityEditForm({ activity, onSave, onCancel }) {
-  const [title, setTitle] = useState(activity.title || "");
-  const [startTime, setStartTime] = useState(activity.start_time?.slice(0, 5) || "");
-  const [endTime, setEndTime] = useState(activity.end_time?.slice(0, 5) || "");
-  const [location, setLocation] = useState(activity.location || "");
-  const [category, setCategory] = useState(activity.category || "sightseeing");
-  const [notes, setNotes] = useState(activity.notes || "");
+// Format 24h time "HH:MM" to "h:mm AM/PM"
+/* ── OptionEventCard: option-module event with editable time ── */
+function OptionEventCard({ item, colors: c, canEditTime, onTimeChange, isDraggable }) {
+  const [showPopup, setShowPopup] = useState(false);
 
-  function handleSubmit(e) {
-    e.preventDefault();
+  const isTransport = item.type === "transportation";
+  const startLabel = isTransport ? "Depart" : "Start";
+  const endLabel = isTransport ? "Arrive" : "End";
+
+  return (
+    <div className={`flex items-start gap-2.5 ${c.bg} border ${c.border} rounded-lg px-3 py-2 group`}>
+      {isDraggable && (
+        <div className="flex-shrink-0 mt-1 text-stone-300 cursor-grab active:cursor-grabbing">
+          <svg className="w-3 h-3" viewBox="0 0 10 10" fill="currentColor"><circle cx="3" cy="2" r="1"/><circle cx="7" cy="2" r="1"/><circle cx="3" cy="5" r="1"/><circle cx="7" cy="5" r="1"/><circle cx="3" cy="8" r="1"/><circle cx="7" cy="8" r="1"/></svg>
+        </div>
+      )}
+      {/* Time — clickable to edit */}
+      <div className="relative flex-shrink-0 w-16 mt-0.5">
+        {canEditTime ? (
+          <>
+            {item.time ? (
+              <span
+                onClick={() => setShowPopup(true)}
+                className="text-xs text-stone-500 cursor-pointer hover:text-[#da7b4a] transition-colors"
+                title="Click to edit time"
+              >
+                {formatTime12hShared(item.time)}
+                {item.endTime && <><br /><span className="text-stone-400">– {formatTime12hShared(item.endTime)}</span></>}
+              </span>
+            ) : (
+              <span
+                onClick={() => setShowPopup(true)}
+                className="text-xs text-stone-400 cursor-pointer opacity-0 group-hover:opacity-100 hover:text-[#da7b4a] transition-all"
+              >
+                + time
+              </span>
+            )}
+            {showPopup && (
+              <TimeSelectPopup
+                startTime={to12h(item.time)}
+                endTime={to12h(item.endTime)}
+                startLabel={startLabel}
+                endLabel={endLabel}
+                showEndTime={true}
+                onSave={(start24, end24) => {
+                  setShowPopup(false);
+                  if (onTimeChange) onTimeChange(start24, end24);
+                }}
+                onClear={() => {
+                  setShowPopup(false);
+                  if (onTimeChange) onTimeChange(null, null);
+                }}
+                onClose={() => setShowPopup(false)}
+              />
+            )}
+          </>
+        ) : (
+          item.time ? (
+            <span className="text-xs text-stone-500">
+              {formatTime12hShared(item.time)}
+              {item.endTime && <><br /><span className="text-stone-400">– {formatTime12hShared(item.endTime)}</span></>}
+            </span>
+          ) : <span />
+        )}
+      </div>
+      <div className={`w-2 h-2 rounded-full ${c.dot} flex-shrink-0 mt-[5px]`} />
+      <div className="flex-1 min-w-0">
+        <span className={`text-sm font-medium ${c.text} uppercase`}>{item.name}</span>
+        {item.detail && <span className="text-xs text-stone-400 ml-2 uppercase">{item.detail}</span>}
+      </div>
+    </div>
+  );
+}
+
+/* ── UserEventCard: each field editable in place, no layout shift ── */
+function UserEventCard({ activity, onUpdate, onDelete, isDraggable }) {
+  const [editingField, setEditingField] = useState(null);
+  const [editValue, setEditValue] = useState("");
+  const [showTimePicker, setShowTimePicker] = useState(false);
+  const [notesValue, setNotesValue] = useState(activity.notes || "");
+  const [confirmDelete, setConfirmDelete] = useState(false);
+
+  useEffect(() => { setNotesValue(activity.notes || ""); }, [activity.notes]);
+
+  function startEdit(field) {
+    setEditingField(field);
+    if (field === "title") setEditValue(activity.title);
+    else if (field === "location") setEditValue(activity.location || "");
+    else if (field === "notes") setNotesValue(activity.notes || "");
+  }
+
+  function saveField(field) {
+    setEditingField(null);
+    if (field === "title") {
+      const val = editValue.trim();
+      if (val && val !== activity.title) onUpdate({ title: val });
+    } else if (field === "location") {
+      const val = editValue.trim();
+      if (val !== (activity.location || "")) onUpdate({ location: val || null });
+    } else if (field === "notes") {
+      const val = notesValue.trim();
+      if (val !== (activity.notes || "")) onUpdate({ notes: val || null });
+    }
+  }
+
+  return (
+    <div className="relative bg-stone-50 border border-stone-200 rounded-lg px-3 py-2 group transition-colors">
+      <div className="flex items-start gap-2.5">
+        {isDraggable && (
+          <div className="flex-shrink-0 mt-1 text-stone-300 cursor-grab active:cursor-grabbing">
+            <svg className="w-3 h-3" viewBox="0 0 10 10" fill="currentColor"><circle cx="3" cy="2" r="1"/><circle cx="7" cy="2" r="1"/><circle cx="3" cy="5" r="1"/><circle cx="7" cy="5" r="1"/><circle cx="3" cy="8" r="1"/><circle cx="7" cy="8" r="1"/></svg>
+          </div>
+        )}
+        {/* Time — clickable */}
+        <div className="relative flex-shrink-0 w-16 mt-0.5">
+          {activity.start_time ? (
+            <span
+              onClick={(e) => { e.stopPropagation(); setShowTimePicker(!showTimePicker); }}
+              className="text-xs text-stone-500 cursor-pointer hover:text-[#da7b4a] transition-colors"
+            >
+              {formatTime12hShared(activity.start_time.slice(0, 5))}
+              {activity.end_time && <><br /><span className="text-stone-400">– {formatTime12hShared(activity.end_time.slice(0, 5))}</span></>}
+            </span>
+          ) : (
+            <span
+              onClick={(e) => { e.stopPropagation(); setShowTimePicker(!showTimePicker); }}
+              className="text-xs text-stone-300 cursor-pointer hover:text-[#da7b4a] italic transition-colors opacity-0 group-hover:opacity-100"
+            >
+              + time
+            </span>
+          )}
+          {showTimePicker && (
+            <TimeSelectPopup
+              startTime={to12h(activity.start_time?.slice(0, 5))}
+              endTime={to12h(activity.end_time?.slice(0, 5))}
+              showEndTime={true}
+              onSave={(start24, end24) => {
+                setShowTimePicker(false);
+                onUpdate({ start_time: start24, end_time: end24 });
+              }}
+              onClear={() => {
+                setShowTimePicker(false);
+                onUpdate({ start_time: null, end_time: null });
+              }}
+              onClose={() => setShowTimePicker(false)}
+            />
+          )}
+        </div>
+
+        <div className="w-2 h-2 rounded-full bg-stone-400 flex-shrink-0 mt-[5px]" />
+
+        {/* Title + location + notes */}
+        <div className="flex-1 min-w-0">
+          {editingField === "title" ? (
+            <input
+              type="text" value={editValue} onChange={(e) => setEditValue(e.target.value)}
+              onBlur={() => saveField("title")}
+              onKeyDown={(e) => { if (e.key === "Enter") saveField("title"); if (e.key === "Escape") setEditingField(null); }}
+              autoFocus
+              className="w-full text-sm font-medium text-stone-800 bg-white border border-stone-300 rounded px-1 py-0.5 focus:outline-none focus:ring-1 focus:ring-[#da7b4a]/50 focus:border-transparent -ml-1"
+            />
+          ) : (
+            <span onClick={() => startEdit("title")} className="text-sm font-medium text-stone-700 hover:text-[#da7b4a] cursor-text transition-colors uppercase">{activity.title}</span>
+          )}
+
+          {editingField === "location" ? (
+            <input
+              type="text" value={editValue} onChange={(e) => setEditValue(e.target.value)}
+              onBlur={() => saveField("location")}
+              onKeyDown={(e) => { if (e.key === "Enter") saveField("location"); if (e.key === "Escape") setEditingField(null); }}
+              autoFocus placeholder="Location..."
+              className="w-full text-xs text-stone-500 bg-white border border-stone-300 rounded px-1 py-0.5 mt-0.5 focus:outline-none focus:ring-1 focus:ring-[#da7b4a]/50 focus:border-transparent -ml-1"
+            />
+          ) : activity.location ? (
+            <span onClick={() => startEdit("location")} className="block text-xs text-stone-400 hover:text-[#da7b4a] cursor-text transition-colors">{activity.location}</span>
+          ) : (
+            <span onClick={() => startEdit("location")} className="block text-xs text-stone-300 hover:text-[#da7b4a] cursor-text italic transition-colors opacity-0 group-hover:opacity-100">+ location</span>
+          )}
+
+          {editingField === "notes" ? (
+            <textarea
+              value={notesValue} onChange={(e) => setNotesValue(e.target.value)}
+              onBlur={() => saveField("notes")}
+              onKeyDown={(e) => { if (e.key === "Escape") setEditingField(null); }}
+              autoFocus placeholder="Add notes..." rows={2}
+              className="w-full text-xs text-stone-500 bg-white border border-stone-300 rounded px-1 py-0.5 mt-0.5 focus:outline-none focus:ring-1 focus:ring-[#da7b4a]/50 focus:border-transparent -ml-1 resize-none"
+            />
+          ) : activity.notes ? (
+            <span onClick={() => startEdit("notes")} className="block text-xs text-stone-400 hover:text-[#da7b4a] cursor-text transition-colors mt-0.5">{activity.notes}</span>
+          ) : (
+            <span onClick={() => startEdit("notes")} className="block text-xs text-stone-300 hover:text-[#da7b4a] cursor-text italic transition-colors opacity-0 group-hover:opacity-100">+ notes</span>
+          )}
+        </div>
+
+        {!confirmDelete ? (
+          <button onClick={(e) => { e.stopPropagation(); setConfirmDelete(true); }} className="text-stone-300 hover:text-red-500 p-1 transition-colors opacity-0 group-hover:opacity-100 flex-shrink-0" title="Delete event">
+            <svg className="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24" strokeWidth={2}><path strokeLinecap="round" strokeLinejoin="round" d="M6 18L18 6M6 6l12 12" /></svg>
+          </button>
+        ) : (
+          <div className="flex items-center gap-1 flex-shrink-0">
+            <button onClick={onDelete} className="px-1.5 py-0.5 text-[10px] font-semibold text-white bg-red-500 rounded hover:bg-red-600 transition-colors">Delete</button>
+            <button onClick={() => setConfirmDelete(false)} className="px-1.5 py-0.5 text-[10px] text-stone-500 hover:text-stone-700 transition-colors">Cancel</button>
+          </div>
+        )}
+      </div>
+    </div>
+  );
+}
+
+/* ── NewEventCard: blank event row for adding, same layout as UserEventCard ── */
+function NewEventCard({ onSave, onCancel }) {
+  const [title, setTitle] = useState("");
+  const [location, setLocation] = useState("");
+  const [showTimePicker, setShowTimePicker] = useState(false);
+  const [savedStart, setSavedStart] = useState(null);
+  const [savedEnd, setSavedEnd] = useState(null);
+  const [notes, setNotes] = useState("");
+  const cardRef = useRef(null);
+
+  function doSave() {
     onSave({
-      title,
-      start_time: startTime || null,
-      end_time: endTime || null,
+      title: title.trim(),
+      start_time: savedStart,
+      end_time: savedEnd,
       location: location || null,
-      category,
       notes: notes || null,
     });
   }
 
+  function handleBlur() {
+    setTimeout(() => {
+      if (cardRef.current && !cardRef.current.contains(document.activeElement)) {
+        doSave();
+      }
+    }, 100);
+  }
+
   return (
-    <form onSubmit={handleSubmit} className="bg-sky-50 rounded-lg p-3 space-y-2 border border-sky-100">
-      <input
-        type="text"
-        value={title}
-        onChange={(e) => setTitle(e.target.value)}
-        required
-        autoFocus
-        className="w-full px-3 py-1.5 border border-slate-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-sky-500 text-sm bg-white"
-      />
-      <div className="grid grid-cols-2 gap-2">
-        <input
-          type="time"
-          value={startTime}
-          onChange={(e) => setStartTime(e.target.value)}
-          className="w-full px-3 py-1.5 border border-slate-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-sky-500 text-sm bg-white"
-        />
-        <input
-          type="time"
-          value={endTime}
-          onChange={(e) => setEndTime(e.target.value)}
-          className="w-full px-3 py-1.5 border border-slate-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-sky-500 text-sm bg-white"
-        />
+    <div ref={cardRef} tabIndex={-1} onBlur={handleBlur}
+      className="relative bg-white border-2 border-dashed border-[#da7b4a]/40 rounded-lg px-3 py-2"
+    >
+      <div className="flex items-start gap-2.5">
+        <div className="relative flex-shrink-0 w-16 mt-0.5">
+          {savedStart ? (
+            <span
+              onClick={(e) => { e.stopPropagation(); setShowTimePicker(!showTimePicker); }}
+              className="text-xs text-stone-500 cursor-pointer hover:text-[#da7b4a] transition-colors"
+            >
+              {formatTime12hShared(savedStart)}
+              {savedEnd && <><br /><span className="text-stone-400">– {formatTime12hShared(savedEnd)}</span></>}
+            </span>
+          ) : (
+            <span
+              onClick={(e) => { e.stopPropagation(); setShowTimePicker(!showTimePicker); }}
+              className="text-xs text-stone-300 cursor-pointer hover:text-[#da7b4a] italic transition-colors"
+            >
+              + time
+            </span>
+          )}
+          {showTimePicker && (
+            <TimeSelectPopup
+              startTime={to12h(savedStart)}
+              endTime={to12h(savedEnd)}
+              showEndTime={true}
+              onSave={(s, e) => { setShowTimePicker(false); setSavedStart(s); setSavedEnd(e); }}
+              onClear={() => { setShowTimePicker(false); setSavedStart(null); setSavedEnd(null); }}
+              onClose={() => setShowTimePicker(false)}
+            />
+          )}
+        </div>
+
+        <div className="w-2 h-2 rounded-full bg-stone-300 flex-shrink-0 mt-[5px]" />
+
+        <div className="flex-1 min-w-0">
+          <input
+            type="text" value={title} onChange={(e) => setTitle(e.target.value)}
+            placeholder="Event name..." autoFocus
+            onKeyDown={(e) => { if (e.key === "Escape") onCancel(); if (e.key === "Enter") doSave(); }}
+            className="w-full text-sm font-medium text-stone-800 bg-transparent border-none outline-none placeholder:text-stone-400 px-0"
+          />
+          <input
+            type="text" value={location} onChange={(e) => setLocation(e.target.value)}
+            placeholder="Location..."
+            onKeyDown={(e) => { if (e.key === "Escape") onCancel(); if (e.key === "Enter") doSave(); }}
+            className="w-full text-xs text-stone-500 bg-transparent border-none outline-none placeholder:text-stone-300 px-0"
+          />
+          <input
+            type="text" value={notes} onChange={(e) => setNotes(e.target.value)}
+            placeholder="Notes..."
+            onKeyDown={(e) => { if (e.key === "Escape") onCancel(); if (e.key === "Enter") doSave(); }}
+            className="w-full text-xs text-stone-500 bg-transparent border-none outline-none placeholder:text-stone-300 px-0"
+          />
+        </div>
       </div>
-      <input
-        type="text"
-        value={location}
-        onChange={(e) => setLocation(e.target.value)}
-        placeholder="Location"
-        className="w-full px-3 py-1.5 border border-slate-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-sky-500 text-sm bg-white"
-      />
-      <select
-        value={category}
-        onChange={(e) => setCategory(e.target.value)}
-        className="w-full px-3 py-1.5 border border-slate-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-sky-500 text-sm bg-white"
-      >
-        {CATEGORIES.map((cat) => (
-          <option key={cat.value} value={cat.value}>
-            {cat.icon} {cat.label}
-          </option>
-        ))}
-      </select>
-      <textarea
-        value={notes}
-        onChange={(e) => setNotes(e.target.value)}
-        placeholder="Notes"
-        rows={2}
-        className="w-full px-3 py-1.5 border border-slate-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-sky-500 text-sm bg-white"
-      />
-      <div className="flex gap-2">
-        <button type="submit" className="flex-1 bg-sky-600 text-white py-1.5 rounded-lg text-sm font-semibold hover:bg-sky-700">Save</button>
-        <button type="button" onClick={onCancel} className="px-4 py-1.5 text-sm text-slate-500 hover:text-slate-700">Cancel</button>
-      </div>
-    </form>
+    </div>
   );
 }

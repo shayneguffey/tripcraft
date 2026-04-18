@@ -2,6 +2,7 @@
 
 import { useState, useEffect, useCallback, useRef } from "react";
 import { supabase } from "@/lib/supabase";
+import InlineConfirm from "@/components/InlineConfirm";
 
 // ── Document type metadata ──
 const DOC_TYPES = {
@@ -33,6 +34,7 @@ export default function TravelDocuments({ tripId }) {
   const [showAddModal, setShowAddModal] = useState(false);
   const [viewingDoc, setViewingDoc] = useState(null);
   const [filter, setFilter] = useState("all");
+  const [confirmDeleteId, setConfirmDeleteId] = useState(null);
 
   const loadDocs = useCallback(async () => {
     const { data } = await supabase
@@ -47,7 +49,7 @@ export default function TravelDocuments({ tripId }) {
   useEffect(() => { loadDocs(); }, [loadDocs]);
 
   async function handleDelete(id, fileUrl) {
-    if (!confirm("Delete this document?")) return;
+    setConfirmDeleteId(null);
     // Delete file from storage if it's a Supabase URL
     if (fileUrl && fileUrl.includes("supabase")) {
       try {
@@ -129,7 +131,10 @@ export default function TravelDocuments({ tripId }) {
                 key={doc.id}
                 doc={doc}
                 onView={() => setViewingDoc(doc)}
-                onDelete={() => handleDelete(doc.id, doc.file_url || doc.thumbnail_url)}
+                confirmDeleteId={confirmDeleteId}
+                onRequestDelete={() => setConfirmDeleteId(doc.id)}
+                onConfirmDelete={() => handleDelete(doc.id, doc.file_url || doc.thumbnail_url)}
+                onCancelDelete={() => setConfirmDeleteId(null)}
               />
             ))}
           </div>
@@ -165,14 +170,14 @@ export default function TravelDocuments({ tripId }) {
 }
 
 // ── Document card ──
-function DocCard({ doc, onView, onDelete }) {
+function DocCard({ doc, onView, confirmDeleteId, onRequestDelete, onConfirmDelete, onCancelDelete }) {
   const typeMeta = DOC_TYPES[doc.doc_type] || DOC_TYPES.general;
   const hasImage = doc.thumbnail_url || (doc.file_type && doc.file_type.startsWith("image/"));
   const previewUrl = doc.thumbnail_url || doc.file_url;
 
   return (
     <div
-      className="border border-slate-100 rounded-lg overflow-hidden hover:border-rose-200 hover:shadow-sm transition-all cursor-pointer group"
+      className="relative border border-slate-100 rounded-lg overflow-hidden hover:border-rose-200 hover:shadow-sm transition-all cursor-pointer group"
       onClick={onView}
     >
       {/* Preview / thumbnail */}
@@ -209,14 +214,22 @@ function DocCard({ doc, onView, onDelete }) {
               <p className="text-xs text-slate-500 truncate">{doc.provider}</p>
             )}
           </div>
-          <button
-            onClick={(e) => { e.stopPropagation(); onDelete(); }}
-            className="flex-shrink-0 text-slate-300 hover:text-red-500 opacity-0 group-hover:opacity-100 transition-all"
-          >
-            <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24" strokeWidth={2}>
-              <path strokeLinecap="round" strokeLinejoin="round" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
-            </svg>
-          </button>
+          <div className="relative flex-shrink-0">
+            <button
+              onClick={(e) => { e.stopPropagation(); onRequestDelete(); }}
+              className="text-slate-300 hover:text-red-500 opacity-0 group-hover:opacity-100 transition-all"
+            >
+              <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24" strokeWidth={2}>
+                <path strokeLinecap="round" strokeLinejoin="round" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
+              </svg>
+            </button>
+            <InlineConfirm
+              open={confirmDeleteId === doc.id}
+              message="Delete this document?"
+              onConfirm={onConfirmDelete}
+              onCancel={onCancelDelete}
+            />
+          </div>
         </div>
         {doc.reference_number && (
           <p className="text-[10px] text-slate-400 mt-1 font-mono">Ref: {doc.reference_number}</p>

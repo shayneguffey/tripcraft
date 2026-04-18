@@ -60,6 +60,26 @@ Used for floating UI elements that sit over the globe or dark backgrounds. Alway
 | Map Line | `#b8a48a` | Latitude/longitude grid lines, coast outlines |
 | Map Accent | `#c9a87c` | Compass rose, route dots, decorative elements |
 
+### Category Colors (Centralized)
+
+All event/option category colors are defined in **`src/lib/categoryColors.js`** — this is the single source of truth. Never hardcode a category color in a component; always import from this file.
+
+Each category provides a full set of tokens: `hex`, `hexLight`, `bg`, `bgMedium`, `border`, `text`, `textDark`, `dot`, `bar`, `pill`, and `chart`. These are used across the calendar, day detail cards, option modules, budget charts, map pins, and event popups.
+
+| Category | Family | Hex (primary) | Tailwind base | Used for |
+|----------|--------|---------------|---------------|----------|
+| Flights | Emerald | `#10b981` | `emerald-*` | Flight events, budget row, map pins |
+| Accommodation | Sky | `#0ea5e9` | `sky-*` | Stay events, budget row, map pins |
+| Activities | Yellow | `#eab308` | `yellow-*` | Activity events, budget row, map pins |
+| Dining | Orange | `#f97316` | `orange-*` | Dining events, budget row, map pins |
+| Transportation | Violet | `#8b5cf6` | `violet-*` | Transport events, budget row, map pins |
+| User Events | Stone | `#78716c` | `stone-*` | Manually created day events |
+| Misc/Other | Slate | `#64748b` | `slate-*` | Budget "other expenses" catch-all |
+
+**To change a category color:** edit the entry in `src/lib/categoryColors.js`. The change propagates everywhere automatically — no need to update individual components.
+
+**Sub-category colors** (cuisine types, activity types, transport types, accommodation types) remain local to their respective option modules. These are visual accents within a module's detail panel and do not need global coordination.
+
 ### Text Colors
 | Context | Value |
 |---------|-------|

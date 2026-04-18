@@ -2,6 +2,8 @@
 
 import { useState, useEffect, useCallback, useRef } from "react";
 import { supabase } from "@/lib/supabase";
+import InlineConfirm from "@/components/InlineConfirm";
+import TimeSelectPopup, { to12h, formatTime12h } from "@/components/TimeSelectPopup";
 
 // ── Category metadata ──
 const CATEGORIES = {
@@ -98,9 +100,10 @@ export default function TransportationOptions({ tripId, tripStart, tripEnd, onTr
   useEffect(() => { loadOptions(); }, [loadOptions]);
 
   const selected = options.find((o) => o.id === selectedId);
+  const [confirmDeleteId, setConfirmDeleteId] = useState(null);
 
   async function handleDelete(id) {
-    if (!confirm("Delete this transportation option?")) return;
+    setConfirmDeleteId(null);
     await supabase.from("transportation_options").delete().eq("id", id);
     if (selectedId === id) setSelectedId(options.find((o) => o.id !== id)?.id || null);
     loadOptions();
@@ -117,6 +120,11 @@ export default function TransportationOptions({ tripId, tripStart, tripEnd, onTr
     }
   }
 
+  async function handleTimeChange(id, depTime, arrTime) {
+    await supabase.from("transportation_options").update({ departure_time: depTime || null, arrival_time: arrTime || null }).eq("id", id);
+    loadOptions();
+  }
+
   if (loading) return null;
 
   return (
@@ -128,7 +136,8 @@ export default function TransportationOptions({ tripId, tripStart, tripEnd, onTr
           <div className="w-56 flex-shrink-0 space-y-2">
             {options.map((opt, i) => (
               <OptionTab key={opt.id} opt={{...opt, is_selected: (itinerarySelections || []).some(s => s.option_type === "transportation" && s.option_id === opt.id)}} index={i} isSelected={selectedId === opt.id}
-                onClick={() => setSelectedId(opt.id)} onDelete={() => handleDelete(opt.id)} />
+                onClick={() => setSelectedId(opt.id)} onDelete={() => setConfirmDeleteId(opt.id)}
+                confirmDelete={confirmDeleteId === opt.id} onConfirmDelete={() => handleDelete(opt.id)} onCancelDelete={() => setConfirmDeleteId(null)} />
             ))}
             <button onClick={() => setShowModal(true)}
               className="w-full py-3 border-2 border-dashed border-violet-300 rounded-xl text-violet-600 text-sm font-medium hover:bg-violet-50 transition-colors">
@@ -140,7 +149,8 @@ export default function TransportationOptions({ tripId, tripStart, tripEnd, onTr
           <div className="flex-1 bg-white rounded-xl border border-violet-100 shadow-sm p-5 min-h-[200px]">
             {selected ? (
               <OptionDetail opt={{...selected, is_selected: (itinerarySelections || []).some(s => s.option_type === "transportation" && s.option_id === selected.id)}} tripStart={tripStart} tripEnd={tripEnd}
-                onToggleSelected={() => handleToggleSelected(selected.id)} />
+                onToggleSelected={() => handleToggleSelected(selected.id)}
+                onTimeChange={(depTime, arrTime) => handleTimeChange(selected.id, depTime, arrTime)} />
             ) : (
               <p className="text-slate-400 text-sm italic">Select a transportation option to view details</p>
             )}
@@ -171,7 +181,7 @@ export default function TransportationOptions({ tripId, tripStart, tripEnd, onTr
 }
 
 // ─── OPTION TAB ───
-function OptionTab({ opt, index, isSelected, onClick, onDelete }) {
+function OptionTab({ opt, index, isSelected, onClick, onDelete, confirmDelete, onConfirmDelete, onCancelDelete }) {
   const [hovered, setHovered] = useState(false);
   const cat = getCategoryInfo(opt.category);
 
@@ -193,6 +203,7 @@ function OptionTab({ opt, index, isSelected, onClick, onDelete }) {
           </svg>
         </button>
       )}
+      <InlineConfirm open={confirmDelete} message="Delete this transport?" onConfirm={onConfirmDelete} onCancel={onCancelDelete} />
 
       <div className="text-[10px] font-semibold text-slate-400 mb-1 flex items-center gap-1">
         <span className={`inline-flex items-center px-1.5 py-0.5 rounded text-[9px] font-bold ${cat.color}`}>
@@ -217,8 +228,13 @@ function OptionTab({ opt, index, isSelected, onClick, onDelete }) {
 }
 
 // ─── OPTION DETAIL ───
-function OptionDetail({ opt, tripStart, tripEnd, onToggleSelected }) {
+function OptionDetail({ opt, tripStart, tripEnd, onToggleSelected, onTimeChange }) {
   const cat = getCategoryInfo(opt.category);
+  const [showTimePopup, setShowTimePopup] = useState(false);
+
+  useEffect(() => {
+    setShowTimePopup(false);
+  }, [opt.id]);
 
   return (
     <div>
@@ -292,7 +308,7 @@ function OptionDetail({ opt, tripStart, tripEnd, onToggleSelected }) {
               {opt.departure_date && (
                 <div className="text-xs text-slate-500 mt-1">
                   {formatDateNice(opt.departure_date)}
-                  {opt.departure_time && ` at ${formatTime(opt.departure_time)}`}
+                  {opt.departure_time && ` at ${formatTime12h(opt.departure_time.slice(0, 5))}`}
                 </div>
               )}
             </div>
@@ -305,13 +321,48 @@ function OptionDetail({ opt, tripStart, tripEnd, onToggleSelected }) {
               {opt.arrival_date && (
                 <div className="text-xs text-slate-500 mt-1">
                   {formatDateNice(opt.arrival_date)}
-                  {opt.arrival_time && ` at ${formatTime(opt.arrival_time)}`}
+                  {opt.arrival_time && ` at ${formatTime12h(opt.arrival_time.slice(0, 5))}`}
                 </div>
               )}
             </div>
           </div>
         </div>
       )}
+
+      {/* Time selection — single popup with Departure/Arrival */}
+      <div className="mb-4 relative">
+        <div className="text-xs text-slate-400 uppercase tracking-wide mb-2">Times</div>
+        <button onClick={() => setShowTimePopup(!showTimePopup)}
+          className="px-3 py-1.5 rounded-lg text-sm font-medium bg-slate-100 text-slate-600 hover:bg-violet-50 hover:text-violet-700 transition-colors">
+          {opt.departure_time || opt.arrival_time ? (
+            <>
+              {opt.departure_time ? formatTime12h(opt.departure_time.slice(0, 5)) : "—"}
+              {" → "}
+              {opt.arrival_time ? formatTime12h(opt.arrival_time.slice(0, 5)) : "—"}
+            </>
+          ) : (
+            "+ Set times"
+          )}
+        </button>
+        {showTimePopup && (
+          <TimeSelectPopup
+            startTime={to12h(opt.departure_time?.slice(0, 5))}
+            endTime={to12h(opt.arrival_time?.slice(0, 5))}
+            startLabel="Departure"
+            endLabel="Arrival"
+            showEndTime={true}
+            onSave={(dep24, arr24) => {
+              setShowTimePopup(false);
+              if (onTimeChange) onTimeChange(dep24, arr24);
+            }}
+            onClear={() => {
+              setShowTimePopup(false);
+              if (onTimeChange) onTimeChange(null, null);
+            }}
+            onClose={() => setShowTimePopup(false)}
+          />
+        )}
+      </div>
 
       {/* Car rental specific */}
       {opt.category === "car_rental" && (

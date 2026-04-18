@@ -2,6 +2,8 @@
 
 import { useState, useEffect, useCallback, useRef } from "react";
 import { supabase } from "@/lib/supabase";
+import InlineConfirm from "@/components/InlineConfirm";
+import TimeSelectPopup, { to12h, formatTime12h } from "@/components/TimeSelectPopup";
 
 // ── Cuisine type metadata ──
 const CUISINES = {
@@ -101,8 +103,10 @@ export default function DiningOptions({ tripId, tripStart, tripEnd, onDiningOpti
 
   const selected = options.find((o) => o.id === selectedId);
 
+  const [confirmDeleteId, setConfirmDeleteId] = useState(null);
+
   async function handleDelete(id) {
-    if (!confirm("Delete this dining option?")) return;
+    setConfirmDeleteId(null);
     await supabase.from("dining_options").delete().eq("id", id);
     if (selectedId === id) setSelectedId(options.find((o) => o.id !== id)?.id || null);
     loadOptions();
@@ -124,6 +128,11 @@ export default function DiningOptions({ tripId, tripStart, tripEnd, onDiningOpti
     loadOptions();
   }
 
+  async function handleTimeChange(id, time, endTime) {
+    await supabase.from("dining_options").update({ start_time: time || null, end_time: endTime || null }).eq("id", id);
+    loadOptions();
+  }
+
   if (loading) return null;
 
   return (
@@ -135,7 +144,8 @@ export default function DiningOptions({ tripId, tripStart, tripEnd, onDiningOpti
           <div className="w-56 flex-shrink-0 space-y-2">
             {options.map((opt, i) => (
               <OptionTab key={opt.id} opt={{...opt, is_selected: (itinerarySelections || []).some(s => s.option_type === "dining" && s.option_id === opt.id)}} index={i} isSelected={selectedId === opt.id}
-                onClick={() => setSelectedId(opt.id)} onDelete={() => handleDelete(opt.id)} />
+                onClick={() => setSelectedId(opt.id)} onDelete={() => setConfirmDeleteId(opt.id)}
+                confirmDelete={confirmDeleteId === opt.id} onConfirmDelete={() => handleDelete(opt.id)} onCancelDelete={() => setConfirmDeleteId(null)} />
             ))}
             <button onClick={() => setShowModal(true)}
               className="w-full py-3 border-2 border-dashed border-orange-300 rounded-xl text-orange-600 text-sm font-medium hover:bg-orange-50 transition-colors">
@@ -148,7 +158,8 @@ export default function DiningOptions({ tripId, tripStart, tripEnd, onDiningOpti
             {selected ? (
               <OptionDetail opt={{...selected, is_selected: (itinerarySelections || []).some(s => s.option_type === "dining" && s.option_id === selected.id)}} tripStart={tripStart} tripEnd={tripEnd}
                 onToggleSelected={() => handleToggleSelected(selected.id)}
-                onSchedule={(date) => handleSchedule(selected.id, date)} />
+                onSchedule={(date) => handleSchedule(selected.id, date)}
+                onTimeChange={(time, endTime) => handleTimeChange(selected.id, time, endTime)} />
             ) : (
               <p className="text-slate-400 text-sm italic">Select a dining option to view details</p>
             )}
@@ -179,7 +190,7 @@ export default function DiningOptions({ tripId, tripStart, tripEnd, onDiningOpti
 }
 
 // ─── OPTION TAB ───
-function OptionTab({ opt, index, isSelected, onClick, onDelete }) {
+function OptionTab({ opt, index, isSelected, onClick, onDelete, confirmDelete, onConfirmDelete, onCancelDelete }) {
   const [hovered, setHovered] = useState(false);
   const cuisine = getCuisineInfo(opt.cuisine_type);
   const mealType = getMealTypeInfo(opt.meal_type);
@@ -202,6 +213,7 @@ function OptionTab({ opt, index, isSelected, onClick, onDelete }) {
           </svg>
         </button>
       )}
+      <InlineConfirm open={confirmDelete} message="Delete this dining option?" onConfirm={onConfirmDelete} onCancel={onCancelDelete} />
 
       <div className="text-[10px] font-semibold text-slate-400 mb-1 flex items-center gap-1 flex-wrap">
         <span className={`inline-flex items-center px-1.5 py-0.5 rounded text-[9px] font-bold ${cuisine.color}`}>
@@ -232,9 +244,27 @@ function OptionTab({ opt, index, isSelected, onClick, onDelete }) {
 }
 
 // ─── OPTION DETAIL ───
-function OptionDetail({ opt, tripStart, tripEnd, onToggleSelected, onSchedule }) {
+function OptionDetail({ opt, tripStart, tripEnd, onToggleSelected, onSchedule, onTimeChange }) {
   const cuisine = getCuisineInfo(opt.cuisine_type);
   const mealType = getMealTypeInfo(opt.meal_type);
+  const [timePopupDate, setTimePopupDate] = useState(null); // which day's popup is open
+
+  // Close popup when opt changes
+  useEffect(() => {
+    setTimePopupDate(null);
+  }, [opt.id]);
+
+  function handleDayClick(dateStr) {
+    const isScheduled = opt.scheduled_date === dateStr;
+    if (isScheduled) {
+      // Already scheduled — just open time popup for editing
+      setTimePopupDate(dateStr);
+    } else {
+      // Schedule to this day, then open popup
+      onSchedule(dateStr);
+      setTimePopupDate(dateStr);
+    }
+  }
 
   // Build trip date range for mini calendar
   const tripDates = [];
@@ -334,7 +364,7 @@ function OptionDetail({ opt, tripStart, tripEnd, onToggleSelected, onSchedule })
         </div>
       )}
 
-      {/* Schedule to calendar — mini date strip */}
+      {/* Schedule on calendar — day buttons open time picker */}
       {tripDates.length > 0 && (
         <div className="mb-4">
           <div className="text-xs text-slate-400 uppercase tracking-wide mb-2">Schedule on calendar</div>
@@ -343,16 +373,42 @@ function OptionDetail({ opt, tripStart, tripEnd, onToggleSelected, onSchedule })
               const dateStr = d.toISOString().split("T")[0];
               const isScheduled = opt.scheduled_date === dateStr;
               return (
-                <button key={dateStr} onClick={() => onSchedule(isScheduled ? null : dateStr)}
-                  className={`px-2 py-1 rounded text-xs font-medium transition-all ${
-                    isScheduled
-                      ? "bg-orange-600 text-white shadow-sm"
-                      : "bg-slate-100 text-slate-600 hover:bg-orange-100 hover:text-orange-700"
-                  }`}
-                  title={d.toLocaleDateString("en-US", { weekday: "long", month: "long", day: "numeric" })}
-                >
-                  {d.toLocaleDateString("en-US", { weekday: "short", day: "numeric" })}
-                </button>
+                <div key={dateStr} className="relative">
+                  <button onClick={() => handleDayClick(dateStr)}
+                    className={`px-2 py-1 rounded text-xs font-medium transition-all ${
+                      isScheduled
+                        ? "bg-orange-600 text-white shadow-sm"
+                        : "bg-slate-100 text-slate-600 hover:bg-orange-100 hover:text-orange-700"
+                    }`}
+                    title={d.toLocaleDateString("en-US", { weekday: "long", month: "long", day: "numeric" })}
+                  >
+                    {d.toLocaleDateString("en-US", { weekday: "short", day: "numeric" })}
+                    {isScheduled && opt.start_time && (
+                      <span className="block text-[9px] opacity-80">{formatTime12h(opt.start_time.slice(0, 5))}</span>
+                    )}
+                  </button>
+                  {timePopupDate === dateStr && (
+                    <TimeSelectPopup
+                      startTime={to12h(opt.start_time?.slice(0, 5))}
+                      endTime={to12h(opt.end_time?.slice(0, 5))}
+                      showEndTime={true}
+                      onSave={(start24, end24) => {
+                        setTimePopupDate(null);
+                        if (onTimeChange) onTimeChange(start24, end24);
+                      }}
+                      onClear={() => {
+                        setTimePopupDate(null);
+                        if (onTimeChange) onTimeChange(null, null);
+                      }}
+                      onClose={() => setTimePopupDate(null)}
+                      onUnschedule={() => {
+                        setTimePopupDate(null);
+                        onSchedule(null);
+                        if (onTimeChange) onTimeChange(null, null);
+                      }}
+                    />
+                  )}
+                </div>
               );
             })}
           </div>

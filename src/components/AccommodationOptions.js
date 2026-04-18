@@ -2,6 +2,7 @@
 
 import { useState, useEffect, useCallback, useRef } from "react";
 import { supabase } from "@/lib/supabase";
+import InlineConfirm from "@/components/InlineConfirm";
 
 // ── Category metadata ──
 const CATEGORIES = {
@@ -86,8 +87,10 @@ export default function AccommodationOptions({ tripId, tripStart, tripEnd, onAcc
 
   const selected = options.find((o) => o.id === selectedId);
 
+  const [confirmDeleteId, setConfirmDeleteId] = useState(null);
+
   async function handleDelete(id) {
-    if (!confirm("Delete this accommodation option?")) return;
+    setConfirmDeleteId(null);
     await supabase.from("accommodation_options").delete().eq("id", id);
     if (selectedId === id) setSelectedId(options.find((o) => o.id !== id)?.id || null);
     loadOptions();
@@ -115,7 +118,8 @@ export default function AccommodationOptions({ tripId, tripStart, tripEnd, onAcc
           <div className="w-56 flex-shrink-0 space-y-2">
             {options.map((opt, i) => (
               <OptionTab key={opt.id} opt={{...opt, is_selected: (itinerarySelections || []).some(s => s.option_type === "accommodation" && s.option_id === opt.id)}} index={i} isSelected={selectedId === opt.id}
-                onClick={() => setSelectedId(opt.id)} onDelete={() => handleDelete(opt.id)} />
+                onClick={() => setSelectedId(opt.id)} onDelete={() => setConfirmDeleteId(opt.id)}
+                confirmDelete={confirmDeleteId === opt.id} onConfirmDelete={() => handleDelete(opt.id)} onCancelDelete={() => setConfirmDeleteId(null)} />
             ))}
             <button onClick={() => setShowModal(true)}
               className="w-full py-3 border-2 border-dashed border-sky-300 rounded-xl text-sky-600 text-sm font-medium hover:bg-sky-50 transition-colors">
@@ -158,7 +162,7 @@ export default function AccommodationOptions({ tripId, tripStart, tripEnd, onAcc
 }
 
 // ─── OPTION TAB ───
-function OptionTab({ opt, index, isSelected, onClick, onDelete }) {
+function OptionTab({ opt, index, isSelected, onClick, onDelete, confirmDelete, onConfirmDelete, onCancelDelete }) {
   const [hovered, setHovered] = useState(false);
   const cat = getCategoryInfo(opt.category);
 
@@ -180,6 +184,7 @@ function OptionTab({ opt, index, isSelected, onClick, onDelete }) {
           </svg>
         </button>
       )}
+      <InlineConfirm open={confirmDelete} message="Delete this accommodation?" onConfirm={onConfirmDelete} onCancel={onCancelDelete} />
 
       <div className="text-[10px] font-semibold text-slate-400 mb-1 flex items-center gap-1">
         <span className={`inline-flex items-center px-1.5 py-0.5 rounded text-[9px] font-bold ${cat.color}`}>

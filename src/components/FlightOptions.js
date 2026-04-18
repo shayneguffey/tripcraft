@@ -3,6 +3,7 @@
 import { useState, useEffect, useCallback, useRef } from "react";
 import { supabase } from "@/lib/supabase";
 import { parseFlightInput, parseFlightText, parseOcrText, getCityName, getAirlineName } from "@/lib/flightParser";
+import InlineConfirm from "@/components/InlineConfirm";
 
 // Send screenshot to Gemini Vision API via our server-side route
 async function extractFlightsFromImage(imageDataUrl) {
@@ -82,8 +83,10 @@ export default function FlightOptions({ tripId, tripStart, tripEnd, onFlightOpti
     loadOptions();
   }, [loadOptions]);
 
+  const [confirmDeleteId, setConfirmDeleteId] = useState(null);
+
   async function handleDeleteOption(optionId) {
-    if (!confirm("Delete this flight option?")) return;
+    setConfirmDeleteId(null);
     await supabase.from("flight_options").delete().eq("id", optionId);
     loadOptions();
   }
@@ -130,7 +133,10 @@ export default function FlightOptions({ tripId, tripStart, tripEnd, onFlightOpti
                 isActive={opt.id === selectedOption}
                 isItinerarySelected={(itinerarySelections || []).some(s => s.option_type === "flight" && s.option_id === opt.id)}
                 onSelect={() => { setSelectedOption(opt.id); handleSelectOption(opt.id); }}
-                onDelete={() => handleDeleteOption(opt.id)}
+                onDelete={() => setConfirmDeleteId(opt.id)}
+                confirmDelete={confirmDeleteId === opt.id}
+                onConfirmDelete={() => handleDeleteOption(opt.id)}
+                onCancelDelete={() => setConfirmDeleteId(null)}
               />
             ))}
             <button
@@ -165,7 +171,7 @@ export default function FlightOptions({ tripId, tripStart, tripEnd, onFlightOpti
 }
 
 // ─── OPTION TAB ───
-function OptionTab({ option, isActive, isItinerarySelected, onSelect, onDelete }) {
+function OptionTab({ option, isActive, isItinerarySelected, onSelect, onDelete, confirmDelete, onConfirmDelete, onCancelDelete }) {
   const [hovered, setHovered] = useState(false);
   const legs = option.flight_legs || [];
   const outbound = legs.find((l) => l.direction === "outbound");
@@ -196,6 +202,12 @@ function OptionTab({ option, isActive, isItinerarySelected, onSelect, onDelete }
           </svg>
         </button>
       )}
+      <InlineConfirm
+        open={confirmDelete}
+        message="Delete this flight?"
+        onConfirm={onConfirmDelete}
+        onCancel={onCancelDelete}
+      />
 
       <div className="text-[10px] font-semibold text-slate-400 mb-1 flex items-center gap-1">
         <span className="uppercase tracking-wide">Option {option.sort_order + 1}</span>

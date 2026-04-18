@@ -115,6 +115,9 @@ FROM transportation_options t
 JOIN itineraries i ON i.trip_id = t.trip_id
 WHERE t.is_selected = true;
 
+-- ─── Add itinerary_id to days table for per-itinerary day headers ───
+ALTER TABLE days ADD COLUMN IF NOT EXISTS itinerary_id UUID REFERENCES itineraries(id) ON DELETE CASCADE;
+
 -- ─── Indexes for performance ───
 CREATE INDEX idx_itineraries_trip_id ON itineraries(trip_id);
 CREATE INDEX idx_itinerary_selections_itinerary_id ON itinerary_selections(itinerary_id);

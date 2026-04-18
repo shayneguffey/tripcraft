@@ -9,14 +9,15 @@ const TileLayer = dynamic(() => import("react-leaflet").then(m => m.TileLayer), 
 const Marker = dynamic(() => import("react-leaflet").then(m => m.Marker), { ssr: false });
 const Popup = dynamic(() => import("react-leaflet").then(m => m.Popup), { ssr: false });
 const Polyline = dynamic(() => import("react-leaflet").then(m => m.Polyline), { ssr: false });
+import CATEGORY_COLORS from "@/lib/categoryColors";
 
-// ── Pin category config ──
+// ── Pin category config — colors from centralized system ──
 const PIN_CONFIG = {
-  flight: { color: "#3b82f6", label: "Flight", emoji: "\u2708\ufe0f" },
-  accommodation: { color: "#0ea5e9", label: "Stay", emoji: "\ud83c\udfe8" },
-  activity: { color: "#10b981", label: "Activity", emoji: "\u2b50" },
-  dining: { color: "#f97316", label: "Dining", emoji: "\ud83c\udf7d\ufe0f" },
-  transport: { color: "#8b5cf6", label: "Transport", emoji: "\ud83d\ude8c" },
+  flight: { color: CATEGORY_COLORS.flight.hex, label: "Flight", emoji: "\u2708\ufe0f" },
+  accommodation: { color: CATEGORY_COLORS.accommodation.hex, label: "Stay", emoji: "\ud83c\udfe8" },
+  activity: { color: CATEGORY_COLORS.activity.hex, label: "Activity", emoji: "\u2b50" },
+  dining: { color: CATEGORY_COLORS.dining.hex, label: "Dining", emoji: "\ud83c\udf7d\ufe0f" },
+  transport: { color: CATEGORY_COLORS.transport.hex, label: "Transport", emoji: "\ud83d\ude8c" },
 };
 
 // ── Day colors for route view (cycle through these) ──
@@ -570,7 +571,7 @@ function MapInner({ viewMode, pins, routes, bounds, defaultCenter, flightLines }
 
       {/* PINS VIEW: flight route lines */}
       {flightLines.map((line, i) => (
-        <Polyline key={`fl-${i}`} positions={line} color="#3b82f6" weight={2} opacity={0.6} dashArray="8 6" />
+        <Polyline key={`fl-${i}`} positions={line} color={CATEGORY_COLORS.flight.hex} weight={2} opacity={0.6} dashArray="8 6" />
       ))}
 
       {/* ROUTE VIEW: day route lines */}

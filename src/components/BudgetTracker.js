@@ -2,6 +2,8 @@
 
 import { useState, useEffect, useCallback } from "react";
 import { supabase } from "@/lib/supabase";
+import InlineConfirm from "@/components/InlineConfirm";
+import CATEGORY_COLORS from "@/lib/categoryColors";
 
 // ── Category metadata for manual budget items ──
 const EXPENSE_CATEGORIES = {
@@ -19,13 +21,22 @@ const EXPENSE_CATEGORIES = {
 };
 
 // ── Budget section categories (aggregated from all modules) ──
+// Colors are pulled from the centralized CATEGORY_COLORS so they stay
+// in sync with the calendar, day cards, map pins, and option modules.
+const _fc = CATEGORY_COLORS.flight;
+const _ac = CATEGORY_COLORS.accommodation;
+const _yc = CATEGORY_COLORS.activity;
+const _dc = CATEGORY_COLORS.dining;
+const _tc = CATEGORY_COLORS.transportation;
+const _mc = CATEGORY_COLORS.misc;
+
 const BUDGET_SECTIONS = [
-  { key: "flights", label: "Flights", icon: "M12 19l9 2-9-18-9 18 9-2zm0 0v-8", color: "text-blue-600", bg: "bg-blue-50", bar: "bg-blue-400", chart: "#60a5fa", perPerson: true },
-  { key: "accommodation", label: "Accommodation", icon: "M3 12l2-2m0 0l7-7 7 7M5 10v10a1 1 0 001 1h3m10-11l2 2m-2-2v10a1 1 0 01-1 1h-3m-4 0h4", color: "text-sky-600", bg: "bg-sky-50", bar: "bg-sky-400", chart: "#38bdf8", perPerson: false },
-  { key: "activities", label: "Activities", icon: "M11.049 2.927c.3-.921 1.603-.921 1.902 0l1.519 4.674a1 1 0 00.95.69h4.915c.969 0 1.371 1.24.588 1.81l-3.976 2.888a1 1 0 00-.363 1.118l1.518 4.674c.3.922-.755 1.688-1.538 1.118l-3.976-2.888a1 1 0 00-1.176 0l-3.976 2.888c-.783.57-1.838-.197-1.538-1.118l1.518-4.674a1 1 0 00-.363-1.118l-3.976-2.888c-.784-.57-.38-1.81.588-1.81h4.914a1 1 0 00.951-.69l1.519-4.674z", color: "text-emerald-600", bg: "bg-emerald-50", bar: "bg-emerald-400", chart: "#34d399", perPerson: true },
-  { key: "dining", label: "Food & Dining", icon: "M3 3h2l.4 2M7 13h10l4-8H5.4M7 13L5.4 5M7 13l-2.293 2.293c-.63.63-.184 1.707.707 1.707H17m0 0a2 2 0 100 4 2 2 0 000-4zm-8 2a2 2 0 100 4 2 2 0 000-4z", color: "text-orange-600", bg: "bg-orange-50", bar: "bg-orange-400", chart: "#fb923c", perPerson: true },
-  { key: "transport", label: "Transportation", icon: "M8 7h12m0 0l-4-4m4 4l-4 4m0 6H4m0 0l4 4m-4-4l4-4", color: "text-violet-600", bg: "bg-violet-50", bar: "bg-violet-400", chart: "#a78bfa", perPerson: false },
-  { key: "misc", label: "Other Expenses", icon: "M17 9V7a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2m2 4h10a2 2 0 002-2v-6a2 2 0 00-2-2H9a2 2 0 00-2 2v6a2 2 0 002 2zm7-5a2 2 0 11-4 0 2 2 0 014 0z", color: "text-slate-600", bg: "bg-slate-50", bar: "bg-slate-400", chart: "#94a3b8", perPerson: false },
+  { key: "flights", label: "Flights", icon: "M12 19l9 2-9-18-9 18 9-2zm0 0v-8", color: _fc.textDark, bg: _fc.bg, bar: _fc.bar, chart: _fc.chart, perPerson: true },
+  { key: "accommodation", label: "Accommodation", icon: "M3 12l2-2m0 0l7-7 7 7M5 10v10a1 1 0 001 1h3m10-11l2 2m-2-2v10a1 1 0 01-1 1h-3m-4 0h4", color: _ac.textDark, bg: _ac.bg, bar: _ac.bar, chart: _ac.chart, perPerson: false },
+  { key: "activities", label: "Activities", icon: "M11.049 2.927c.3-.921 1.603-.921 1.902 0l1.519 4.674a1 1 0 00.95.69h4.915c.969 0 1.371 1.24.588 1.81l-3.976 2.888a1 1 0 00-.363 1.118l1.518 4.674c.3.922-.755 1.688-1.538 1.118l-3.976-2.888a1 1 0 00-1.176 0l-3.976 2.888c-.783.57-1.838-.197-1.538-1.118l1.518-4.674a1 1 0 00-.363-1.118l-3.976-2.888c-.784-.57-.38-1.81.588-1.81h4.914a1 1 0 00.951-.69l1.519-4.674z", color: _yc.textDark, bg: _yc.bg, bar: _yc.bar, chart: _yc.chart, perPerson: true },
+  { key: "dining", label: "Food & Dining", icon: "M3 3h2l.4 2M7 13h10l4-8H5.4M7 13L5.4 5M7 13l-2.293 2.293c-.63.63-.184 1.707.707 1.707H17m0 0a2 2 0 100 4 2 2 0 000-4zm-8 2a2 2 0 100 4 2 2 0 000-4z", color: _dc.textDark, bg: _dc.bg, bar: _dc.bar, chart: _dc.chart, perPerson: true },
+  { key: "transport", label: "Transportation", icon: "M8 7h12m0 0l-4-4m4 4l-4 4m0 6H4m0 0l4 4m-4-4l4-4", color: _tc.textDark, bg: _tc.bg, bar: _tc.bar, chart: _tc.chart, perPerson: false },
+  { key: "misc", label: "Other Expenses", icon: "M17 9V7a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2m2 4h10a2 2 0 002-2v-6a2 2 0 00-2-2H9a2 2 0 00-2 2v6a2 2 0 002 2zm7-5a2 2 0 11-4 0 2 2 0 014 0z", color: _mc.textDark, bg: _mc.bg, bar: _mc.bar, chart: _mc.chart, perPerson: false },
 ];
 
 function formatPrice(amount, currency) {
@@ -127,8 +138,10 @@ export default function BudgetTracker({ tripId, numTravelers = 1, flightOptions,
     misc: budgetItems.length,
   };
 
+  const [confirmDeleteId, setConfirmDeleteId] = useState(null);
+
   async function handleDeleteBudgetItem(id) {
-    if (!confirm("Delete this expense?")) return;
+    setConfirmDeleteId(null);
     await supabase.from("budget_items").delete().eq("id", id);
     loadBudgetItems();
   }
@@ -308,14 +321,20 @@ export default function BudgetTracker({ tripId, numTravelers = 1, flightOptions,
                             <span className="text-sm text-slate-700">{item.name}</span>
                             {item.is_paid && <span className="text-[10px] text-green-600 font-medium">PAID</span>}
                           </div>
-                          <div className="flex items-center gap-2">
+                          <div className="relative flex items-center gap-2">
                             <span className="text-sm font-semibold text-slate-800">{formatPrice(item.amount, item.currency)}</span>
-                            <button onClick={() => handleDeleteBudgetItem(item.id)}
+                            <button onClick={() => setConfirmDeleteId(item.id)}
                               className="text-slate-300 hover:text-red-500 opacity-0 group-hover:opacity-100 transition-opacity">
                               <svg className="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24" strokeWidth={2}>
                                 <path strokeLinecap="round" strokeLinejoin="round" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
                               </svg>
                             </button>
+                            <InlineConfirm
+                              open={confirmDeleteId === item.id}
+                              message="Delete this expense?"
+                              onConfirm={() => handleDeleteBudgetItem(item.id)}
+                              onCancel={() => setConfirmDeleteId(null)}
+                            />
                           </div>
                         </div>
                       );
