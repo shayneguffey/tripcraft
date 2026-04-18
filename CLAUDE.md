@@ -1,1 +1,2 @@
 @AGENTS.md
+@STYLE_GUIDE.md

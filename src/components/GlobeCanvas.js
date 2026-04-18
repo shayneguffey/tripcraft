@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useRef } from "react";
+import { useEffect, useRef, useState } from "react";
 import Script from "next/script";
 
 // Simple geocoding lookup for common destinations
@@ -56,26 +56,265 @@ const GEO_CACHE = {
   "cusco": [-13.52, -71.97], "playa del carmen": [20.63, -87.08],
   "tulum": [20.21, -87.43], "oaxaca": [17.07, -96.73], "guadalajara": [20.67, -103.35],
   "cabo san lucas": [22.89, -109.91], "cabo": [22.89, -109.91],
+  "santo domingo": [18.47, -69.90], "bordeaux": [44.84, -0.58],
+  "lyon": [45.76, 4.84], "toulouse": [43.60, 1.44], "strasbourg": [48.57, 7.75],
+  "naples": [40.85, 14.27], "palermo": [38.12, 13.36], "salzburg": [47.80, 13.04],
+  "tallinn": [59.44, 24.75], "riga": [56.95, 24.11], "vilnius": [54.69, 25.28],
+  "split": [43.51, 16.44], "zagreb": [45.81, 15.98], "belgrade": [44.79, 20.47],
+  "bucharest": [44.43, 26.10], "sofia": [42.70, 23.32], "tbilisi": [41.72, 44.79],
+  "san juan": [18.47, -66.11], "kingston": [18.00, -76.79],
+  "nassau": [25.05, -77.34], "bridgetown": [13.10, -59.61],
+  "bermuda": [32.30, -64.78], "aruba": [12.51, -69.97],
+  "antigua": [17.12, -61.85], "st lucia": [13.91, -60.98],
+  "turks and caicos": [21.69, -71.80],
+  "chiang mai": [18.79, 98.98], "ho chi minh": [10.82, 106.63], "saigon": [10.82, 106.63],
+  "phnom penh": [11.56, 104.92], "luang prabang": [19.89, 102.13],
+  "kathmandu": [27.72, 85.32], "jaipur": [26.92, 75.79], "goa": [15.50, 73.83],
+  "colombo": [6.93, 79.85], "uluru": [-25.34, 131.04], "tasmania": [-42.05, 146.60],
 };
 
-function geocode(destination) {
+// Persistent localStorage caches — survive page refreshes
+const STORAGE_KEY = "tripcraft_geocache";
+const COUNTRY_CACHE_KEY = "tripcraft_countrycache";
+
+function loadPersistedCache() {
+  try {
+    const stored = localStorage.getItem(STORAGE_KEY);
+    return stored ? JSON.parse(stored) : {};
+  } catch { return {}; }
+}
+
+function saveToPersistedCache(key, coords) {
+  try {
+    const cache = loadPersistedCache();
+    cache[key] = coords;
+    localStorage.setItem(STORAGE_KEY, JSON.stringify(cache));
+  } catch {}
+}
+
+// Try: 1) hardcoded cache → 2) localStorage → 3) Nominatim API
+async function geocode(destination) {
   if (!destination) return null;
   const lower = destination.toLowerCase().trim();
+
+  // 1. Check hardcoded cache (instant)
   if (GEO_CACHE[lower]) return GEO_CACHE[lower];
   for (const [key, coords] of Object.entries(GEO_CACHE)) {
     if (lower.includes(key) || key.includes(lower)) return coords;
   }
+
+  // 2. Check persisted localStorage cache
+  const persisted = loadPersistedCache();
+  if (persisted[lower] !== undefined) {
+    if (persisted[lower]) GEO_CACHE[lower] = persisted[lower];
+    return persisted[lower];
+  }
+
+  // 3. Call Nominatim (free, no API key, max 1 req/sec)
+  try {
+    const now = Date.now();
+    if (geocode._lastCall && now - geocode._lastCall < 1100) {
+      await new Promise((r) => setTimeout(r, 1100 - (now - geocode._lastCall)));
+    }
+    geocode._lastCall = Date.now();
+
+    const query = encodeURIComponent(destination);
+    const res = await fetch(
+      `https://nominatim.openstreetmap.org/search?q=${query}&format=json&limit=1`,
+      { headers: { "User-Agent": "TripCraft/1.0" } }
+    );
+    if (res.ok) {
+      const data = await res.json();
+      if (data && data.length > 0) {
+        const coords = [parseFloat(data[0].lat), parseFloat(data[0].lon)];
+        GEO_CACHE[lower] = coords;
+        saveToPersistedCache(lower, coords);
+        console.log(`[Globe] Geocoded "${destination}" → [${coords}] (saved to cache)`);
+        return coords;
+      }
+    }
+  } catch (err) {
+    console.warn(`[Globe] Nominatim lookup failed for "${destination}":`, err.message);
+  }
+
+  // 4. Nothing found — save null so we don't retry
+  saveToPersistedCache(lower, null);
+  console.warn(`[Globe] No coordinates found for "${destination}"`);
   return null;
 }
 
-export default function GlobeCanvas({ trips = [], interactive = true }) {
+// Reverse geocode: [lat, lng] → country name, cached in localStorage
+async function reverseGeocodeCountry(lat, lng, destination) {
+  const key = `${lat.toFixed(2)},${lng.toFixed(2)}`;
+
+  // 1. Check localStorage cache
+  try {
+    const stored = localStorage.getItem(COUNTRY_CACHE_KEY);
+    const cache = stored ? JSON.parse(stored) : {};
+    if (cache[key]) return cache[key];
+  } catch {}
+
+  // 2. Call Nominatim reverse geocoding
+  try {
+    const now = Date.now();
+    if (reverseGeocodeCountry._lastCall && now - reverseGeocodeCountry._lastCall < 1100) {
+      await new Promise((r) => setTimeout(r, 1100 - (now - reverseGeocodeCountry._lastCall)));
+    }
+    reverseGeocodeCountry._lastCall = Date.now();
+
+    const res = await fetch(
+      `https://nominatim.openstreetmap.org/reverse?lat=${lat}&lon=${lng}&format=json&zoom=3`,
+      { headers: { "User-Agent": "TripCraft/1.0" } }
+    );
+    if (res.ok) {
+      const data = await res.json();
+      const country = data?.address?.country;
+      if (country) {
+        // Save to localStorage
+        try {
+          const stored = localStorage.getItem(COUNTRY_CACHE_KEY);
+          const cache = stored ? JSON.parse(stored) : {};
+          cache[key] = country;
+          localStorage.setItem(COUNTRY_CACHE_KEY, JSON.stringify(cache));
+        } catch {}
+        console.log(`[Globe] Country for "${destination}" → ${country}`);
+        return country;
+      }
+    }
+  } catch (err) {
+    console.warn(`[Globe] Reverse geocode failed for [${lat}, ${lng}]:`, err.message);
+  }
+
+  return null;
+}
+
+// Airport IATA code → [lat, lng] for common airports
+const AIRPORT_CACHE = {
+  "SEA": [47.45, -122.31], "PDX": [45.59, -122.60], "LAX": [33.94, -118.41],
+  "SFO": [37.62, -122.38], "JFK": [40.64, -73.78], "EWR": [40.69, -74.17],
+  "LGA": [40.77, -73.87], "ORD": [41.97, -87.91], "ATL": [33.64, -84.43],
+  "DFW": [32.90, -97.04], "DEN": [39.86, -104.67], "MIA": [25.80, -80.29],
+  "BOS": [42.37, -71.02], "IAD": [38.95, -77.46], "DCA": [38.85, -77.04],
+  "PHX": [33.43, -112.01], "LAS": [36.08, -115.15], "MCO": [28.43, -81.31],
+  "MSP": [44.88, -93.22], "DTW": [42.21, -83.35], "CLT": [35.21, -80.94],
+  "SAN": [32.73, -117.19], "HNL": [21.32, -157.92], "ANC": [61.17, -150.00],
+  "AUS": [30.19, -97.67], "BNA": [36.12, -86.68], "MSY": [29.99, -90.26],
+  "SLC": [40.79, -111.98], "IAH": [29.98, -95.34], "TPA": [27.98, -82.53],
+  "PHL": [39.87, -75.24], "BWI": [39.18, -76.67], "RDU": [35.88, -78.79],
+  "CHS": [32.90, -80.04], "SAV": [32.13, -81.20],
+  "LHR": [51.47, -0.46], "CDG": [49.01, 2.55], "FCO": [41.80, 12.24],
+  "BCN": [41.30, 2.08], "MAD": [40.47, -3.57], "AMS": [52.31, 4.77],
+  "FRA": [50.03, 8.57], "MUC": [48.35, 11.79], "ZRH": [47.46, 8.55],
+  "LIS": [38.77, -9.13], "ATH": [37.94, 23.94], "IST": [41.26, 28.74],
+  "DUB": [53.42, -6.27], "EDI": [55.95, -3.37], "CPH": [55.62, 12.66],
+  "ARN": [59.65, 17.94], "OSL": [60.19, 11.10], "HEL": [60.32, 24.97],
+  "VCE": [45.50, 12.35], "MXP": [45.63, 8.72], "NCE": [43.66, 7.22],
+  "BRU": [50.90, 4.48], "VIE": [48.11, 16.57], "PRG": [50.10, 14.26],
+  "BUD": [47.44, 19.26], "WAW": [52.17, 20.97], "KRK": [50.08, 19.78],
+  "NRT": [35.76, 140.39], "HND": [35.55, 139.78], "KIX": [34.43, 135.23],
+  "ICN": [37.46, 126.44], "PEK": [40.08, 116.58], "PVG": [31.14, 121.81],
+  "HKG": [22.31, 113.91], "TPE": [25.08, 121.23], "SIN": [1.36, 103.99],
+  "BKK": [13.69, 100.75], "HAN": [21.22, 105.81], "KUL": [2.75, 101.71],
+  "MNL": [14.51, 121.02], "DXB": [25.25, 55.36], "DOH": [25.26, 51.61],
+  "CAI": [30.12, 31.41], "JNB": [26.14, 28.25], "CPT": [-33.97, 18.60],
+  "NBO": [-1.32, 36.93], "DEL": [28.56, 77.10], "BOM": [19.09, 72.87],
+  "SYD": [-33.95, 151.18], "MEL": [-37.67, 144.84], "AKL": [-37.01, 174.78],
+  "ZQN": [-45.02, 168.74],
+  "MEX": [19.44, -99.07], "CUN": [21.04, -86.87], "PVR": [20.68, -105.25],
+  "GDL": [20.52, -103.31], "SJO": [9.99, -84.21], "PTY": [9.07, -79.38],
+  "BOG": [4.70, -74.15], "CTG": [10.44, -75.51], "MDE": [6.16, -75.43],
+  "LIM": [-12.02, -77.11], "CUZ": [-13.54, -71.94], "EZE": [-34.82, -58.54],
+  "GIG": [-22.81, -43.25], "GRU": [-23.43, -46.47],
+  "SDQ": [18.43, -69.67], "PUJ": [18.57, -68.36], "SJU": [18.44, -66.00],
+  "KIN": [17.94, -76.79], "NAS": [25.04, -77.47], "HAV": [22.99, -82.41],
+  "BGI": [13.07, -59.49], "AUA": [12.50, -70.02],
+  "KEF": [63.99, -22.62], "BOD": [44.83, -0.72],
+  "DBV": [42.56, 18.27], "SPU": [43.54, 16.30],
+};
+
+const AIRPORT_CACHE_KEY = "tripcraft_airport_geocache";
+
+async function geocodeAirport(code) {
+  if (!code || code.length !== 3) return null;
+  const upper = code.toUpperCase();
+
+  // 1. Check hardcoded cache
+  if (AIRPORT_CACHE[upper]) return AIRPORT_CACHE[upper];
+
+  // 2. Check localStorage
+  try {
+    const stored = JSON.parse(localStorage.getItem(AIRPORT_CACHE_KEY) || "{}");
+    if (stored[upper]) return stored[upper];
+  } catch {}
+
+  // 3. Query Nominatim for "<CODE> airport"
+  try {
+    await new Promise((r) => setTimeout(r, 1100)); // rate limit
+    const res = await fetch(
+      `https://nominatim.openstreetmap.org/search?q=${upper}+airport&format=json&limit=1`,
+      { headers: { "User-Agent": "TripCraft/1.0" } }
+    );
+    const data = await res.json();
+    if (data && data.length > 0) {
+      const coords = [parseFloat(data[0].lat), parseFloat(data[0].lon)];
+      // Save to localStorage
+      try {
+        const stored = JSON.parse(localStorage.getItem(AIRPORT_CACHE_KEY) || "{}");
+        stored[upper] = coords;
+        localStorage.setItem(AIRPORT_CACHE_KEY, JSON.stringify(stored));
+      } catch {}
+      return coords;
+    }
+  } catch (err) {
+    console.warn(`[Globe] Airport geocode failed for ${upper}:`, err.message);
+  }
+  return null;
+}
+
+export default function GlobeCanvas({ trips = [], flightLegs = [], interactive = true }) {
   const containerRef = useRef(null);
   const globeRef = useRef(null);
   const threeLoadedRef = useRef(false);
   const tripsRef = useRef(trips);
   tripsRef.current = trips;
+  const flightLegsRef = useRef(flightLegs);
+  flightLegsRef.current = flightLegs;
   const interactiveRef = useRef(interactive);
   interactiveRef.current = interactive;
+  const [countriesVisited, setCountriesVisited] = useState([]);
+  const [showCountryList, setShowCountryList] = useState(false);
+  const [showFlightPaths, setShowFlightPaths] = useState(true);
+  const showFlightPathsRef = useRef(true);
+
+  // Build unique countries list for "traveled" trips using reverse geocoding
+  useEffect(() => {
+    async function buildCountryList() {
+      const traveled = trips.filter((t) => t.status === "traveled" && t.destination);
+      if (traveled.length === 0) { setCountriesVisited([]); return; }
+
+      // Map: country name → earliest travel date
+      const countryMap = {};
+      for (const trip of traveled) {
+        const coords = await geocode(trip.destination);
+        if (coords) {
+          const country = await reverseGeocodeCountry(coords[0], coords[1], trip.destination);
+          if (country) {
+            const tripDate = trip.start_date || trip.created_at;
+            if (!countryMap[country] || (tripDate && tripDate < countryMap[country])) {
+              countryMap[country] = tripDate;
+            }
+          }
+        }
+      }
+
+      // Convert to sorted array
+      const list = Object.entries(countryMap)
+        .map(([name, date]) => ({ name, date }))
+        .sort((a, b) => a.name.localeCompare(b.name));
+      setCountriesVisited(list);
+    }
+    buildCountryList();
+  }, [trips]);
 
   function handleThreeLoaded() {
     threeLoadedRef.current = true;
@@ -89,10 +328,18 @@ export default function GlobeCanvas({ trips = [], interactive = true }) {
     }
   }, []);
 
-  // Re-add pins when trips change
+  // Re-add pins when trips or flight legs change
   useEffect(() => {
     if (globeRef.current) addPins();
-  }, [trips]);
+  }, [trips, flightLegs]);
+
+  // Toggle flight path arc visibility
+  useEffect(() => {
+    showFlightPathsRef.current = showFlightPaths;
+    if (!globeRef.current) return;
+    const { globe } = globeRef.current;
+    globe.children.filter((c) => c._isArc).forEach((c) => { c.visible = showFlightPaths; });
+  }, [showFlightPaths]);
 
   function initGlobe() {
     if (!threeLoadedRef.current || !containerRef.current || globeRef.current) return;
@@ -115,34 +362,26 @@ export default function GlobeCanvas({ trips = [], interactive = true }) {
     renderer.setPixelRatio(window.devicePixelRatio);
     container.appendChild(renderer.domElement);
 
-    // Globe
+    // Globe — custom posterized texture
     const globeGeom = new THREE.SphereGeometry(1, 64, 64);
     const textureLoader = new THREE.TextureLoader();
-    const earthTexture = textureLoader.load(
-      "https://unpkg.com/three-globe@2.24.4/example/img/earth-blue-marble.jpg"
-    );
-    const bumpTexture = textureLoader.load(
-      "https://unpkg.com/three-globe@2.24.4/example/img/earth-topology.png"
-    );
+    const earthTexture = textureLoader.load("/globe posterized lores.png");
     const globeMat = new THREE.MeshPhongMaterial({
       map: earthTexture,
-      bumpMap: bumpTexture,
-      bumpScale: 0.04,
-      color: new THREE.Color(0xd6c7ad),
-      emissive: new THREE.Color(0x150d04),
-      specular: new THREE.Color(0x3d3025),
-      shininess: 8,
+      bumpScale: 0,
+      specular: new THREE.Color(0x222222),
+      shininess: 5,
     });
     const globe = new THREE.Mesh(globeGeom, globeMat);
     scene.add(globe);
 
-    // Lights — desaturated 20% to match card view intensity
-    const ambient = new THREE.AmbientLight(0xc2ab8c, 0.7);
+    // Lights — warm, even lighting to show the texture faithfully
+    const ambient = new THREE.AmbientLight(0xfff5e8, 0.8);
     scene.add(ambient);
-    const dir = new THREE.DirectionalLight(0xf5e8d8, 0.9);
+    const dir = new THREE.DirectionalLight(0xfff0e0, 0.6);
     dir.position.set(5, 3, 5);
     scene.add(dir);
-    const fill = new THREE.DirectionalLight(0xa08f74, 0.25);
+    const fill = new THREE.DirectionalLight(0xe8dcc8, 0.3);
     fill.position.set(-5, -2, -3);
     scene.add(fill);
 
@@ -258,7 +497,7 @@ export default function GlobeCanvas({ trips = [], interactive = true }) {
     };
   }
 
-  function addPins() {
+  async function addPins() {
     if (!globeRef.current) return;
     const { globe, THREE } = globeRef.current;
     const trips = tripsRef.current;
@@ -343,8 +582,15 @@ export default function GlobeCanvas({ trips = [], interactive = true }) {
     globe.children.filter((c) => c._isArc).forEach((c) => globe.remove(c));
 
     const pins = [];
+    // Geocode all trips — sequential for API rate limits (Nominatim: 1 req/sec)
+    // Cached/hardcoded lookups are instant, only API calls are slow
+    const geocodeResults = [];
     for (const trip of trips) {
-      const coords = geocode(trip.destination);
+      geocodeResults.push(await geocode(trip.destination));
+    }
+    for (let ti = 0; ti < trips.length; ti++) {
+      const trip = trips[ti];
+      const coords = geocodeResults[ti];
       if (!coords) continue;
 
       const color = STATUS_COLORS[trip.status] || STATUS_COLORS.planning;
@@ -375,20 +621,51 @@ export default function GlobeCanvas({ trips = [], interactive = true }) {
       pins.push({ mesh: pin, hitbox, label, trip, coords, color });
     }
 
-    // Arcs between traveled trips
-    const traveled = pins.filter((p) => p.trip.status === "traveled");
-    for (let i = 0; i < traveled.length - 1; i++) {
-      const a = latLngToVec3(traveled[i].coords[0], traveled[i].coords[1], 1.0);
-      const b = latLngToVec3(traveled[i + 1].coords[0], traveled[i + 1].coords[1], 1.0);
-      const mid = a.clone().add(b).multiplyScalar(0.5).normalize().multiplyScalar(1.3);
-      const curve = new THREE.QuadraticBezierCurve3(a, mid, b);
-      const curveGeom = new THREE.TubeGeometry(curve, 32, 0.004, 8, false);
-      const curveMat = new THREE.MeshBasicMaterial({
-        color: 0x3c78b4, transparent: true, opacity: 0.4,
-      });
-      const arcMesh = new THREE.Mesh(curveGeom, curveMat);
-      arcMesh._isArc = true;
-      globe.add(arcMesh);
+    // Flight path arcs from real flight legs data
+    const legs = flightLegsRef.current || [];
+    if (legs.length > 0) {
+      // Deduplicate routes (same departure→arrival pair)
+      const routeSet = new Set();
+      const uniqueLegs = [];
+      for (const leg of legs) {
+        if (!leg.departure_airport || !leg.arrival_airport) continue;
+        const key = `${leg.departure_airport}-${leg.arrival_airport}`;
+        if (!routeSet.has(key)) {
+          routeSet.add(key);
+          uniqueLegs.push(leg);
+        }
+      }
+
+      // Geocode all airports (sequential for rate limits)
+      const airportCodes = new Set();
+      uniqueLegs.forEach((l) => { airportCodes.add(l.departure_airport); airportCodes.add(l.arrival_airport); });
+      const airportCoords = {};
+      for (const code of airportCodes) {
+        airportCoords[code] = await geocodeAirport(code);
+      }
+
+      // Draw arcs for each flight leg
+      for (const leg of uniqueLegs) {
+        const depCoords = airportCoords[leg.departure_airport];
+        const arrCoords = airportCoords[leg.arrival_airport];
+        if (!depCoords || !arrCoords) continue;
+
+        const a = latLngToVec3(depCoords[0], depCoords[1], 1.0);
+        const b = latLngToVec3(arrCoords[0], arrCoords[1], 1.0);
+        // Arc height proportional to distance
+        const dist = a.distanceTo(b);
+        const arcHeight = 1.0 + Math.min(dist * 0.35, 0.4);
+        const mid = a.clone().add(b).multiplyScalar(0.5).normalize().multiplyScalar(arcHeight);
+        const curve = new THREE.QuadraticBezierCurve3(a, mid, b);
+        const curveGeom = new THREE.TubeGeometry(curve, 48, 0.003, 8, false);
+        const curveMat = new THREE.MeshBasicMaterial({
+          color: 0x3c78b4, transparent: true, opacity: 0.5,
+        });
+        const arcMesh = new THREE.Mesh(curveGeom, curveMat);
+        arcMesh._isArc = true;
+        arcMesh.visible = showFlightPathsRef.current;
+        globe.add(arcMesh);
+      }
     }
 
     globeRef.current.pins = pins;
@@ -402,29 +679,110 @@ export default function GlobeCanvas({ trips = [], interactive = true }) {
       />
       <div ref={containerRef} className="w-full h-full" style={{ pointerEvents: interactive ? "auto" : "none", cursor: interactive ? "grab" : "default" }} />
 
-      {/* Status legend — bottom left */}
+      {/* Countries visited counter + Status legend — bottom left */}
       {interactive && (
-        <div
-          className="fixed bottom-8 left-6 z-30 flex flex-col gap-2 px-4 py-3 rounded-xl"
-          style={{
-            background: "rgba(30, 22, 12, 0.75)",
-            backdropFilter: "blur(8px)",
-            border: "1px solid rgba(212, 165, 116, 0.2)",
-          }}
-        >
-          {[
-            { label: "Planning", color: "#4a965a" },
-            { label: "Traveled", color: "#3c78b4" },
-            { label: "Wish", color: "#d2aa32" },
-          ].map((item) => (
-            <div key={item.label} className="flex items-center gap-2">
-              <span
-                className="inline-block w-3 h-3 rounded-full"
-                style={{ backgroundColor: item.color }}
-              />
-              <span className="text-xs text-white/80 font-medium">{item.label}</span>
+        <div className="fixed bottom-8 left-6 z-30 flex flex-col gap-3">
+          {/* Countries visited — clickable */}
+          <div className="relative">
+            <div
+              className="px-4 py-3 rounded-xl text-center cursor-pointer hover:brightness-110 transition-all"
+              style={{
+                background: "rgba(30, 22, 12, 0.75)",
+                backdropFilter: "blur(8px)",
+                border: "1px solid rgba(212, 165, 116, 0.2)",
+              }}
+              onClick={() => setShowCountryList(!showCountryList)}
+            >
+              <div className="text-2xl font-bold text-white/90">
+                {countriesVisited.length}
+              </div>
+              <div className="text-[10px] text-white/50 font-medium tracking-wide uppercase">Country Count</div>
             </div>
-          ))}
+
+            {/* Country list panel */}
+            {showCountryList && (
+              <>
+                <div className="fixed inset-0 z-30" onClick={() => setShowCountryList(false)} />
+                <div
+                  className="absolute bottom-full left-0 mb-2 z-40 rounded-xl"
+                  style={{
+                    background: "rgba(30, 22, 12, 0.75)",
+                    backdropFilter: "blur(8px)",
+                    border: "1px solid rgba(212, 165, 116, 0.2)",
+                    minWidth: "200px",
+                  }}
+                >
+                  {countriesVisited.length === 0 ? (
+                    <div className="px-4 py-3 text-xs text-white/40">No traveled trips yet</div>
+                  ) : (
+                    <div className="py-2">
+                      {countriesVisited.map((c) => (
+                        <div key={c.name} className="flex items-center gap-2 px-3 py-1.5">
+                          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor" className="w-3.5 h-3.5 text-[#3c78b4] flex-shrink-0">
+                            <path fillRule="evenodd" d="M10 18a8 8 0 1 0 0-16 8 8 0 0 0 0 16Zm3.857-9.809a.75.75 0 0 0-1.214-.882l-3.483 4.79-1.88-1.88a.75.75 0 1 0-1.06 1.061l2.5 2.5a.75.75 0 0 0 1.137-.089l4-5.5Z" clipRule="evenodd" />
+                          </svg>
+                          <span className="text-sm text-white/90 font-medium">{c.name}</span>
+                          <span className="text-[10px] text-white/40 ml-auto whitespace-nowrap">
+                            {c.date ? new Date(c.date + (c.date.includes("T") ? "" : "T00:00:00")).toLocaleDateString("en-US", { month: "short", year: "numeric" }) : ""}
+                          </span>
+                        </div>
+                      ))}
+                    </div>
+                  )}
+                </div>
+              </>
+            )}
+          </div>
+
+          {/* Flight paths toggle */}
+          <div
+            className="flex items-center gap-2.5 px-4 py-2.5 rounded-xl cursor-pointer select-none hover:brightness-110 transition-all"
+            style={{
+              background: "rgba(30, 22, 12, 0.75)",
+              backdropFilter: "blur(8px)",
+              border: "1px solid rgba(212, 165, 116, 0.2)",
+            }}
+            onClick={() => setShowFlightPaths(!showFlightPaths)}
+          >
+            <div
+              className="w-4 h-4 rounded flex items-center justify-center flex-shrink-0"
+              style={{
+                border: "1.5px solid rgba(212, 165, 116, 0.5)",
+                background: showFlightPaths ? "rgba(60, 120, 180, 0.6)" : "transparent",
+              }}
+            >
+              {showFlightPaths && (
+                <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 16 16" fill="currentColor" className="w-3 h-3 text-white">
+                  <path fillRule="evenodd" d="M12.416 3.376a.75.75 0 0 1 .208 1.04l-5 7.5a.75.75 0 0 1-1.154.114l-3-3a.75.75 0 0 1 1.06-1.06l2.353 2.353 4.493-6.74a.75.75 0 0 1 1.04-.207Z" clipRule="evenodd" />
+                </svg>
+              )}
+            </div>
+            <span className="text-xs text-white/80 font-medium">Flight Paths</span>
+          </div>
+
+          {/* Status legend */}
+          <div
+            className="flex flex-col gap-2 px-4 py-3 rounded-xl"
+            style={{
+              background: "rgba(30, 22, 12, 0.75)",
+              backdropFilter: "blur(8px)",
+              border: "1px solid rgba(212, 165, 116, 0.2)",
+            }}
+          >
+            {[
+              { label: "Planning", color: "#4a965a" },
+              { label: "Traveled", color: "#3c78b4" },
+              { label: "Wish", color: "#d2aa32" },
+            ].map((item) => (
+              <div key={item.label} className="flex items-center gap-2">
+                <span
+                  className="inline-block w-3 h-3 rounded-full"
+                  style={{ backgroundColor: item.color }}
+                />
+                <span className="text-xs text-white/80 font-medium">{item.label}</span>
+              </div>
+            ))}
+          </div>
         </div>
       )}
     </>

@@ -13,6 +13,7 @@ import BudgetTracker from "@/components/BudgetTracker";
 import PlanningChecklist from "@/components/PlanningChecklist";
 import PackingList from "@/components/PackingList";
 import TravelDocuments from "@/components/TravelDocuments";
+import MapPatternBg from "@/components/MapPatternBg";
 import TripMap from "@/components/TripMap";
 import TripCollaborators from "@/components/TripCollaborators";
 
@@ -282,8 +283,12 @@ export default function TripDetailPage() {
 
   if (loading) {
     return (
-      <div className="flex min-h-screen items-center justify-center bg-gradient-to-b from-sky-50 to-white">
-        <p className="text-slate-500">Loading trip...</p>
+      <div className="flex min-h-screen items-center justify-center relative" style={{ background: "linear-gradient(to bottom, rgba(210,195,172,0.7) 0%, rgba(222,210,190,0.6) 50%, rgba(210,195,172,0.7) 100%)" }}>
+        <MapPatternBg tileSize={280} opacity={1} />
+        <div className="text-center relative z-10">
+          <div className="w-8 h-8 mx-auto mb-4 border-[3px] border-stone-400 border-t-[#da7b4a] rounded-full animate-spin" />
+          <p className="text-stone-500 text-sm font-medium tracking-wide">Loading trip...</p>
+        </div>
       </div>
     );
   }
@@ -327,26 +332,34 @@ export default function TripDetailPage() {
 
   return (
     <div
-      className="min-h-screen bg-gradient-to-b from-sky-50 to-white"
+      className="min-h-screen relative"
       onMouseUp={handleMouseUp}
     >
-      {/* Header */}
-      <header className="w-full border-b border-sky-100 bg-white/80 backdrop-blur-sm">
-        <div className="max-w-6xl mx-auto px-6 py-4 flex items-center justify-between">
-          <Link href="/" className="flex items-center gap-2">
-            <span className="text-2xl">✈️</span>
-            <span className="text-xl font-bold text-sky-900">TripCraft</span>
+      {/* Parchment gradient base */}
+      <div className="fixed inset-0" style={{ background: "linear-gradient(to bottom, rgba(210,195,172,0.7) 0%, rgba(222,210,190,0.6) 50%, rgba(210,195,172,0.7) 100%)" }} />
+      <MapPatternBg tileSize={280} opacity={1} />
+
+      <main className="relative z-10 max-w-6xl mx-auto px-6 py-4">
+        {/* Logo + Back button */}
+        <div className="flex items-center justify-between mb-4">
+          <Link href="/" className="flex items-center">
+            <img src="/TRIPCRAFTLOGO.png" alt="TripCraft" style={{ height: 120, width: "auto" }} />
           </Link>
           <Link
             href="/trips"
-            className="text-sm text-sky-700 hover:text-sky-900"
+            className="flex items-center gap-2 px-4 py-1.5 rounded-lg text-sm font-semibold text-stone-600 transition-all hover:ring-2 hover:ring-[#da7b4a]/40"
+            style={{
+              background: "rgba(255,255,255,0.45)",
+              border: "1px solid rgba(180, 165, 140, 0.4)",
+            }}
           >
-            ← Back to Trips
+            <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 16 16" fill="currentColor" className="w-3.5 h-3.5">
+              <path fillRule="evenodd" d="M9.78 4.22a.75.75 0 0 1 0 1.06L7.06 8l2.72 2.72a.75.75 0 1 1-1.06 1.06L5.47 8.53a.75.75 0 0 1 0-1.06l3.25-3.25a.75.75 0 0 1 1.06 0Z" clipRule="evenodd" />
+            </svg>
+            Back to Trips
           </Link>
         </div>
-      </header>
 
-      <main className="max-w-6xl mx-auto px-6 py-8">
         {/* Trip Header with inline editing */}
         <div className="mb-8 space-y-2">
           {/* Title */}

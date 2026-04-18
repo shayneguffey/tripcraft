@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect, useRef } from "react";
+import MapPatternBg from "@/components/MapPatternBg";
 
 /**
  * FlightPathLoader — a 2D animated flight path that draws across the screen.
@@ -139,18 +140,19 @@ export default function FlightPathLoader({ text = "Preparing your trips..." }) {
 
   return (
     <div
-      className="flex flex-col min-h-screen items-center justify-center"
+      className="flex flex-col min-h-screen items-center justify-center relative"
       style={{
         background:
-          "radial-gradient(ellipse at 50% 45%, rgba(222,210,190,0.95) 0%, rgba(195,178,155,0.98) 55%, rgba(160,140,115,1) 100%)",
+          "linear-gradient(to bottom, rgba(210,195,172,0.7) 0%, rgba(222,210,190,0.6) 50%, rgba(210,195,172,0.7) 100%)",
       }}
     >
+      <MapPatternBg tileSize={280} opacity={1} />
       <canvas
         ref={canvasRef}
-        className="w-full max-w-xl"
+        className="w-full max-w-xl relative z-10"
         style={{ height: 160 }}
       />
-      <p className="text-stone-600 text-sm mt-4 tracking-wide">{text}</p>
+      <p className="text-stone-600 text-sm mt-4 tracking-wide relative z-10">{text}</p>
     </div>
   );
 }

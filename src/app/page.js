@@ -5,6 +5,7 @@ import { supabase } from "@/lib/supabase";
 import { useRouter } from "next/navigation";
 import Link from "next/link";
 import HomeGlobeAnimated from "@/components/HomeGlobeAnimated";
+import MapPatternBg from "@/components/MapPatternBg";
 
 export default function Home() {
   const [showAuth, setShowAuth] = useState(false);
@@ -147,9 +148,12 @@ export default function Home() {
         className="absolute inset-0"
         style={{
           background:
-            "radial-gradient(ellipse at 50% 45%, rgba(222,210,190,0.95) 0%, rgba(195,178,155,0.98) 55%, rgba(160,140,115,1) 100%)",
+            "linear-gradient(to bottom, rgba(210,195,172,0.7) 0%, rgba(222,210,190,0.6) 50%, rgba(210,195,172,0.7) 100%)",
         }}
       />
+
+      {/* Map pattern overlay */}
+      <MapPatternBg tileSize={280} opacity={1} />
 
       {/* Globe — fills the viewport, centered */}
       <HomeGlobeAnimated />

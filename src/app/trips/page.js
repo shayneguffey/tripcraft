@@ -210,12 +210,11 @@ const STATUS_EDGE_COLORS = {
   wish: "rgba(210,170,50,1)",
 };
 
-function TripCard({ trip, index, imageOptions, onCycleImage, onLoadImageOptions, onStatusChange, onArchive, onFieldUpdate }) {
+function TripCard({ trip, index, onRegenerate, onStatusChange, onArchive, onFieldUpdate }) {
   const [hovered, setHovered] = useState(false);
   const hasImage = !!trip.cover_image;
   const gradient = getGradient(index);
-  const hasMultipleImages = imageOptions && imageOptions.images && imageOptions.images.length > 1;
-  const canCycleImages = hasImage && trip.destination;
+  const canRegenerate = hasImage && trip.destination;
   const status = trip.status || "planning";
   const edgeColor = STATUS_EDGE_COLORS[status] || STATUS_EDGE_COLORS.planning;
 
@@ -228,52 +227,57 @@ function TripCard({ trip, index, imageOptions, onCycleImage, onLoadImageOptions,
       {/* Card body — clickable link */}
       <Link href={`/trips/${trip.id}`} className="block">
         <div
-          className="relative rounded-2xl overflow-hidden aspect-[3/4] flex flex-col shadow-sm hover:shadow-xl transition-all duration-300"
+          className="relative rounded-2xl overflow-hidden aspect-[3/4] shadow-sm hover:shadow-xl transition-all duration-300"
           style={{
             borderBottom: `8px solid ${edgeColor}`,
             transition: "border-color 0.4s, box-shadow 0.3s",
           }}
         >
-          {/* Image area — top ~72% of card */}
-          <div className="relative flex-1 overflow-hidden">
-            {hasImage ? (
-              <div
-                className="absolute inset-0 bg-cover bg-center"
-                style={{
-                  backgroundImage: `url(${trip.cover_image})`,
-                  filter: hovered
-                    ? "sepia(0.08) saturate(1.18) contrast(1.05) brightness(1.12) hue-rotate(-2deg)"
-                    : "sepia(0.15) saturate(1.1) contrast(1.02) brightness(1.08) hue-rotate(-3deg)",
-                  transition: "filter 0.4s, transform 0.5s",
-                  transform: hovered ? "scale(1.05)" : "scale(1)",
-                }}
-              />
-            ) : (
-              <div
-                className={`absolute inset-0 bg-gradient-to-br ${gradient}`}
-                style={{
-                  transition: "transform 0.5s",
-                  transform: hovered ? "scale(1.05)" : "scale(1)",
-                }}
-              />
-            )}
-
-            {/* Short gradient fade into the info area */}
+          {/* Full-bleed image layer — overscaled to crop AI-generated borders */}
+          {hasImage ? (
             <div
-              className="absolute bottom-0 left-0 right-0 h-12"
-              style={{ background: "linear-gradient(to top, #EEEEEE 0%, transparent 100%)" }}
+              className="absolute bg-cover"
+              style={{
+                inset: "-5%",
+                backgroundImage: `url(${trip.cover_image})`,
+                backgroundPosition: "center 20%",
+                filter: hovered
+                  ? "sepia(0.08) saturate(1.18) contrast(1.05) brightness(1.12) hue-rotate(-2deg)"
+                  : "sepia(0.15) saturate(1.1) contrast(1.02) brightness(1.08) hue-rotate(-3deg)",
+                transition: "filter 0.4s, transform 0.5s",
+                transform: hovered ? "scale(1.05)" : "scale(1)",
+              }}
             />
+          ) : (
+            <div
+              className={`absolute inset-0 bg-gradient-to-br ${gradient}`}
+              style={{
+                transition: "transform 0.5s",
+                transform: hovered ? "scale(1.05)" : "scale(1)",
+              }}
+            />
+          )}
 
-            {/* Shared badge */}
-            {trip._isCollaborator && (
-              <div className="absolute top-3 left-3 z-10">
-                <span className="text-xs px-2 py-0.5 rounded-full bg-white/90 text-violet-700 font-medium backdrop-blur-sm">Shared</span>
-              </div>
-            )}
-          </div>
+          {/* Generating poster overlay */}
+          {trip._generating && (
+            <div className="absolute inset-0 z-10 flex flex-col items-center justify-center bg-stone-200/80 backdrop-blur-sm">
+              <div className="w-8 h-8 border-3 border-stone-400 border-t-[#da7b4a] rounded-full animate-spin mb-3" />
+              <span className="text-xs font-medium text-stone-600 tracking-wide">Creating poster…</span>
+            </div>
+          )}
 
-          {/* Info area — fixed height, solid light background */}
-          <div className="relative z-10 px-4 py-3 pr-[5.5rem]" style={{ backgroundColor: "#EEEEEE", height: 80, flexShrink: 0 }}>
+          {/* Shared badge */}
+          {trip._isCollaborator && (
+            <div className="absolute top-3 left-3 z-10">
+              <span className="text-xs px-2 py-0.5 rounded-full bg-white/90 text-violet-700 font-medium backdrop-blur-sm">Shared</span>
+            </div>
+          )}
+
+          {/* Info area — pinned to bottom, overlays the image */}
+          <div className="absolute bottom-0 left-0 right-0 z-10">
+            {/* Gradient fade from image to info */}
+            <div className="h-10" style={{ background: "linear-gradient(to top, #EEEEEE 0%, transparent 100%)" }} />
+            <div className="px-4 py-3 pr-[5.5rem]" style={{ backgroundColor: "#EEEEEE" }}>
             <InlineEdit
               value={trip.destination}
               onSave={(v) => onFieldUpdate(trip.id, "destination", v)}
@@ -291,6 +295,7 @@ function TripCard({ trip, index, imageOptions, onCycleImage, onLoadImageOptions,
                 {formatTripDates(trip.start_date, trip.end_date)}
               </p>
             )}
+            </div>
           </div>
         </div>
       </Link>
@@ -318,22 +323,17 @@ function TripCard({ trip, index, imageOptions, onCycleImage, onLoadImageOptions,
         )}
       </div>
 
-      {/* Image cycling arrows — hover only, outside Link */}
-      {canCycleImages && hovered && (
-        <>
-          <button
-            onClick={(e) => { e.preventDefault(); e.stopPropagation(); onCycleImage(-1); }}
-            className="absolute left-2 top-[35%] -translate-y-1/2 z-20 w-7 h-7 rounded-full bg-black/50 hover:bg-black/70 text-white flex items-center justify-center transition-colors backdrop-blur-sm"
-          >
-            <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 16 16" fill="currentColor" className="w-3.5 h-3.5"><path fillRule="evenodd" d="M9.78 4.22a.75.75 0 0 1 0 1.06L7.06 8l2.72 2.72a.75.75 0 1 1-1.06 1.06L5.47 8.53a.75.75 0 0 1 0-1.06l3.25-3.25a.75.75 0 0 1 1.06 0Z" clipRule="evenodd" /></svg>
-          </button>
-          <button
-            onClick={(e) => { e.preventDefault(); e.stopPropagation(); onCycleImage(1); }}
-            className="absolute right-2 top-[35%] -translate-y-1/2 z-20 w-7 h-7 rounded-full bg-black/50 hover:bg-black/70 text-white flex items-center justify-center transition-colors backdrop-blur-sm"
-          >
-            <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 16 16" fill="currentColor" className="w-3.5 h-3.5"><path fillRule="evenodd" d="M6.22 4.22a.75.75 0 0 1 1.06 0l3.25 3.25a.75.75 0 0 1 0 1.06l-3.25 3.25a.75.75 0 0 1-1.06-1.06L8.94 8 6.22 5.28a.75.75 0 0 1 0-1.06Z" clipRule="evenodd" /></svg>
-          </button>
-        </>
+      {/* Regenerate image button — hover only, right side */}
+      {canRegenerate && hovered && !trip._generating && (
+        <button
+          onClick={(e) => { e.preventDefault(); e.stopPropagation(); onRegenerate(trip.id, trip.destination); }}
+          title="Regenerate poster image"
+          className="absolute right-2 top-[35%] -translate-y-1/2 z-20 w-7 h-7 rounded-full bg-black/50 hover:bg-black/70 text-white flex items-center justify-center transition-colors backdrop-blur-sm"
+        >
+          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor" className="w-3.5 h-3.5">
+            <path fillRule="evenodd" d="M15.312 11.424a5.5 5.5 0 0 1-9.201 2.466l-.312-.311h2.451a.75.75 0 0 0 0-1.5H4.5a.75.75 0 0 0-.75.75v3.75a.75.75 0 0 0 1.5 0v-2.127l.209.209a7 7 0 0 0 11.713-3.138.75.75 0 0 0-1.46-.349Zm-10.624-2.85a5.5 5.5 0 0 1 9.201-2.465l.312.31H12.75a.75.75 0 0 0 0 1.5h3.75a.75.75 0 0 0 .75-.75V3.42a.75.75 0 0 0-1.5 0v2.127l-.209-.209A7 7 0 0 0 3.828 8.476a.75.75 0 1 0 1.46.349l-.6.749Z" clipRule="evenodd" />
+          </svg>
+        </button>
       )}
     </div>
   );
@@ -343,6 +343,8 @@ function TripCard({ trip, index, imageOptions, onCycleImage, onLoadImageOptions,
 export default function DashboardPage() {
   const [user, setUser] = useState(null);
   const [trips, setTrips] = useState([]);
+  const [allTripsForGlobe, setAllTripsForGlobe] = useState([]);
+  const [flightLegsForGlobe, setFlightLegsForGlobe] = useState([]);
   const [loading, setLoading] = useState(true);
   const [showAccount, setShowAccount] = useState(false);
   const [view, setView] = useState("cards"); // "cards" or "globe"
@@ -363,27 +365,81 @@ export default function DashboardPage() {
   const titleRef = useRef(null);
   const router = useRouter();
 
-  // Rotating backgrounds for the new trip card
-  const NEW_CARD_DESTINATIONS = [
-    "Santorini Greece", "Kyoto Japan", "Machu Picchu Peru", "Paris France",
-    "Bali Indonesia", "Iceland Northern Lights", "Amalfi Coast Italy",
-    "Maldives Beach", "Swiss Alps", "Morocco Marrakech", "New Zealand Mountains",
-    "Havana Cuba", "Patagonia Argentina", "Dubrovnik Croatia",
-  ];
+  // Rotating backgrounds for the new trip card — uses generated poster images
   const [newCardImages, setNewCardImages] = useState([]);
 
   useEffect(() => {
-    // Fetch a batch of destination images for the new card background
+    // Build image bank URLs and verify which ones actually exist
     async function loadNewCardBg() {
-      const dest = NEW_CARD_DESTINATIONS[Math.floor(Math.random() * NEW_CARD_DESTINATIONS.length)];
-      try {
-        const res = await fetch(`/api/cover-image?destination=${encodeURIComponent(dest)}&count=10`);
-        const data = await res.json();
-        if (data.images && data.images.length > 0) setNewCardImages(data.images);
-      } catch (err) {}
+      const bucketUrl = `${process.env.NEXT_PUBLIC_SUPABASE_URL}/storage/v1/object/public/trip-posters/shared`;
+      const BANK_DESTINATIONS = [
+        "Paris France","Rome Italy","Barcelona Spain","London England",
+        "Amsterdam Netherlands","Santorini Greece","Athens Greece",
+        "Prague Czech Republic","Vienna Austria","Dubrovnik Croatia",
+        "Amalfi Coast Italy","Edinburgh Scotland","Lisbon Portugal",
+        "Swiss Alps Switzerland","Bruges Belgium","Budapest Hungary",
+        "Cinque Terre Italy","Istanbul Turkey","Reykjavik Iceland",
+        "Copenhagen Denmark","Tokyo Japan","Kyoto Japan","Bali Indonesia",
+        "Bangkok Thailand","Hanoi Vietnam","Ha Long Bay Vietnam",
+        "Angkor Wat Cambodia","Singapore","Hong Kong","Seoul South Korea",
+        "Kathmandu Nepal","Jaipur India","Maldives","Luang Prabang Laos",
+        "Zhangjiajie China","Taipei Taiwan","Kuala Lumpur Malaysia",
+        "Sri Lanka","Petra Jordan","Dubai UAE","New York City USA",
+        "Machu Picchu Peru","Rio de Janeiro Brazil","Havana Cuba",
+        "Buenos Aires Argentina","Cartagena Colombia","Costa Rica",
+        "Patagonia Argentina","Banff National Park Canada","Mexico City Mexico",
+        "Grand Canyon USA","Yellowstone USA","San Francisco USA",
+        "Cusco Peru","Quebec City Canada","Sedona Arizona USA",
+        "Charleston South Carolina USA","Oaxaca Mexico","Marrakech Morocco",
+        "Cape Town South Africa","Serengeti Tanzania","Victoria Falls Zimbabwe",
+        "Cairo Egypt","Zanzibar Tanzania","Namibia Desert","Fez Morocco",
+        "Madagascar","Lake Bled Slovenia","Sydney Australia",
+        "Great Barrier Reef Australia","Queenstown New Zealand",
+        "Fiji Islands","Bora Bora French Polynesia","Tasmania Australia",
+        "Milford Sound New Zealand","Uluru Australia",
+        "Turks and Caicos","St Lucia Caribbean","Bermuda",
+        "Barbados","Puerto Rico","US Virgin Islands","Aruba",
+        "Antigua Caribbean","Iceland Northern Lights","Antarctica",
+        "Galapagos Islands Ecuador","Northern Norway Fjords",
+        "Great Wall of China","Cappadocia Turkey","Yosemite USA",
+        "Scottish Highlands","Trans Siberian Railway Russia",
+        "Amazon Rainforest Brazil","Mount Kilimanjaro Tanzania",
+        "Svalbard Norway",
+      ];
+
+      function slugify(s) {
+        return s.toLowerCase().replace(/[^a-z0-9]+/g, "-").replace(/^-+|-+$/g, "");
+      }
+
+      const candidateUrls = BANK_DESTINATIONS.map(
+        (d) => `${bucketUrl}/${slugify(d)}.png`
+      );
+
+      // Check which images actually exist with HEAD requests (fast, no download)
+      const checks = await Promise.all(
+        candidateUrls.map(async (url) => {
+          try {
+            const res = await fetch(url, { method: "HEAD" });
+            return res.ok ? url : null;
+          } catch {
+            return null;
+          }
+        })
+      );
+      const posterUrls = checks.filter(Boolean);
+
+      console.log("[NewCard] verified images:", posterUrls.length, "of", candidateUrls.length);
+
+      // Shuffle for variety
+      for (let i = posterUrls.length - 1; i > 0; i--) {
+        const j = Math.floor(Math.random() * (i + 1));
+        [posterUrls[i], posterUrls[j]] = [posterUrls[j], posterUrls[i]];
+      }
+
+      if (posterUrls.length > 0) setNewCardImages(posterUrls);
     }
-    loadNewCardBg();
-  }, []);
+    if (!loading) loadNewCardBg();
+  }, [loading]);
 
   useEffect(() => {
     if (newCardImages.length <= 2) return;
@@ -412,43 +468,94 @@ export default function DashboardPage() {
     if (!user) { router.push("/login"); return; }
     setUser(user);
 
-    // Parallel fetch: own trips + collaborator IDs at the same time
-    const [ownResult, collabResult] = await Promise.all([
+    // Parallel fetch: own trips (active + archived for globe) + collaborator IDs
+    const [ownResult, ownAllResult, collabResult] = await Promise.all([
       supabase.from("trips").select("*").eq("user_id", user.id)
         .eq("archived", false).order("updated_at", { ascending: false }),
+      supabase.from("trips").select("*").eq("user_id", user.id)
+        .order("updated_at", { ascending: false }),
       supabase.from("trip_collaborators").select("trip_id")
         .eq("user_id", user.id).eq("status", "accepted"),
     ]);
 
     const ownTrips = ownResult.data || [];
+    const ownAllTrips = ownAllResult.data || [];
     const collabs = collabResult.data || [];
 
     let collabTrips = [];
+    let collabAllTrips = [];
     if (collabs.length > 0) {
       const ids = collabs.map((c) => c.trip_id);
-      const { data: shared } = await supabase
-        .from("trips").select("*").in("id", ids)
-        .eq("archived", false)
-        .order("updated_at", { ascending: false });
-      collabTrips = (shared || []).map((t) => ({ ...t, _isCollaborator: true }));
+      const [sharedResult, sharedAllResult] = await Promise.all([
+        supabase.from("trips").select("*").in("id", ids)
+          .eq("archived", false).order("updated_at", { ascending: false }),
+        supabase.from("trips").select("*").in("id", ids)
+          .order("updated_at", { ascending: false }),
+      ]);
+      collabTrips = (sharedResult.data || []).map((t) => ({ ...t, _isCollaborator: true }));
+      collabAllTrips = (sharedAllResult.data || []).map((t) => ({ ...t, _isCollaborator: true }));
     }
 
-    // Merge and sort by most recently updated
+    // Active trips for card grid
     const all = [...ownTrips, ...collabTrips]
       .sort((a, b) => new Date(b.updated_at || b.created_at) - new Date(a.updated_at || a.created_at));
     setTrips(all);
+
+    // All trips (including archived) for globe pins
+    const allForGlobe = [...ownAllTrips, ...collabAllTrips]
+      .sort((a, b) => new Date(b.updated_at || b.created_at) - new Date(a.updated_at || a.created_at));
+    setAllTripsForGlobe(allForGlobe);
+
+    // Fetch flight legs for traveled trips (for globe flight arcs)
+    await refreshFlightLegs(allForGlobe);
+
     setLoading(false);
 
-    // Only fetch images for trips that don't have a cover image yet
+    // Generate poster images for trips that don't have a cover image yet
     const tripsNeedingImages = all.filter((trip) => trip.destination && !trip.cover_image);
     if (tripsNeedingImages.length > 0) {
       const imagePromises = tripsNeedingImages
-        .map((trip) => fetchCoverImages(trip.id, trip.destination, true));
+        .map((trip) => generatePosterImage(trip.id, trip.destination));
       Promise.all(imagePromises);
     }
   }
 
-  async function fetchCoverImages(tripId, destination, saveFirst = false) {
+  // ─── AI poster image generation (primary) ─────────────────────
+  async function generatePosterImage(tripId, destination) {
+    try {
+      // Show a generating state on the card
+      setTrips((p) => p.map((t) => t.id === tripId ? { ...t, _generating: true } : t));
+
+      const res = await fetch("/api/generate-poster", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ destination, tripId }),
+      });
+      const data = await res.json();
+
+      if (data.imageUrl) {
+        await supabase.from("trips").update({ cover_image: data.imageUrl }).eq("id", tripId);
+        setTrips((p) => p.map((t) => t.id === tripId
+          ? { ...t, cover_image: data.imageUrl, _generating: false }
+          : t
+        ));
+        return data.imageUrl;
+      } else {
+        // Fallback to Unsplash if poster generation fails
+        console.warn("Poster generation failed, falling back to Unsplash:", data.error);
+        setTrips((p) => p.map((t) => t.id === tripId ? { ...t, _generating: false } : t));
+        await fetchUnsplashImages(tripId, destination, true);
+      }
+    } catch (err) {
+      console.error("Poster generation error:", err);
+      setTrips((p) => p.map((t) => t.id === tripId ? { ...t, _generating: false } : t));
+      // Fallback to Unsplash
+      await fetchUnsplashImages(tripId, destination, true);
+    }
+  }
+
+  // ─── Unsplash fallback (for image cycling / alternatives) ─────
+  async function fetchUnsplashImages(tripId, destination, saveFirst = false) {
     try {
       const res = await fetch(`/api/cover-image?destination=${encodeURIComponent(destination)}&count=10`);
       const data = await res.json();
@@ -466,15 +573,15 @@ export default function DashboardPage() {
   }
 
   async function loadImageOptions(tripId) {
-    // Only fetch if we haven't already loaded options for this trip
+    // Only fetch Unsplash options if we haven't already loaded them
     if (imageOptions[tripId]) return;
     const trip = trips.find((t) => t.id === tripId);
     if (!trip?.destination) return;
-    await fetchCoverImages(tripId, trip.destination, false);
+    await fetchUnsplashImages(tripId, trip.destination, false);
   }
 
   async function cycleImage(tripId, direction) {
-    // Load image options on first cycle attempt if not yet loaded
+    // Load Unsplash alternatives on first cycle attempt
     if (!imageOptions[tripId]) {
       await loadImageOptions(tripId);
     }
@@ -489,9 +596,62 @@ export default function DashboardPage() {
     await supabase.from("trips").update({ cover_image: img }).eq("id", tripId);
   }
 
+  // Regenerate poster for a specific trip — adds cache-buster so browser loads new image
+  async function regeneratePoster(tripId, destination) {
+    try {
+      setTrips((p) => p.map((t) => t.id === tripId ? { ...t, _generating: true } : t));
+
+      const res = await fetch("/api/generate-poster", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ destination, tripId, regenerate: true }),
+      });
+      const data = await res.json();
+
+      if (data.imageUrl) {
+        // Strip any existing query params and add a fresh cache-buster
+        const baseUrl = data.imageUrl.split("?")[0];
+        const freshUrl = `${baseUrl}?t=${Date.now()}`;
+        await supabase.from("trips").update({ cover_image: freshUrl }).eq("id", tripId);
+        setTrips((p) => p.map((t) => t.id === tripId
+          ? { ...t, cover_image: freshUrl, _generating: false }
+          : t
+        ));
+      } else {
+        console.warn("Poster regeneration failed:", data.error);
+        setTrips((p) => p.map((t) => t.id === tripId ? { ...t, _generating: false } : t));
+      }
+    } catch (err) {
+      console.error("Poster regeneration error:", err);
+      setTrips((p) => p.map((t) => t.id === tripId ? { ...t, _generating: false } : t));
+    }
+  }
+
+  // Reusable: fetch flight legs for all traveled trips
+  async function refreshFlightLegs(allTrips) {
+    const traveledIds = allTrips.filter((t) => t.status === "traveled").map((t) => t.id);
+    if (traveledIds.length === 0) { setFlightLegsForGlobe([]); return; }
+    const { data: options } = await supabase
+      .from("flight_options").select("id, trip_id, is_selected")
+      .in("trip_id", traveledIds).eq("is_selected", true);
+    if (options && options.length > 0) {
+      const optionIds = options.map((o) => o.id);
+      const { data: legs } = await supabase
+        .from("flight_legs").select("option_id, departure_airport, arrival_airport, departure_date, leg_order")
+        .in("option_id", optionIds).order("leg_order", { ascending: true });
+      setFlightLegsForGlobe(legs || []);
+    } else {
+      setFlightLegsForGlobe([]);
+    }
+  }
+
   async function handleStatusChange(tripId, status) {
     await supabase.from("trips").update({ status, updated_at: new Date().toISOString() }).eq("id", tripId);
+    const updatedTrips = allTripsForGlobe.map((t) => t.id === tripId ? { ...t, status } : t);
     setTrips((p) => p.map((t) => t.id === tripId ? { ...t, status } : t));
+    setAllTripsForGlobe(updatedTrips);
+    // Re-fetch flight legs since the set of traveled trips changed
+    refreshFlightLegs(updatedTrips);
   }
 
   async function handleArchiveTrip(tripId) {
@@ -503,9 +663,9 @@ export default function DashboardPage() {
     const update = { [field]: value, updated_at: new Date().toISOString() };
     await supabase.from("trips").update(update).eq("id", tripId);
     setTrips((p) => p.map((t) => t.id === tripId ? { ...t, ...update } : t));
-    // If destination changed, refresh cover image
+    // If destination changed, generate a new poster image
     if (field === "destination" && value) {
-      fetchCoverImages(tripId, value);
+      generatePosterImage(tripId, value);
     }
   }
 
@@ -565,7 +725,7 @@ export default function DashboardPage() {
           pointerEvents: view === "globe" ? "auto" : "none",
         }}
       >
-        <GlobeCanvas trips={trips} interactive={view === "globe"} />
+        <GlobeCanvas trips={allTripsForGlobe} flightLegs={flightLegsForGlobe} interactive={view === "globe"} />
       </div>
 
       {/* Globe tooltip */}
@@ -602,6 +762,16 @@ export default function DashboardPage() {
               <path fillRule="evenodd" d="M8 1a7 7 0 1 0 0 14A7 7 0 0 0 8 1ZM5.404 3.196a5.518 5.518 0 0 0-2.66 3.054H4.84c.1-1.14.345-2.175.715-3.032l-.15-.022Zm-2.66 4.554a5.518 5.518 0 0 0 2.66 3.054l.15-.022c-.37-.857-.615-1.892-.715-3.032H2.744ZM8 13.5c-.753 0-1.596-1.348-1.834-3.75h3.668C9.596 12.152 8.753 13.5 8 13.5Zm1.834-5.25H6.166C6.404 5.848 7.247 4.5 8 4.5s1.596 1.348 1.834 3.75Zm.762 5.054a5.518 5.518 0 0 0 2.66-3.054H11.16c-.1 1.14-.345 2.175-.715 3.032l.15.022Zm2.66-4.554a5.518 5.518 0 0 0-2.66-3.054l-.15.022c.37.857.615 1.892.715 3.032h2.096Z" clipRule="evenodd" />
             </svg>
           </button>
+          <Link
+            href="/archived"
+            className="w-12 h-12 rounded-lg flex items-center justify-center backdrop-blur-sm transition-colors bg-white/20 text-stone-500 hover:bg-[#da7b4a]/25 hover:text-[#b5552a]"
+            title="Archived Trips"
+          >
+            <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor" className="w-6 h-6">
+              <path d="M2 3a1 1 0 0 0-1 1v1a1 1 0 0 0 1 1h16a1 1 0 0 0 1-1V4a1 1 0 0 0-1-1H2Z" />
+              <path fillRule="evenodd" d="M2 7.5h16l-.811 7.71a2 2 0 0 1-1.99 1.79H4.802a2 2 0 0 1-1.99-1.79L2 7.5ZM7 11a1 1 0 0 1 1-1h4a1 1 0 1 1 0 2H8a1 1 0 0 1-1-1Z" clipRule="evenodd" />
+            </svg>
+          </Link>
         </div>
 
         {/* Centered logo */}
@@ -667,78 +837,86 @@ export default function DashboardPage() {
               key={trip.id}
               trip={trip}
               index={i}
-              imageOptions={imageOptions[trip.id]}
-              onCycleImage={(dir) => cycleImage(trip.id, dir)}
-              onLoadImageOptions={() => loadImageOptions(trip.id)}
+              onRegenerate={regeneratePoster}
               onStatusChange={handleStatusChange}
               onArchive={handleArchiveTrip}
               onFieldUpdate={handleFieldUpdate}
             />
           ))}
 
-          {/* New Trip Card — matches trip card layout */}
-          <div className="relative group">
-            <form onSubmit={handleCreateTrip} className="block">
-              <div className="relative rounded-2xl overflow-hidden aspect-[3/4] flex flex-col justify-end shadow-sm hover:shadow-xl transition-all duration-300">
-                {/* Rotating destination background — two-layer crossfade */}
+          {/* New Trip Card — smaller than trip cards */}
+          <div className="relative group" style={{ display: "flex", alignItems: "center", justifyContent: "center" }}>
+            <form onSubmit={handleCreateTrip} className="block" style={{ width: "82%" }}>
+              <div className="relative rounded-2xl overflow-hidden aspect-[3/4] flex flex-col justify-end shadow-sm hover:shadow-xl transition-all duration-300" style={{ border: "2px solid rgba(0,0,0,0.3)" }}>
+                {/* Rotating poster backgrounds — two-layer crossfade, lightened */}
                 {newCardImages.length > 0 ? (
                   <>
                     {/* Layer A */}
                     <div
-                      className="absolute inset-0 bg-cover bg-center"
+                      className="absolute bg-cover"
                       style={{
+                        inset: "-5%",
                         backgroundImage: `url(${newCardImages[layerA] || newCardImages[0]})`,
-                        filter: "sepia(0.3) saturate(0.82) contrast(0.94) brightness(0.85) hue-rotate(-4deg)",
-                        opacity: showA ? 0.5 : 0,
+                        backgroundPosition: "center 20%",
+                        filter: showA ? "brightness(1.55) saturate(0.35) contrast(0.8)" : "brightness(1.55) saturate(0.35) contrast(0.8)",
+                        opacity: showA ? 1 : 0,
                         transition: "opacity 1.5s ease-in-out",
                       }}
                     />
                     {/* Layer B */}
                     <div
-                      className="absolute inset-0 bg-cover bg-center"
+                      className="absolute bg-cover"
                       style={{
+                        inset: "-5%",
                         backgroundImage: `url(${newCardImages[layerB] || newCardImages[1] || newCardImages[0]})`,
-                        filter: "sepia(0.3) saturate(0.82) contrast(0.94) brightness(0.85) hue-rotate(-4deg)",
-                        opacity: showA ? 0 : 0.5,
+                        backgroundPosition: "center 20%",
+                        filter: "brightness(1.55) saturate(0.35) contrast(0.8)",
+                        opacity: showA ? 0 : 1,
                         transition: "opacity 1.5s ease-in-out",
                       }}
                     />
                   </>
                 ) : (
-                  <div className="absolute inset-0 bg-gradient-to-br from-slate-300 to-slate-500 opacity-50" />
+                  <div className="absolute inset-0 bg-gradient-to-br from-stone-300 to-stone-500 opacity-50" />
                 )}
 
-                {/* Gradient overlay */}
+                {/* Subtle dark overlay for text readability */}
                 <div
                   className="absolute inset-0"
-                  style={{ background: "linear-gradient(to top, rgba(0,0,0,0.95) 0%, rgba(0,0,0,0.8) 25%, rgba(0,0,0,0.4) 50%, rgba(0,0,0,0.1) 75%, transparent 100%)" }}
+                  style={{ background: "linear-gradient(to top, rgba(0,0,0,0.25) 0%, rgba(0,0,0,0.05) 50%, rgba(0,0,0,0.1) 100%)" }}
                 />
 
                 {/* Top area — click to start editing if not already */}
                 {!creating && (
                   <div
-                    className="absolute inset-0 z-10 flex flex-col items-center justify-center gap-2 cursor-pointer"
+                    className="absolute inset-0 z-10 flex flex-col items-center justify-center cursor-pointer"
                     onClick={() => { setCreating(true); setTimeout(() => titleRef.current?.focus(), 100); }}
                   >
-                    <div className="w-10 h-10 rounded-full bg-white/20 backdrop-blur-sm flex items-center justify-center">
-                      <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor" className="w-5 h-5 text-white">
+                    <div
+                      className="flex flex-col items-center gap-2 px-6 py-4 rounded-xl backdrop-blur-sm"
+                      style={{
+                        background: "rgba(0,0,0,0.18)",
+                        border: "1.5px solid rgba(255,255,255,0.4)",
+                      }}
+                    >
+                      <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor" className="w-8 h-8 text-white">
                         <path d="M10.75 4.75a.75.75 0 0 0-1.5 0v4.5h-4.5a.75.75 0 0 0 0 1.5h4.5v4.5a.75.75 0 0 0 1.5 0v-4.5h4.5a.75.75 0 0 0 0-1.5h-4.5v-4.5Z" />
                       </svg>
+                      <span className="text-white text-lg font-semibold">New Trip</span>
                     </div>
-                    <span className="text-white/80 text-sm font-medium">New Trip</span>
                   </div>
                 )}
 
                 {/* Inline fields at bottom — same position as trip card info */}
                 {creating && (
-                  <div className="relative z-10 p-4 pr-[5.5rem]">
+                  <div className="relative z-10 p-4 pr-[5.5rem] rounded-b-2xl" style={{ background: "rgba(0,0,0,0.45)", backdropFilter: "blur(4px)" }}>
                     {createError && <div className="mb-2 px-2 py-1 rounded bg-red-500/60 text-white text-[10px]">{createError}</div>}
                     <input
                       type="text"
                       value={newDest}
                       onChange={(e) => setNewDest(e.target.value)}
                       placeholder="Destination"
-                      className="w-full text-white/70 text-xs bg-transparent border-none outline-none placeholder-white/30 mb-0.5 border-b border-transparent focus:border-white/30"
+                      className="w-full text-white text-xs bg-transparent border-none outline-none placeholder-white/60 mb-0.5 border-b border-transparent focus:border-white/50"
                     />
                     <input
                       ref={titleRef}
@@ -746,12 +924,12 @@ export default function DashboardPage() {
                       value={newTitle}
                       onChange={(e) => setNewTitle(e.target.value)}
                       placeholder="Trip name"
-                      className="w-full font-bold text-white text-base leading-tight bg-transparent border-none outline-none placeholder-white/30 mb-0.5 border-b border-transparent focus:border-white/30"
+                      className="w-full font-bold text-white text-base leading-tight bg-transparent border-none outline-none placeholder-white/60 mb-0.5 border-b border-transparent focus:border-white/50"
                     />
                     <button
                       type="button"
                       onClick={() => setShowCalendar(!showCalendar)}
-                      className="text-white/50 text-xs hover:text-white/70 transition-colors text-left"
+                      className="text-white/80 text-xs hover:text-white transition-colors text-left"
                     >
                       {newStart && newEnd ? formatTripDates(newStart, newEnd) : "Select dates"}
                     </button>
