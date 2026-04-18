@@ -46,7 +46,7 @@ function formatDate(d) {
 }
 
 // ─── MAIN COMPONENT ───
-export default function FlightOptions({ tripId, tripStart, tripEnd, onFlightOptionsChange }) {
+export default function FlightOptions({ tripId, tripStart, tripEnd, onFlightOptionsChange, itinerarySelections, activeItineraryId, onToggleSelection }) {
   const [options, setOptions] = useState([]);
   const [selectedOption, setSelectedOption] = useState(null);
   const [showAddModal, setShowAddModal] = useState(false);
@@ -65,15 +65,18 @@ export default function FlightOptions({ tripId, tripStart, tripEnd, onFlightOpti
     }));
     setOptions(sorted);
 
-    // Auto-select the selected option, or first one
-    const sel = sorted.find((o) => o.is_selected) || sorted[0];
+    // Auto-select the option selected in current itinerary, or first one
+    const selectedFlightIds = (itinerarySelections || [])
+      .filter((s) => s.option_type === "flight")
+      .map((s) => s.option_id);
+    const sel = sorted.find((o) => selectedFlightIds.includes(o.id)) || sorted[0];
     if (sel) setSelectedOption(sel.id);
 
     // Notify parent about flight options for calendar display
     if (onFlightOptionsChange) onFlightOptionsChange(sorted);
 
     setLoading(false);
-  }, [tripId, onFlightOptionsChange]);
+  }, [tripId, onFlightOptionsChange, itinerarySelections]);
 
   useEffect(() => {
     loadOptions();
@@ -86,9 +89,14 @@ export default function FlightOptions({ tripId, tripStart, tripEnd, onFlightOpti
   }
 
   async function handleSelectOption(optionId) {
-    // Unselect all, then select this one
-    await supabase.from("flight_options").update({ is_selected: false }).eq("trip_id", tripId);
-    await supabase.from("flight_options").update({ is_selected: true }).eq("id", optionId);
+    if (onToggleSelection && activeItineraryId) {
+      // Use itinerary-based selection (flights are exclusive — toggle handles deselecting others)
+      onToggleSelection("flight", optionId);
+    } else {
+      // Fallback: direct DB update (pre-migration)
+      await supabase.from("flight_options").update({ is_selected: false }).eq("trip_id", tripId);
+      await supabase.from("flight_options").update({ is_selected: true }).eq("id", optionId);
+    }
     setSelectedOption(optionId);
     loadOptions();
   }
@@ -98,28 +106,11 @@ export default function FlightOptions({ tripId, tripStart, tripEnd, onFlightOpti
   if (loading) return null;
 
   return (
-    <div className="mb-8">
-      {/* Header */}
-      <div className="flex items-center justify-between mb-4">
-        <div className="flex items-center gap-2">
-          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor" className="w-5 h-5 text-sky-600">
-            <path d="M3.478 2.404a.75.75 0 0 0-.926.941l2.432 7.905H13.5a.75.75 0 0 1 0 1.5H4.984l-2.432 7.905a.75.75 0 0 0 .926.94 60.519 60.519 0 0 0 18.445-8.986.75.75 0 0 0 0-1.218A60.517 60.517 0 0 0 3.478 2.404Z" />
-          </svg>
-          <h2 className="text-lg font-bold text-slate-800">Flight Options</h2>
-          <span className="text-sm text-slate-400">({options.length})</span>
-        </div>
-        <button
-          onClick={() => setShowAddModal(true)}
-          className="px-4 py-2 bg-sky-600 text-white text-sm font-medium rounded-lg hover:bg-sky-700 transition-colors"
-        >
-          + Add Flight Option
-        </button>
-      </div>
-
+    <div className="mb-4">
       {options.length === 0 ? (
-        <div className="bg-white rounded-xl border border-dashed border-sky-200 p-8 text-center">
+        <div className="bg-white rounded-xl border border-dashed border-emerald-200 p-8 text-center">
           <div className="text-4xl mb-3">
-            <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor" className="w-12 h-12 mx-auto text-sky-200">
+            <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor" className="w-12 h-12 mx-auto text-emerald-200">
               <path d="M3.478 2.404a.75.75 0 0 0-.926.941l2.432 7.905H13.5a.75.75 0 0 1 0 1.5H4.984l-2.432 7.905a.75.75 0 0 0 .926.94 60.519 60.519 0 0 0 18.445-8.986.75.75 0 0 0 0-1.218A60.517 60.517 0 0 0 3.478 2.404Z" />
             </svg>
           </div>
@@ -137,22 +128,27 @@ export default function FlightOptions({ tripId, tripStart, tripEnd, onFlightOpti
                 key={opt.id}
                 option={opt}
                 isActive={opt.id === selectedOption}
+                isItinerarySelected={(itinerarySelections || []).some(s => s.option_type === "flight" && s.option_id === opt.id)}
                 onSelect={() => { setSelectedOption(opt.id); handleSelectOption(opt.id); }}
                 onDelete={() => handleDeleteOption(opt.id)}
               />
             ))}
             <button
               onClick={() => setShowAddModal(true)}
-              className="border-2 border-dashed border-sky-200 text-sky-500 text-sm font-medium rounded-lg py-3 hover:border-sky-400 hover:text-sky-600 transition-colors"
+              className="w-full border-2 border-dashed border-emerald-200 text-emerald-500 text-sm font-medium rounded-lg py-3 hover:border-emerald-400 hover:text-emerald-600 transition-colors"
             >
               + Add Option
             </button>
           </div>
 
           {/* Detail panel (right side) */}
-          {selectedOpt && (
-            <OptionDetail option={selectedOpt} />
-          )}
+          <div className="flex-1 bg-white rounded-xl border border-emerald-100 shadow-sm p-5 min-h-[200px]">
+            {selectedOpt ? (
+              <OptionDetail option={selectedOpt} />
+            ) : (
+              <p className="text-slate-400 text-sm italic">Select a flight option to view details</p>
+            )}
+          </div>
         </div>
       )}
 
@@ -168,11 +164,11 @@ export default function FlightOptions({ tripId, tripStart, tripEnd, onFlightOpti
   );
 }
 
-// ─── OPTION TAB (boarding pass style) ───
-function OptionTab({ option, isActive, onSelect, onDelete }) {
+// ─── OPTION TAB ───
+function OptionTab({ option, isActive, isItinerarySelected, onSelect, onDelete }) {
+  const [hovered, setHovered] = useState(false);
   const legs = option.flight_legs || [];
   const outbound = legs.find((l) => l.direction === "outbound");
-  const returnLeg = legs.find((l) => l.direction === "return");
 
   const routeSummary = outbound
     ? `${outbound.departure_airport} → ${outbound.arrival_airport}`
@@ -185,59 +181,39 @@ function OptionTab({ option, isActive, onSelect, onDelete }) {
   return (
     <div
       onClick={onSelect}
-      className={`
-        group relative cursor-pointer rounded-r-lg border overflow-hidden transition-all
-        ${isActive
-          ? "border-sky-500 bg-sky-50 shadow-md"
-          : "border-slate-200 bg-white hover:border-sky-300 hover:shadow-sm"
-        }
-      `}
+      onMouseEnter={() => setHovered(true)}
+      onMouseLeave={() => setHovered(false)}
+      className={`relative p-3 rounded-xl cursor-pointer transition-all border-2 ${
+        isActive ? "border-emerald-500 bg-emerald-50 shadow-sm" : "border-slate-200 bg-white hover:border-emerald-300"
+      }`}
     >
-      {/* Perforated left edge */}
-      <div
-        className="absolute top-0 bottom-0 left-0 w-2"
-        style={{
-          background: isActive
-            ? "repeating-linear-gradient(to bottom, transparent 0px, transparent 3px, #e0f2fe 3px, #e0f2fe 6px)"
-            : "repeating-linear-gradient(to bottom, transparent 0px, transparent 3px, #f8fafc 3px, #f8fafc 6px)",
-          borderRight: "1px dashed #cbd5e1",
-        }}
-      />
+      {/* Delete button */}
+      {hovered && (
+        <button onClick={(e) => { e.stopPropagation(); onDelete(); }}
+          className="absolute top-2 right-2 text-slate-300 hover:text-red-500 transition-colors" title="Delete">
+          <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24" strokeWidth={2}>
+            <path strokeLinecap="round" strokeLinejoin="round" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
+          </svg>
+        </button>
+      )}
 
-      {/* Delete button (appears on hover) */}
-      <button
-        onClick={(e) => { e.stopPropagation(); onDelete(); }}
-        className="absolute top-1.5 right-1.5 w-5 h-5 rounded-full bg-white/80 flex items-center justify-center text-slate-300 hover:text-red-500 hover:bg-red-50 opacity-0 group-hover:opacity-100 transition-all z-10 shadow-sm"
-        title="Delete option"
-      >
-        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 16 16" fill="currentColor" className="w-3 h-3">
-          <path fillRule="evenodd" d="M5 3.25V4H2.75a.75.75 0 0 0 0 1.5h.3l.815 8.15A1.5 1.5 0 0 0 5.357 15h5.285a1.5 1.5 0 0 0 1.493-1.35l.815-8.15h.3a.75.75 0 0 0 0-1.5H11v-.75A2.25 2.25 0 0 0 8.75 1h-1.5A2.25 2.25 0 0 0 5 3.25Zm2.25-.75a.75.75 0 0 0-.75.75V4h3v-.75a.75.75 0 0 0-.75-.75h-1.5ZM6.05 6a.75.75 0 0 1 .787.713l.275 5.5a.75.75 0 0 1-1.498.075l-.275-5.5A.75.75 0 0 1 6.05 6Zm3.9 0a.75.75 0 0 1 .712.787l-.275 5.5a.75.75 0 0 1-1.498-.075l.275-5.5a.75.75 0 0 1 .786-.711Z" clipRule="evenodd" />
-        </svg>
-      </button>
-
-      <div className="pl-4 pr-3 py-2.5">
-        <div className="flex items-center justify-between mb-1">
-          <span className="text-[10px] font-bold text-slate-400 uppercase tracking-wide">
-            Option {option.sort_order + 1}
+      <div className="text-[10px] font-semibold text-slate-400 mb-1 flex items-center gap-1">
+        <span className="uppercase tracking-wide">Option {option.sort_order + 1}</span>
+        {(isItinerarySelected !== undefined ? isItinerarySelected : option.is_selected) && (
+          <svg className="w-3.5 h-3.5 text-emerald-500" fill="currentColor" viewBox="0 0 20 20">
+            <path fillRule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clipRule="evenodd" />
+          </svg>
+        )}
+      </div>
+      <div className="font-semibold text-sm text-slate-800 truncate">{option.name}</div>
+      <div className="text-xs text-slate-500 truncate">{routeSummary}</div>
+      <div className="flex items-center justify-between mt-1">
+        <span className="text-[11px] text-slate-400">{dateSummary}</span>
+        {option.total_price && (
+          <span className="text-sm font-bold text-emerald-600">
+            ${Number(option.total_price).toLocaleString()}
           </span>
-          {isActive && (
-            <span className="w-4 h-4 rounded-full bg-sky-500 flex items-center justify-center">
-              <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 16 16" fill="white" className="w-2.5 h-2.5">
-                <path fillRule="evenodd" d="M12.416 3.376a.75.75 0 0 1 .208 1.04l-5 7.5a.75.75 0 0 1-1.154.114l-3-3a.75.75 0 0 1 1.06-1.06l2.353 2.353 4.493-6.74a.75.75 0 0 1 1.04-.207Z" clipRule="evenodd" />
-              </svg>
-            </span>
-          )}
-        </div>
-        <div className="text-sm font-bold text-slate-800 truncate">{option.name}</div>
-        <div className="text-xs text-slate-500 truncate">{routeSummary}</div>
-        <div className="flex items-center justify-between mt-1">
-          <span className="text-[11px] text-slate-400">{dateSummary}</span>
-          {option.total_price && (
-            <span className="text-sm font-bold text-emerald-600">
-              ${Number(option.total_price).toLocaleString()}
-            </span>
-          )}
-        </div>
+        )}
       </div>
     </div>
   );
@@ -250,7 +226,7 @@ function OptionDetail({ option }) {
   const returnLegs = legs.filter((l) => l.direction === "return");
 
   return (
-    <div className="flex-1 bg-white rounded-xl border border-sky-100 p-5">
+    <div>
       {/* Header */}
       <div className="flex items-center justify-between mb-4">
         <div>
@@ -260,7 +236,7 @@ function OptionDetail({ option }) {
               href={option.source_url}
               target="_blank"
               rel="noopener noreferrer"
-              className="text-xs text-sky-500 hover:text-sky-600 inline-flex items-center gap-1"
+              className="text-xs text-emerald-500 hover:text-emerald-600 inline-flex items-center gap-1"
             >
               View on booking site
               <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 16 16" fill="currentColor" className="w-3 h-3">
@@ -281,7 +257,7 @@ function OptionDetail({ option }) {
       </div>
 
       {/* Stats row */}
-      <div className="flex gap-4 mb-5 pb-4 border-b border-sky-50">
+      <div className="flex gap-4 mb-5 pb-4 border-b border-emerald-50">
         <StatBadge label="Legs" value={legs.length} />
         <StatBadge label="Cabin" value={legs[0]?.cabin_class || "economy"} />
         {outbound[0]?.departure_date && returnLegs[returnLegs.length - 1]?.departure_date && (
@@ -321,7 +297,7 @@ function OptionDetail({ option }) {
 
       {/* Screenshot */}
       {option.screenshot_url && (
-        <div className="mt-4 pt-4 border-t border-sky-50">
+        <div className="mt-4 pt-4 border-t border-emerald-50">
           <div className="text-xs font-bold text-slate-400 uppercase tracking-wide mb-2">Screenshot</div>
           <img
             src={option.screenshot_url}
@@ -338,7 +314,7 @@ function OptionDetail({ option }) {
 
       {/* Notes */}
       {option.notes && (
-        <div className="mt-4 pt-4 border-t border-sky-50">
+        <div className="mt-4 pt-4 border-t border-emerald-50">
           <div className="text-xs font-bold text-slate-400 uppercase tracking-wide mb-1">Notes</div>
           <p className="text-sm text-slate-600">{option.notes}</p>
         </div>
@@ -394,7 +370,7 @@ function FlightLegCard({ leg }) {
             </span>
           )}
           {leg.duration_minutes && (
-            <span className="text-xs text-sky-500 font-medium">
+            <span className="text-xs text-emerald-500 font-medium">
               {Math.floor(leg.duration_minutes / 60)}h {leg.duration_minutes % 60}m
             </span>
           )}
@@ -779,7 +755,7 @@ function AddFlightModal({ tripId, onClose, onSave }) {
   return (
     <div className="fixed inset-0 bg-black/30 flex items-center justify-center z-50 p-4" onClick={onClose}>
       <div
-        className="bg-white rounded-2xl shadow-xl border border-sky-100 w-full max-w-lg max-h-[85vh] overflow-y-auto"
+        className="bg-white rounded-2xl shadow-xl border border-emerald-100 w-full max-w-lg max-h-[85vh] overflow-y-auto"
         onClick={(e) => e.stopPropagation()}
         onPaste={handlePaste}
       >
@@ -930,7 +906,7 @@ function AddFlightModal({ tripId, onClose, onSave }) {
             )}
             <button
               onClick={addManualLeg}
-              className="text-sm text-sky-600 hover:text-sky-700 font-medium"
+              className="text-sm text-emerald-600 hover:text-sky-700 font-medium"
             >
               + Add flight leg manually
             </button>
@@ -997,7 +973,7 @@ function AddFlightModal({ tripId, onClose, onSave }) {
             <button
               onClick={handleSave}
               disabled={!name.trim() || saving}
-              className="flex-1 px-4 py-2 bg-sky-600 text-white rounded-lg hover:bg-sky-700 disabled:opacity-50 text-sm font-medium"
+              className="flex-1 px-4 py-2 bg-emerald-600 text-white rounded-lg hover:bg-emerald-700 disabled:opacity-50 text-sm font-medium"
             >
               {saving ? "Saving..." : "Save Option"}
             </button>

@@ -63,7 +63,7 @@ async function extractAccommodationFromUrl(url) {
 // ─────────────────────────────────────────────────
 // MAIN COMPONENT
 // ─────────────────────────────────────────────────
-export default function AccommodationOptions({ tripId, tripStart, tripEnd, onAccommodationOptionsChange }) {
+export default function AccommodationOptions({ tripId, tripStart, tripEnd, onAccommodationOptionsChange, itinerarySelections, activeItineraryId, onToggleSelection }) {
   const [options, setOptions] = useState([]);
   const [selectedId, setSelectedId] = useState(null);
   const [showModal, setShowModal] = useState(false);
@@ -94,37 +94,27 @@ export default function AccommodationOptions({ tripId, tripStart, tripEnd, onAcc
   }
 
   async function handleToggleSelected(id) {
-    const opt = options.find((o) => o.id === id);
-    if (!opt) return;
-    await supabase.from("accommodation_options").update({ is_selected: !opt.is_selected }).eq("id", id);
-    loadOptions();
+    if (onToggleSelection && activeItineraryId) {
+      onToggleSelection("accommodation", id);
+    } else {
+      const opt = options.find((o) => o.id === id);
+      if (!opt) return;
+      await supabase.from("accommodation_options").update({ is_selected: !opt.is_selected }).eq("id", id);
+      loadOptions();
+    }
   }
 
   if (loading) return null;
 
   return (
-    <div className="mb-6">
-      {/* Section header */}
-      <div className="flex items-center justify-between mb-3">
-        <h2 className="text-lg font-bold text-slate-800 flex items-center gap-2">
-          <svg className="w-5 h-5 text-sky-600" fill="none" stroke="currentColor" viewBox="0 0 24 24" strokeWidth={2}>
-            <path strokeLinecap="round" strokeLinejoin="round" d="M19 21H5a2 2 0 01-2-2V5a2 2 0 012-2h14a2 2 0 012 2v14a2 2 0 01-2 2z" />
-          </svg>
-          Accommodation Options
-          {options.length > 0 && <span className="text-sm font-normal text-slate-400">({options.length})</span>}
-        </h2>
-        <button onClick={() => setShowModal(true)} className="px-4 py-2 bg-sky-600 text-white text-sm font-semibold rounded-lg hover:bg-sky-700 transition-colors">
-          + Add Accommodation Option
-        </button>
-      </div>
-
+    <div className="mb-4">
       {/* Options list + detail panel */}
       {options.length > 0 && (
         <div className="flex gap-4">
           {/* Left: option tabs */}
           <div className="w-56 flex-shrink-0 space-y-2">
             {options.map((opt, i) => (
-              <OptionTab key={opt.id} opt={opt} index={i} isSelected={selectedId === opt.id}
+              <OptionTab key={opt.id} opt={{...opt, is_selected: (itinerarySelections || []).some(s => s.option_type === "accommodation" && s.option_id === opt.id)}} index={i} isSelected={selectedId === opt.id}
                 onClick={() => setSelectedId(opt.id)} onDelete={() => handleDelete(opt.id)} />
             ))}
             <button onClick={() => setShowModal(true)}
@@ -136,7 +126,7 @@ export default function AccommodationOptions({ tripId, tripStart, tripEnd, onAcc
           {/* Right: detail panel */}
           <div className="flex-1 bg-white rounded-xl border border-sky-100 shadow-sm p-5 min-h-[200px]">
             {selected ? (
-              <OptionDetail opt={selected} tripStart={tripStart} tripEnd={tripEnd}
+              <OptionDetail opt={{...selected, is_selected: (itinerarySelections || []).some(s => s.option_type === "accommodation" && s.option_id === selected.id)}} tripStart={tripStart} tripEnd={tripEnd}
                 onToggleSelected={() => handleToggleSelected(selected.id)} />
             ) : (
               <p className="text-slate-400 text-sm italic">Select an accommodation to view details</p>

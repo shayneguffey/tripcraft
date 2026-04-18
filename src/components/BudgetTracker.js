@@ -34,13 +34,21 @@ function formatPrice(amount, currency) {
   return `${sym}${Number(amount).toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`;
 }
 
-export default function BudgetTracker({ tripId, numTravelers = 1, flightOptions, activityOptions, accommodationOptions, diningOptions, transportOptions }) {
+export default function BudgetTracker({ tripId, numTravelers = 1, flightOptions, activityOptions, accommodationOptions, diningOptions, transportOptions, itinerarySelections }) {
   const [budgetItems, setBudgetItems] = useState([]);
   const [showAddModal, setShowAddModal] = useState(false);
   const [expanded, setExpanded] = useState(false);
   const [loading, setLoading] = useState(true);
 
   const travelers = Math.max(1, numTravelers || 1);
+
+  // Helper: check if an option is selected in the current itinerary
+  function isSelected(optionType, optionId) {
+    if (itinerarySelections && itinerarySelections.length >= 0) {
+      return itinerarySelections.some(s => s.option_type === optionType && s.option_id === optionId);
+    }
+    return false;
+  }
 
   const loadBudgetItems = useCallback(async () => {
     const { data } = await supabase
@@ -58,7 +66,7 @@ export default function BudgetTracker({ tripId, numTravelers = 1, flightOptions,
   // Flights: price already covers num_passengers from the booking. If that covers
   // fewer people than the trip's traveler count, scale up proportionally.
   const flightCalc = (() => {
-    const selected = (flightOptions || []).find((f) => f.is_selected);
+    const selected = (flightOptions || []).find((f) => isSelected("flight", f.id));
     if (!selected?.total_price) return { base: 0, perPassenger: 0, passengers: 1 };
     const price = Number(selected.total_price);
     const passengers = selected.num_passengers ? Math.max(1, Number(selected.num_passengers)) : 1;
@@ -68,7 +76,7 @@ export default function BudgetTracker({ tripId, numTravelers = 1, flightOptions,
   const flightTotal = flightCalc.perPassenger * travelers;
 
   const accommodationBase = (accommodationOptions || [])
-    .filter((a) => a.is_selected)
+    .filter((a) => isSelected("accommodation", a.id))
     .reduce((sum, a) => {
       if (a.total_price) return sum + Number(a.total_price);
       if (a.price_per_night && a.check_in_date && a.check_out_date) {
@@ -80,16 +88,16 @@ export default function BudgetTracker({ tripId, numTravelers = 1, flightOptions,
     }, 0);
 
   const activityBase = (activityOptions || [])
-    .filter((a) => a.is_selected)
+    .filter((a) => isSelected("activity", a.id))
     .reduce((sum, a) => sum + (a.price ? Number(a.price) : 0), 0);
 
   const diningBase = (diningOptions || [])
-    .filter((d) => d.is_selected)
+    .filter((d) => isSelected("dining", d.id))
     .reduce((sum, d) => sum + (d.avg_meal_cost ? Number(d.avg_meal_cost) : 0), 0);
 
   // Transport: car rentals are flat rate, tickets (train/bus/ferry) are per-person
   const transportBase = (transportOptions || [])
-    .filter((t) => t.is_selected)
+    .filter((t) => isSelected("transportation", t.id))
     .reduce((sum, t) => {
       const p = t.price ? Number(t.price) : 0;
       const isCarRental = t.category === "car_rental";
@@ -111,11 +119,11 @@ export default function BudgetTracker({ tripId, numTravelers = 1, flightOptions,
   const grandTotal = Object.values(sectionTotals).reduce((a, b) => a + b, 0);
 
   const sectionCounts = {
-    flights: (flightOptions || []).filter((f) => f.is_selected).length,
-    accommodation: (accommodationOptions || []).filter((a) => a.is_selected).length,
-    activities: (activityOptions || []).filter((a) => a.is_selected).length,
-    dining: (diningOptions || []).filter((d) => d.is_selected).length,
-    transport: (transportOptions || []).filter((t) => t.is_selected).length,
+    flights: (flightOptions || []).filter((f) => isSelected("flight", f.id)).length,
+    accommodation: (accommodationOptions || []).filter((a) => isSelected("accommodation", a.id)).length,
+    activities: (activityOptions || []).filter((a) => isSelected("activity", a.id)).length,
+    dining: (diningOptions || []).filter((d) => isSelected("dining", d.id)).length,
+    transport: (transportOptions || []).filter((t) => isSelected("transportation", t.id)).length,
     misc: budgetItems.length,
   };
 
@@ -216,7 +224,7 @@ export default function BudgetTracker({ tripId, numTravelers = 1, flightOptions,
               {/* ── Line item details ── */}
               {sectionCounts.flights > 0 && (
                 <BudgetSection title={`Flights${travelers > 1 ? ` (${travelers} travelers)` : ""}`} items={
-                  (flightOptions || []).filter((f) => f.is_selected).map((f) => {
+                  (flightOptions || []).filter((f) => isSelected("flight", f.id)).map((f) => {
                     const price = f.total_price ? Number(f.total_price) : 0;
                     const pax = f.num_passengers ? Math.max(1, Number(f.num_passengers)) : 1;
                     const perPerson = price / pax;
@@ -232,7 +240,7 @@ export default function BudgetTracker({ tripId, numTravelers = 1, flightOptions,
 
               {sectionCounts.accommodation > 0 && (
                 <BudgetSection title="Accommodation" items={
-                  (accommodationOptions || []).filter((a) => a.is_selected).map((a) => {
+                  (accommodationOptions || []).filter((a) => isSelected("accommodation", a.id)).map((a) => {
                     let amount = a.total_price;
                     let note = "";
                     if (!amount && a.price_per_night && a.check_in_date && a.check_out_date) {
@@ -247,7 +255,7 @@ export default function BudgetTracker({ tripId, numTravelers = 1, flightOptions,
 
               {sectionCounts.activities > 0 && (
                 <BudgetSection title={`Activities${travelers > 1 ? ` (x${travelers})` : ""}`} items={
-                  (activityOptions || []).filter((a) => a.is_selected).map((a) => ({
+                  (activityOptions || []).filter((a) => isSelected("activity", a.id)).map((a) => ({
                     name: a.name || "Activity",
                     amount: (a.price || 0) * travelers,
                     unitNote: travelers > 1 ? `${formatPrice(a.price, "USD")}/pp` : null,
@@ -257,7 +265,7 @@ export default function BudgetTracker({ tripId, numTravelers = 1, flightOptions,
 
               {sectionCounts.dining > 0 && (
                 <BudgetSection title={`Food & Dining${travelers > 1 ? ` (x${travelers})` : ""}`} items={
-                  (diningOptions || []).filter((d) => d.is_selected).map((d) => ({
+                  (diningOptions || []).filter((d) => isSelected("dining", d.id)).map((d) => ({
                     name: d.name || "Restaurant",
                     amount: (d.avg_meal_cost || 0) * travelers,
                     unitNote: travelers > 1 ? `${formatPrice(d.avg_meal_cost, "USD")}/pp` : null,
@@ -267,7 +275,7 @@ export default function BudgetTracker({ tripId, numTravelers = 1, flightOptions,
 
               {sectionCounts.transport > 0 && (
                 <BudgetSection title="Transportation" items={
-                  (transportOptions || []).filter((t) => t.is_selected).map((t) => {
+                  (transportOptions || []).filter((t) => isSelected("transportation", t.id)).map((t) => {
                     const p = t.price ? Number(t.price) : 0;
                     const isCarRental = t.category === "car_rental";
                     const total = isCarRental ? p : p * travelers;
