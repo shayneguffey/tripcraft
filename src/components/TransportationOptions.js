@@ -4,6 +4,8 @@ import { useState, useEffect, useCallback, useRef } from "react";
 import { supabase } from "@/lib/supabase";
 import InlineConfirm from "@/components/InlineConfirm";
 import TimeSelectPopup, { to12h, formatTime12h } from "@/components/TimeSelectPopup";
+import SourceThumbnails from "@/components/SourceThumbnails";
+import EditableNotes from "@/components/EditableNotes";
 
 // ── Category metadata ──
 const CATEGORIES = {
@@ -42,7 +44,12 @@ function formatDateNice(dateStr) {
 }
 
 function formatTime(timeStr) {
-  return timeStr || "";
+  if (!timeStr) return "";
+  const [h, m] = timeStr.split(":");
+  const hour = parseInt(h, 10);
+  const ampm = hour >= 12 ? "PM" : "AM";
+  const h12 = hour === 0 ? 12 : hour > 12 ? hour - 12 : hour;
+  return `${h12}:${m} ${ampm}`;
 }
 
 // ── Send image to Gemini for transportation extraction ──
@@ -89,7 +96,8 @@ export default function TransportationOptions({ tripId, tripStart, tripEnd, onTr
       .from("transportation_options")
       .select("*")
       .eq("trip_id", tripId)
-      .order("sort_order", { ascending: true });
+      .order("sort_order", { ascending: true })
+      .order("created_at", { ascending: true });
     const opts = data || [];
     setOptions(opts);
     if (onTransportationOptionsChange) onTransportationOptionsChange(opts);
@@ -125,6 +133,11 @@ export default function TransportationOptions({ tripId, tripStart, tripEnd, onTr
     loadOptions();
   }
 
+  async function handleNotesChange(id, notes) {
+    await supabase.from("transportation_options").update({ notes: notes }).eq("id", id);
+    loadOptions();
+  }
+
   if (loading) return null;
 
   return (
@@ -150,7 +163,8 @@ export default function TransportationOptions({ tripId, tripStart, tripEnd, onTr
             {selected ? (
               <OptionDetail opt={{...selected, is_selected: (itinerarySelections || []).some(s => s.option_type === "transportation" && s.option_id === selected.id)}} tripStart={tripStart} tripEnd={tripEnd}
                 onToggleSelected={() => handleToggleSelected(selected.id)}
-                onTimeChange={(depTime, arrTime) => handleTimeChange(selected.id, depTime, arrTime)} />
+                onTimeChange={(depTime, arrTime) => handleTimeChange(selected.id, depTime, arrTime)}
+                onNotesChange={(notes) => handleNotesChange(selected.id, notes)} />
             ) : (
               <p className="text-slate-400 text-sm italic">Select a transportation option to view details</p>
             )}
@@ -190,14 +204,21 @@ function OptionTab({ opt, index, isSelected, onClick, onDelete, confirmDelete, o
       onClick={onClick}
       onMouseEnter={() => setHovered(true)}
       onMouseLeave={() => setHovered(false)}
-      className={`relative p-3 rounded-xl cursor-pointer transition-all border-2 ${
+      className={`relative p-3 pr-8 rounded-xl cursor-pointer transition-all border-2 ${
         isSelected ? "border-violet-500 bg-violet-50 shadow-sm" : "border-slate-200 bg-white hover:border-violet-300"
       }`}
     >
-      {/* Delete button */}
+      {/* Itinerary check icon — upper right */}
+      {opt.is_selected && (
+        <svg className="absolute top-2 right-2 w-3.5 h-3.5 text-violet-500" fill="currentColor" viewBox="0 0 20 20">
+          <path fillRule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clipRule="evenodd" />
+        </svg>
+      )}
+
+      {/* Delete button — bottom right */}
       {hovered && (
         <button onClick={(e) => { e.stopPropagation(); onDelete(); }}
-          className="absolute top-2 right-2 text-slate-300 hover:text-red-500 transition-colors" title="Delete">
+          className="absolute bottom-2 right-2 text-slate-300 hover:text-red-500 transition-colors" title="Delete">
           <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24" strokeWidth={2}>
             <path strokeLinecap="round" strokeLinejoin="round" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
           </svg>
@@ -209,26 +230,22 @@ function OptionTab({ opt, index, isSelected, onClick, onDelete, confirmDelete, o
         <span className={`inline-flex items-center px-1.5 py-0.5 rounded text-[9px] font-bold ${cat.color}`}>
           {cat.label.toUpperCase()}
         </span>
-        {opt.is_selected && (
-          <svg className="w-3.5 h-3.5 text-violet-500" fill="currentColor" viewBox="0 0 20 20">
-            <path fillRule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clipRule="evenodd" />
-          </svg>
-        )}
       </div>
-      <div className="font-semibold text-sm text-slate-800 truncate">{opt.name || "Untitled"}</div>
+      <div className="font-semibold text-sm text-slate-800 line-clamp-2">{opt.name || "Untitled"}</div>
       {opt.pickup_location && <div className="text-xs text-slate-500 truncate">{opt.pickup_location} → {opt.dropoff_location || "..."}</div>}
-      <div className="flex items-center justify-between mt-1">
-        <span className="text-xs text-slate-400">
+      {(opt.departure_date || opt.arrival_date) && (
+        <div className="text-[11px] text-slate-400 mt-1">
           {opt.departure_date ? formatDateNice(opt.departure_date) : ""}
-        </span>
-        {opt.price && <span className="text-sm font-bold text-violet-600">{formatPrice(opt.price, opt.currency)}</span>}
-      </div>
+          {opt.departure_date && opt.arrival_date ? " – " : ""}
+          {opt.arrival_date ? formatDateNice(opt.arrival_date) : ""}
+        </div>
+      )}
     </div>
   );
 }
 
 // ─── OPTION DETAIL ───
-function OptionDetail({ opt, tripStart, tripEnd, onToggleSelected, onTimeChange }) {
+function OptionDetail({ opt, tripStart, tripEnd, onToggleSelected, onTimeChange, onNotesChange }) {
   const cat = getCategoryInfo(opt.category);
   const [showTimePopup, setShowTimePopup] = useState(false);
 
@@ -239,25 +256,29 @@ function OptionDetail({ opt, tripStart, tripEnd, onToggleSelected, onTimeChange 
   return (
     <div>
       {/* Header */}
-      <div className="flex items-start justify-between mb-4">
-        <div className="flex-1">
-          <div className="flex items-center gap-2 mb-1">
-            <span className={`inline-flex items-center px-2 py-0.5 rounded text-xs font-bold ${cat.color}`}>
-              {cat.label}
-            </span>
-            {opt.provider && <span className="text-xs text-slate-400">via {opt.provider}</span>}
-            {opt.is_private && <span className="inline-flex items-center px-2 py-0.5 rounded text-xs font-bold bg-purple-100 text-purple-700">Private</span>}
-          </div>
+      <div className="flex items-start justify-between mb-2">
+        <div>
           <h3 className="text-xl font-bold text-slate-800">{opt.name}</h3>
+          {opt.provider && <span className="text-xs text-slate-400">via {opt.provider}</span>}
         </div>
-        <div className="text-right">
-          {opt.price && (
-            <div className="text-2xl font-bold text-slate-800">{formatPrice(opt.price, opt.currency)}</div>
-          )}
-          {opt.price_per && (
-            <div className="text-xs text-slate-400">per {opt.price_per}</div>
-          )}
-        </div>
+        {opt.price != null && opt.price > 0 && (
+          <div className="text-right flex-shrink-0 ml-4">
+            <div className="text-2xl font-bold text-slate-800">
+              {formatPrice(opt.price, opt.currency)}
+            </div>
+            <div className="text-xs text-slate-400">{opt.price_per || "total"}</div>
+          </div>
+        )}
+      </div>
+
+      {/* Add to Itinerary — just below title */}
+      <div className="mb-4">
+        <button onClick={onToggleSelected}
+          className={`px-3 py-1.5 rounded-lg text-sm font-medium transition-colors ${
+            opt.is_selected ? "bg-violet-100 text-violet-700" : "bg-slate-100 text-slate-600 hover:bg-violet-50"
+          }`}>
+          {opt.is_selected ? "✓ Added to Itinerary" : "Add to Itinerary"}
+        </button>
       </div>
 
       {/* Stats row */}
@@ -268,22 +289,11 @@ function OptionDetail({ opt, tripStart, tripEnd, onToggleSelected, onTimeChange 
         {opt.class_type && !opt.vehicle_type && (
           <div><span className="text-xs text-slate-400 uppercase tracking-wide">Class</span><div className="font-medium">{opt.class_type}</div></div>
         )}
-        {opt.duration_minutes && (
+        {opt.duration_minutes && opt.category !== "car_rental" && (
           <div><span className="text-xs text-slate-400 uppercase tracking-wide">Duration</span><div className="font-medium">{formatDuration(opt.duration_minutes)}</div></div>
         )}
         {opt.passengers && (
           <div><span className="text-xs text-slate-400 uppercase tracking-wide">Passengers</span><div className="font-medium">{opt.passengers}</div></div>
-        )}
-        {opt.rating && (
-          <div>
-            <span className="text-xs text-slate-400 uppercase tracking-wide">Rating</span>
-            <div className="font-medium flex items-center gap-1">
-              <svg className="w-4 h-4 text-amber-400" fill="currentColor" viewBox="0 0 20 20">
-                <path d="M9.049 2.927c.3-.921 1.603-.921 1.902 0l1.07 3.292a1 1 0 00.95.69h3.462c.969 0 1.371 1.24.588 1.81l-2.8 2.034a1 1 0 00-.364 1.118l1.07 3.292c.3.921-.755 1.688-1.538 1.118l-2.8-2.034a1 1 0 00-1.175 0l-2.8 2.034c-.784.57-1.838-.197-1.539-1.118l1.07-3.292a1 1 0 00-.364-1.118L2.98 8.72c-.783-.57-.38-1.81.588-1.81h3.461a1 1 0 00.951-.69l1.07-3.292z" />
-              </svg>
-              {opt.rating}{opt.review_count ? <span className="text-xs text-slate-400">({opt.review_count.toLocaleString()})</span> : ""}
-            </div>
-          </div>
         )}
         {opt.service_name && (
           <div><span className="text-xs text-slate-400 uppercase tracking-wide">Service</span><div className="font-medium">{opt.service_name}</div></div>
@@ -297,76 +307,41 @@ function OptionDetail({ opt, tripStart, tripEnd, onToggleSelected, onTimeChange 
         </div>
       )}
 
-      {/* Route info */}
-      {(opt.pickup_location || opt.dropoff_location) && (
-        <div className="mb-4">
-          <div className="text-xs text-slate-400 uppercase tracking-wide mb-2">Route</div>
-          <div className="flex items-center gap-3">
-            <div>
-              <div className="text-xs text-slate-500">Pickup</div>
-              <div className="font-medium text-slate-800">{opt.pickup_location || "—"}</div>
-              {opt.departure_date && (
-                <div className="text-xs text-slate-500 mt-1">
-                  {formatDateNice(opt.departure_date)}
-                  {opt.departure_time && ` at ${formatTime12h(opt.departure_time.slice(0, 5))}`}
-                </div>
-              )}
-            </div>
-            <svg className="w-5 h-5 text-slate-300 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24" strokeWidth={2}>
-              <path strokeLinecap="round" strokeLinejoin="round" d="M9 5l7 7-7 7" />
-            </svg>
-            <div>
-              <div className="text-xs text-slate-500">Dropoff</div>
-              <div className="font-medium text-slate-800">{opt.dropoff_location || "—"}</div>
-              {opt.arrival_date && (
-                <div className="text-xs text-slate-500 mt-1">
-                  {formatDateNice(opt.arrival_date)}
-                  {opt.arrival_time && ` at ${formatTime12h(opt.arrival_time.slice(0, 5))}`}
-                </div>
-              )}
-            </div>
-          </div>
-        </div>
-      )}
-
-      {/* Time selection — single popup with Departure/Arrival */}
-      <div className="mb-4 relative">
-        <div className="text-xs text-slate-400 uppercase tracking-wide mb-2">Times</div>
-        <button onClick={() => setShowTimePopup(!showTimePopup)}
-          className="px-3 py-1.5 rounded-lg text-sm font-medium bg-slate-100 text-slate-600 hover:bg-violet-50 hover:text-violet-700 transition-colors">
-          {opt.departure_time || opt.arrival_time ? (
-            <>
-              {opt.departure_time ? formatTime12h(opt.departure_time.slice(0, 5)) : "—"}
-              {" → "}
-              {opt.arrival_time ? formatTime12h(opt.arrival_time.slice(0, 5)) : "—"}
-            </>
-          ) : (
-            "+ Set times"
-          )}
-        </button>
-        {showTimePopup && (
-          <TimeSelectPopup
-            startTime={to12h(opt.departure_time?.slice(0, 5))}
-            endTime={to12h(opt.arrival_time?.slice(0, 5))}
-            startLabel="Departure"
-            endLabel="Arrival"
-            showEndTime={true}
-            onSave={(dep24, arr24) => {
-              setShowTimePopup(false);
-              if (onTimeChange) onTimeChange(dep24, arr24);
-            }}
-            onClear={() => {
-              setShowTimePopup(false);
-              if (onTimeChange) onTimeChange(null, null);
-            }}
-            onClose={() => setShowTimePopup(false)}
-          />
-        )}
-      </div>
 
       {/* Car rental specific */}
       {opt.category === "car_rental" && (
         <div className="mb-4">
+          {/* Pickup & Dropoff */}
+          {(opt.pickup_location || opt.departure_date || opt.dropoff_location || opt.arrival_date) && (
+            <div className="flex gap-6 mb-3">
+              {(opt.pickup_location || opt.departure_date) && (
+                <div>
+                  <div className="text-xs text-slate-400 uppercase tracking-wide mb-1">Pick Up</div>
+                  {opt.pickup_location && <div className="text-sm font-medium text-slate-700">{opt.pickup_location}</div>}
+                  {opt.departure_date && (
+                    <div className="text-sm text-slate-600">
+                      {formatDateNice(opt.departure_date)}
+                      {opt.departure_time && <span className="ml-1 text-slate-500">at {formatTime(opt.departure_time)}</span>}
+                    </div>
+                  )}
+                </div>
+              )}
+              {(opt.dropoff_location || opt.arrival_date) && (
+                <div>
+                  <div className="text-xs text-slate-400 uppercase tracking-wide mb-1">Drop Off</div>
+                  {opt.dropoff_location && <div className="text-sm font-medium text-slate-700">{opt.dropoff_location}</div>}
+                  {opt.arrival_date && (
+                    <div className="text-sm text-slate-600">
+                      {formatDateNice(opt.arrival_date)}
+                      {opt.arrival_time && <span className="ml-1 text-slate-500">at {formatTime(opt.arrival_time)}</span>}
+                    </div>
+                  )}
+                </div>
+              )}
+            </div>
+          )}
+
+          {/* Rental extras */}
           <div className="text-xs text-slate-400 uppercase tracking-wide mb-2">Rental Details</div>
           <div className="flex flex-wrap gap-2">
             {opt.insurance_included && (
@@ -383,37 +358,22 @@ function OptionDetail({ opt, tripStart, tripEnd, onToggleSelected, onTimeChange 
         </div>
       )}
 
-      {/* Action buttons */}
-      <div className="flex gap-2 mb-4">
-        <button onClick={onToggleSelected}
-          className={`px-3 py-1.5 rounded-lg text-sm font-medium transition-colors ${
-            opt.is_selected ? "bg-violet-100 text-violet-700" : "bg-slate-100 text-slate-600 hover:bg-violet-50"
-          }`}>
-          {opt.is_selected ? "✓ Picked" : "Mark as pick"}
-        </button>
-        {opt.source_url && (
-          <a href={opt.source_url} target="_blank" rel="noopener noreferrer"
-            className="px-3 py-1.5 rounded-lg text-sm font-medium bg-slate-100 text-slate-600 hover:bg-blue-50 hover:text-blue-700 transition-colors">
-            View original →
-          </a>
-        )}
-      </div>
-
-      {/* Screenshot */}
-      {opt.screenshot_url && (
-        <div className="mb-4">
-          <div className="text-xs text-slate-400 uppercase tracking-wide mb-2">Screenshot</div>
-          <img src={opt.screenshot_url} alt="Transportation screenshot" className="rounded-lg border border-slate-200 max-h-64 object-contain" />
-        </div>
-      )}
 
       {/* Notes */}
-      {opt.notes && (
-        <div>
-          <div className="text-xs text-slate-400 uppercase tracking-wide mb-1">Notes</div>
-          <p className="text-sm text-slate-600">{opt.notes}</p>
-        </div>
-      )}
+      <EditableNotes notes={opt.notes} onSave={onNotesChange} />
+
+      {/* Source thumbnails */}
+      <SourceThumbnails
+        screenshotUrl={opt.screenshot_url}
+        sourceUrl={opt.source_url}
+        manualData={[
+          { label: "Category", value: opt.category ? getCategoryInfo(opt.category).label : "" },
+          { label: "Vehicle", value: opt.vehicle_type || "" },
+          { label: "Price", value: opt.price ? formatPrice(opt.price, opt.currency) : "" },
+          { label: "Route", value: opt.pickup_location && opt.dropoff_location ? `${opt.pickup_location} → ${opt.dropoff_location}` : "" },
+        ]}
+        accentColor="violet"
+      />
     </div>
   );
 }

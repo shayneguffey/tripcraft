@@ -77,12 +77,18 @@ export default function BudgetTracker({ tripId, numTravelers = 1, flightOptions,
   // Flights: price already covers num_passengers from the booking. If that covers
   // fewer people than the trip's traveler count, scale up proportionally.
   const flightCalc = (() => {
-    const selected = (flightOptions || []).find((f) => isSelected("flight", f.id));
-    if (!selected?.total_price) return { base: 0, perPassenger: 0, passengers: 1 };
-    const price = Number(selected.total_price);
-    const passengers = selected.num_passengers ? Math.max(1, Number(selected.num_passengers)) : 1;
-    const perPassenger = price / passengers;
-    return { base: price, perPassenger, passengers };
+    const selectedFlights = (flightOptions || []).filter((f) => isSelected("flight", f.id));
+    if (selectedFlights.length === 0) return { base: 0, perPassenger: 0, passengers: 1 };
+    let totalBase = 0;
+    let totalPerPassenger = 0;
+    for (const sel of selectedFlights) {
+      if (!sel.total_price) continue;
+      const price = Number(sel.total_price);
+      const passengers = sel.num_passengers ? Math.max(1, Number(sel.num_passengers)) : 1;
+      totalBase += price;
+      totalPerPassenger += price / passengers;
+    }
+    return { base: totalBase, perPassenger: totalPerPassenger, passengers: selectedFlights[0]?.num_passengers || 1 };
   })();
   const flightTotal = flightCalc.perPassenger * travelers;
 

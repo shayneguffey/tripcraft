@@ -33,8 +33,8 @@ Return ONLY valid JSON (no markdown fences, no explanation):
   "review_count": integer number of reviews,
   "amenities": "wifi, kitchen, pool, parking, ac" (comma-separated list),
   "cancellation_policy": "Free cancellation" or policy description,
-  "location_name": "Neighborhood, district, or area name",
-  "address": "Street address if available",
+  "location_name": "City or area name (e.g. 'Phuket', 'Shibuya, Tokyo')",
+  "address": "Full street address (e.g. '10 Moo 4, Srisoonthorn Road, Cherngtalay, Phuket 83110')",
   "distance_info": "Distance to landmarks or attractions",
   "provider": "Booking platform name"
 }

@@ -4,6 +4,8 @@ import { useState, useEffect, useCallback, useRef } from "react";
 import { supabase } from "@/lib/supabase";
 import { parseFlightInput, parseFlightText, parseOcrText, getCityName, getAirlineName } from "@/lib/flightParser";
 import InlineConfirm from "@/components/InlineConfirm";
+import SourceThumbnails from "@/components/SourceThumbnails";
+import EditableNotes from "@/components/EditableNotes";
 
 // Send screenshot to Gemini Vision API via our server-side route
 async function extractFlightsFromImage(imageDataUrl) {
@@ -58,7 +60,8 @@ export default function FlightOptions({ tripId, tripStart, tripEnd, onFlightOpti
       .from("flight_options")
       .select("*, flight_legs(*)")
       .eq("trip_id", tripId)
-      .order("sort_order", { ascending: true });
+      .order("sort_order", { ascending: true })
+      .order("created_at", { ascending: true });
 
     const sorted = (opts || []).map((o) => ({
       ...o,
@@ -66,12 +69,12 @@ export default function FlightOptions({ tripId, tripStart, tripEnd, onFlightOpti
     }));
     setOptions(sorted);
 
-    // Auto-select the option selected in current itinerary, or first one
+    // Auto-select the first itinerary-selected option for viewing, or first option
     const selectedFlightIds = (itinerarySelections || [])
       .filter((s) => s.option_type === "flight")
       .map((s) => s.option_id);
     const sel = sorted.find((o) => selectedFlightIds.includes(o.id)) || sorted[0];
-    if (sel) setSelectedOption(sel.id);
+    if (sel && !selectedOption) setSelectedOption(sel.id);
 
     // Notify parent about flight options for calendar display
     if (onFlightOptionsChange) onFlightOptionsChange(sorted);
@@ -93,14 +96,18 @@ export default function FlightOptions({ tripId, tripStart, tripEnd, onFlightOpti
 
   async function handleSelectOption(optionId) {
     if (onToggleSelection && activeItineraryId) {
-      // Use itinerary-based selection (flights are exclusive — toggle handles deselecting others)
+      // Use itinerary-based selection (supports multiple flights)
       onToggleSelection("flight", optionId);
     } else {
-      // Fallback: direct DB update (pre-migration)
-      await supabase.from("flight_options").update({ is_selected: false }).eq("trip_id", tripId);
-      await supabase.from("flight_options").update({ is_selected: true }).eq("id", optionId);
+      // Fallback: direct DB toggle
+      const opt = options.find((o) => o.id === optionId);
+      await supabase.from("flight_options").update({ is_selected: !opt?.is_selected }).eq("id", optionId);
     }
-    setSelectedOption(optionId);
+    loadOptions();
+  }
+
+  async function handleNotesChange(optionId, notes) {
+    await supabase.from("flight_options").update({ notes: notes }).eq("id", optionId);
     loadOptions();
   }
 
@@ -132,7 +139,7 @@ export default function FlightOptions({ tripId, tripStart, tripEnd, onFlightOpti
                 option={opt}
                 isActive={opt.id === selectedOption}
                 isItinerarySelected={(itinerarySelections || []).some(s => s.option_type === "flight" && s.option_id === opt.id)}
-                onSelect={() => { setSelectedOption(opt.id); handleSelectOption(opt.id); }}
+                onSelect={() => setSelectedOption(opt.id)}
                 onDelete={() => setConfirmDeleteId(opt.id)}
                 confirmDelete={confirmDeleteId === opt.id}
                 onConfirmDelete={() => handleDeleteOption(opt.id)}
@@ -150,7 +157,10 @@ export default function FlightOptions({ tripId, tripStart, tripEnd, onFlightOpti
           {/* Detail panel (right side) */}
           <div className="flex-1 bg-white rounded-xl border border-emerald-100 shadow-sm p-5 min-h-[200px]">
             {selectedOpt ? (
-              <OptionDetail option={selectedOpt} />
+              <OptionDetail option={selectedOpt}
+                isItinerarySelected={(itinerarySelections || []).some(s => s.option_type === "flight" && s.option_id === selectedOpt.id)}
+                onToggleSelected={() => handleSelectOption(selectedOpt.id)}
+                onNotesChange={(notes) => handleNotesChange(selectedOpt.id, notes)} />
             ) : (
               <p className="text-slate-400 text-sm italic">Select a flight option to view details</p>
             )}
@@ -174,29 +184,39 @@ export default function FlightOptions({ tripId, tripStart, tripEnd, onFlightOpti
 function OptionTab({ option, isActive, isItinerarySelected, onSelect, onDelete, confirmDelete, onConfirmDelete, onCancelDelete }) {
   const [hovered, setHovered] = useState(false);
   const legs = option.flight_legs || [];
-  const outbound = legs.find((l) => l.direction === "outbound");
+  const outboundLegs = legs.filter((l) => l.direction === "outbound");
+  const returnLegs = legs.filter((l) => l.direction === "return");
 
-  const routeSummary = outbound
-    ? `${outbound.departure_airport} → ${outbound.arrival_airport}`
+  const routeSummary = outboundLegs.length > 0
+    ? `${outboundLegs[0].departure_airport} → ${outboundLegs[outboundLegs.length - 1].arrival_airport}`
     : "No flights";
 
-  const dateSummary = outbound?.departure_date
-    ? formatDate(outbound.departure_date)
-    : "Dates TBD";
+  const airlineName = legs[0]?.airline_name || legs[0]?.airline_code || "";
+  const outboundStops = outboundLegs.length > 1 ? `${outboundLegs.length - 1} stop${outboundLegs.length > 2 ? "s" : ""}` : outboundLegs.length === 1 ? "Direct" : "";
+
+  const outboundDate = outboundLegs[0]?.departure_date ? formatDate(outboundLegs[0].departure_date) : "";
+  const returnDate = returnLegs[0]?.departure_date ? formatDate(returnLegs[0].departure_date) : "";
 
   return (
     <div
       onClick={onSelect}
       onMouseEnter={() => setHovered(true)}
       onMouseLeave={() => setHovered(false)}
-      className={`relative p-3 rounded-xl cursor-pointer transition-all border-2 ${
+      className={`relative p-3 pr-8 rounded-xl cursor-pointer transition-all border-2 ${
         isActive ? "border-emerald-500 bg-emerald-50 shadow-sm" : "border-slate-200 bg-white hover:border-emerald-300"
       }`}
     >
-      {/* Delete button */}
+      {/* Itinerary check icon — upper right */}
+      {(isItinerarySelected !== undefined ? isItinerarySelected : option.is_selected) && (
+        <svg className="absolute top-2 right-2 w-3.5 h-3.5 text-emerald-500" fill="currentColor" viewBox="0 0 20 20">
+          <path fillRule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clipRule="evenodd" />
+        </svg>
+      )}
+
+      {/* Delete button — bottom right */}
       {hovered && (
         <button onClick={(e) => { e.stopPropagation(); onDelete(); }}
-          className="absolute top-2 right-2 text-slate-300 hover:text-red-500 transition-colors" title="Delete">
+          className="absolute bottom-2 right-2 text-slate-300 hover:text-red-500 transition-colors" title="Delete">
           <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24" strokeWidth={2}>
             <path strokeLinecap="round" strokeLinejoin="round" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
           </svg>
@@ -209,57 +229,31 @@ function OptionTab({ option, isActive, isItinerarySelected, onSelect, onDelete, 
         onCancel={onCancelDelete}
       />
 
-      <div className="text-[10px] font-semibold text-slate-400 mb-1 flex items-center gap-1">
-        <span className="uppercase tracking-wide">Option {option.sort_order + 1}</span>
-        {(isItinerarySelected !== undefined ? isItinerarySelected : option.is_selected) && (
-          <svg className="w-3.5 h-3.5 text-emerald-500" fill="currentColor" viewBox="0 0 20 20">
-            <path fillRule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clipRule="evenodd" />
-          </svg>
-        )}
+      <div className="flex items-center gap-1 mb-0.5">
+        {airlineName && <span className="text-xs font-medium text-slate-600 truncate">{airlineName}</span>}
       </div>
-      <div className="font-semibold text-sm text-slate-800 truncate">{option.name}</div>
-      <div className="text-xs text-slate-500 truncate">{routeSummary}</div>
-      <div className="flex items-center justify-between mt-1">
-        <span className="text-[11px] text-slate-400">{dateSummary}</span>
-        {option.total_price && (
-          <span className="text-sm font-bold text-emerald-600">
-            ${Number(option.total_price).toLocaleString()}
-          </span>
-        )}
+      <div className="font-semibold text-sm text-slate-800 line-clamp-2">{routeSummary}</div>
+      {outboundStops && <div className="text-[11px] text-slate-500">{outboundStops}</div>}
+      <div className="text-[11px] text-slate-400 mt-1">
+        {outboundDate}{outboundDate && returnDate ? " – " : ""}{returnDate}
+        {!outboundDate && !returnDate && "Dates TBD"}
       </div>
     </div>
   );
 }
 
 // ─── OPTION DETAIL PANEL ───
-function OptionDetail({ option }) {
+function OptionDetail({ option, isItinerarySelected, onToggleSelected, onNotesChange }) {
   const legs = option.flight_legs || [];
   const outbound = legs.filter((l) => l.direction === "outbound");
   const returnLegs = legs.filter((l) => l.direction === "return");
-
   return (
     <div>
       {/* Header */}
-      <div className="flex items-center justify-between mb-4">
-        <div>
-          <h3 className="text-lg font-bold text-slate-800">{option.name}</h3>
-          {option.source_url && (
-            <a
-              href={option.source_url}
-              target="_blank"
-              rel="noopener noreferrer"
-              className="text-xs text-emerald-500 hover:text-emerald-600 inline-flex items-center gap-1"
-            >
-              View on booking site
-              <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 16 16" fill="currentColor" className="w-3 h-3">
-                <path d="M6.22 8.72a.75.75 0 0 0 1.06 1.06l5.22-5.22v1.69a.75.75 0 0 0 1.5 0v-3.5a.75.75 0 0 0-.75-.75h-3.5a.75.75 0 0 0 0 1.5h1.69L6.22 8.72Z" />
-                <path d="M3.5 6.75c0-.69.56-1.25 1.25-1.25H7A.75.75 0 0 0 7 4H4.75A2.75 2.75 0 0 0 2 6.75v4.5A2.75 2.75 0 0 0 4.75 14h4.5A2.75 2.75 0 0 0 12 11.25V9a.75.75 0 0 0-1.5 0v2.25c0 .69-.56 1.25-1.25 1.25h-4.5c-.69 0-1.25-.56-1.25-1.25v-4.5Z" />
-              </svg>
-            </a>
-          )}
-        </div>
+      <div className="flex items-start justify-between mb-4">
+        <h3 className="text-lg font-bold text-slate-800">{option.name}</h3>
         {option.total_price && (
-          <div className="text-right">
+          <div className="text-right flex-shrink-0 ml-4">
             <div className="text-2xl font-bold text-slate-800">
               ${Number(option.total_price).toLocaleString()}
             </div>
@@ -269,7 +263,7 @@ function OptionDetail({ option }) {
       </div>
 
       {/* Stats row */}
-      <div className="flex gap-4 mb-5 pb-4 border-b border-emerald-50">
+      <div className="flex gap-4 mb-3 pb-4 border-b border-emerald-50">
         <StatBadge label="Legs" value={legs.length} />
         <StatBadge label="Cabin" value={legs[0]?.cabin_class || "economy"} />
         {outbound[0]?.departure_date && returnLegs[returnLegs.length - 1]?.departure_date && (
@@ -282,6 +276,16 @@ function OptionDetail({ option }) {
         {option.num_passengers && option.num_passengers > 0 && (
           <StatBadge label="Passengers" value={option.num_passengers} />
         )}
+      </div>
+
+      {/* Add to Itinerary — just below stats */}
+      <div className="mb-4">
+        <button onClick={onToggleSelected}
+          className={`px-3 py-1.5 rounded-lg text-sm font-medium transition-colors ${
+            isItinerarySelected ? "bg-emerald-100 text-emerald-700" : "bg-slate-100 text-slate-600 hover:bg-emerald-50"
+          }`}>
+          {isItinerarySelected ? "✓ Added to Itinerary" : "Add to Itinerary"}
+        </button>
       </div>
 
       {/* Flight legs */}
@@ -307,30 +311,20 @@ function OptionDetail({ option }) {
         <p className="text-sm text-slate-400 italic">No flight legs parsed. Try adding details manually.</p>
       )}
 
-      {/* Screenshot */}
-      {option.screenshot_url && (
-        <div className="mt-4 pt-4 border-t border-emerald-50">
-          <div className="text-xs font-bold text-slate-400 uppercase tracking-wide mb-2">Screenshot</div>
-          <img
-            src={option.screenshot_url}
-            alt="Flight screenshot"
-            className="w-full rounded-lg border border-slate-200 max-h-64 object-contain bg-slate-50 cursor-pointer"
-            onClick={(e) => {
-              // Open screenshot in full view on click
-              const w = window.open();
-              w.document.write(`<img src="${option.screenshot_url}" style="max-width:100%;margin:20px auto;display:block;">`);
-            }}
-          />
-        </div>
-      )}
-
       {/* Notes */}
-      {option.notes && (
-        <div className="mt-4 pt-4 border-t border-emerald-50">
-          <div className="text-xs font-bold text-slate-400 uppercase tracking-wide mb-1">Notes</div>
-          <p className="text-sm text-slate-600">{option.notes}</p>
-        </div>
-      )}
+      <EditableNotes notes={option.notes} onSave={onNotesChange} />
+
+      {/* Source thumbnails */}
+      <SourceThumbnails
+        screenshotUrl={option.screenshot_url}
+        sourceUrl={option.source_url}
+        manualData={[
+          { label: "Price", value: option.total_price ? `$${Number(option.total_price).toLocaleString()}` : "" },
+          { label: "Passengers", value: option.num_passengers ? String(option.num_passengers) : "" },
+          { label: "Cabin", value: legs[0]?.cabin_class || "" },
+        ]}
+        accentColor="emerald"
+      />
     </div>
   );
 }

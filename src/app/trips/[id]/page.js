@@ -414,15 +414,6 @@ export default function TripDetailPage() {
       await supabase.from("itinerary_selections").delete().eq("id", existing.id);
       setItinerarySelections((prev) => prev.filter((s) => s.id !== existing.id));
     } else {
-      // For flights: only one can be selected per itinerary — remove others first
-      if (optionType === "flight") {
-        const otherFlights = itinerarySelections.filter((s) => s.option_type === "flight");
-        if (otherFlights.length > 0) {
-          const idsToRemove = otherFlights.map((s) => s.id);
-          await supabase.from("itinerary_selections").delete().in("id", idsToRemove);
-          setItinerarySelections((prev) => prev.filter((s) => s.option_type !== "flight"));
-        }
-      }
       // Add selection
       const { data: newSel } = await supabase
         .from("itinerary_selections")
@@ -471,15 +462,16 @@ export default function TripDetailPage() {
     loadTrip();
   }
 
-  // Get flights on a given date — filtered by itinerary selections
+  // Get flights on a given date — filtered by itinerary selections (supports multiple flight options)
   function getFlightsOnDate(dateKey) {
-    // Find the flight option selected in this itinerary
     const selectedFlightIds = itinerarySelections
       .filter((s) => s.option_type === "flight")
       .map((s) => s.option_id);
-    const selectedOpt = flightOptions.find((o) => selectedFlightIds.includes(o.id));
-    if (!selectedOpt) return [];
-    return (selectedOpt.flight_legs || []).filter((leg) => leg.departure_date === dateKey);
+    const selectedOpts = flightOptions.filter((o) => selectedFlightIds.includes(o.id));
+    if (selectedOpts.length === 0) return [];
+    return selectedOpts.flatMap((opt) =>
+      (opt.flight_legs || []).filter((leg) => leg.departure_date === dateKey)
+    );
   }
 
   function getScheduledActivities(dateKey) {
@@ -897,8 +889,8 @@ export default function TripDetailPage() {
                   </div>
                 </div>
 
-                {/* Right: Description — inline editable */}
-                <div className="flex-1 min-w-0 min-h-[60px]">
+                {/* Right: Description — inline editable, aligned with date range */}
+                <div className="flex-1 min-w-0 mt-[34px]">
                   {editingItineraryDesc ? (
                     <textarea
                       value={itineraryDescValue}
@@ -913,7 +905,7 @@ export default function TripDetailPage() {
                   ) : (
                     <div
                       onClick={() => { setEditingItineraryDesc(true); setItineraryDescValue(activeItinerary?.description || ""); }}
-                      className={`text-sm px-2 py-1 rounded-lg cursor-text min-h-[32px] whitespace-pre-wrap transition-colors border border-transparent ${
+                      className={`text-sm px-2 py-1 rounded-lg cursor-text min-h-[32px] whitespace-pre-wrap transition-colors border border-stone-300 ${
                         activeItinerary?.description
                           ? "text-stone-600"
                           : "text-stone-300 italic hover:bg-stone-50"
@@ -1146,7 +1138,7 @@ export default function TripDetailPage() {
 
         {/* ═══ ITINERARY TABS ═══ */}
         <div className="mt-8">
-          <div className="flex gap-1 mb-0">
+          <div className="flex flex-wrap gap-1 mb-0">
             {[
               { key: "flights", label: "Flights", color: "#059669", icon: <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor" className="w-4 h-4"><path d="M3.105 2.288a.75.75 0 0 0-.826.95l1.414 4.926A1.5 1.5 0 0 0 5.135 9.25h6.115a.75.75 0 0 1 0 1.5H5.135a1.5 1.5 0 0 0-1.442 1.086l-1.414 4.926a.75.75 0 0 0 .826.95 28.897 28.897 0 0 0 15.293-7.154.75.75 0 0 0 0-1.115A28.897 28.897 0 0 0 3.105 2.289Z" /></svg> },
               { key: "accommodations", label: "Accommodations", color: "#0284c7", icon: <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor" className="w-4 h-4"><path d="M.75 15.5a.75.75 0 0 0 1.5 0V13h16v2.5a.75.75 0 0 0 1.5 0v-6a.75.75 0 0 0-1.5 0V11H16V4.5A2.5 2.5 0 0 0 13.5 2h-7A2.5 2.5 0 0 0 4 4.5V11H2.25V9.5a.75.75 0 0 0-1.5 0v6ZM5.5 4.5a1 1 0 0 1 1-1h7a1 1 0 0 1 1 1V11h-9V4.5Z" /></svg> },
@@ -1251,8 +1243,8 @@ export default function TripDetailPage() {
             <div style={{ display: activeItineraryTab === "activities" ? "block" : "none" }}>
               <ActivityOptions
                 tripId={params.id}
-                tripStart={trip?.start_date}
-                tripEnd={trip?.end_date}
+                tripStart={activeItinerary?.start_date || trip?.start_date}
+                tripEnd={activeItinerary?.end_date || trip?.end_date}
                 onActivityOptionsChange={setActivityOptions}
                 itinerarySelections={itinerarySelections}
                 activeItineraryId={activeItineraryId}
@@ -1262,8 +1254,8 @@ export default function TripDetailPage() {
             <div style={{ display: activeItineraryTab === "dining" ? "block" : "none" }}>
               <DiningOptions
                 tripId={params.id}
-                tripStart={trip?.start_date}
-                tripEnd={trip?.end_date}
+                tripStart={activeItinerary?.start_date || trip?.start_date}
+                tripEnd={activeItinerary?.end_date || trip?.end_date}
                 onDiningOptionsChange={setDiningOptions}
                 itinerarySelections={itinerarySelections}
                 activeItineraryId={activeItineraryId}

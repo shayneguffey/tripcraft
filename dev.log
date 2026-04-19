@@ -1,0 +1,3022 @@
+
+> tripcraft@0.1.0 dev
+> next dev
+
+Γû▓ Next.js 16.2.3 (Turbopack)
+- Local:         http://localhost:3000
+- Network:       http://10.0.0.22:3000
+- Environments: .env.local
+Γ£ô Ready in 387ms
+
+ GET /api/clear-posters 200 in 1393ms (next.js: 235ms, application-code: 1158ms)
+ GET /trips 200 in 361ms (next.js: 126ms, application-code: 235ms)
+ GET /api/cover-image?destination=Bali%20Indonesia&count=10 200 in 145ms (next.js: 30ms, application-code: 115ms)
+Trying gemini-2.5-flash-image for: Athens Greece
+[gemini-2.5-flash-image] Γ£ô image generated successfully
+ POST /api/generate-poster 200 in 7.1s (next.js: 30ms, application-code: 7.1s)
+ GET /trips 200 in 394ms (next.js: 349ms, application-code: 45ms)
+ GET /api/clear-posters 200 in 1237ms (next.js: 37ms, application-code: 1201ms)
+ GET /trips 200 in 160ms (next.js: 5ms, application-code: 155ms)
+ GET /api/cover-image?destination=Bali%20Indonesia&count=10 200 in 121ms (next.js: 14ms, application-code: 107ms)
+Trying gemini-2.5-flash-image for: Athens Greece
+[gemini-2.5-flash-image] Γ£ô image generated successfully
+ POST /api/generate-poster 200 in 6.8s (next.js: 46ms, application-code: 6.8s)
+Γ£ô Compiled in 352ms
+ GET /trips 200 in 92ms (next.js: 60ms, application-code: 32ms)
+ GET /trips 200 in 109ms (next.js: 25ms, application-code: 84ms)
+ GET /api/clear-posters 200 in 3.1s (next.js: 71ms, application-code: 3.0s)
+ GET /trips 200 in 192ms (next.js: 7ms, application-code: 185ms)
+ GET /api/cover-image?destination=Iceland%20Northern%20Lights&count=10 200 in 143ms (next.js: 28ms, application-code: 115ms)
+Trying gemini-2.5-flash-image for: Paris France
+Trying gemini-2.5-flash-image for: Athens Greece
+Trying gemini-2.5-flash-image for: Paris france
+Trying gemini-2.5-flash-image for: Olympic National Park
+Trying gemini-2.5-flash-image for: Puerto Vallarta
+Trying gemini-2.5-flash-image for: Santo Domingo
+[gemini-2.5-flash-image] Γ£ô image generated successfully
+[gemini-2.5-flash-image] Γ£ô image generated successfully
+ POST /api/generate-poster 200 in 7.3s (next.js: 62ms, application-code: 7.3s)
+ POST /api/generate-poster 200 in 7.5s (next.js: 87ms, application-code: 7.4s)
+Trying gemini-2.5-flash-image for: Madrid Spain
+Trying gemini-2.5-flash-image for: Portland Oregon
+[gemini-2.5-flash-image] Γ£ô image generated successfully
+[gemini-2.5-flash-image] Γ£ô image generated successfully
+[gemini-2.5-flash-image] Γ£ô image generated successfully
+ POST /api/generate-poster 200 in 8.6s (next.js: 48ms, application-code: 8.6s)
+ POST /api/generate-poster 200 in 8.8s (next.js: 30ms, application-code: 8.7s)
+[gemini-2.5-flash-image] Γ£ô image generated successfully
+ POST /api/generate-poster 200 in 9.1s (next.js: 41ms, application-code: 9.1s)
+ POST /api/generate-poster 200 in 9.6s (next.js: 54ms, application-code: 9.5s)
+[gemini-2.5-flash-image] Γ£ô image generated successfully
+[gemini-2.5-flash-image] Γ£ô image generated successfully
+ POST /api/generate-poster 200 in 7.2s (next.js: 6ms, application-code: 7.2s)
+ POST /api/generate-poster 200 in 7.6s (next.js: 6ms, application-code: 7.6s)
+Γ£ô Compiled in 219ms
+ GET /trips 200 in 347ms (next.js: 171ms, application-code: 176ms)
+ GET /trips 200 in 116ms (next.js: 65ms, application-code: 51ms)
+ GET /api/clear-posters 200 in 3.2s (next.js: 78ms, application-code: 3.1s)
+ GET /trips 200 in 188ms (next.js: 3ms, application-code: 184ms)
+ GET /api/cover-image?destination=Amalfi%20Coast%20Italy&count=10 200 in 148ms (next.js: 31ms, application-code: 117ms)
+Trying gemini-2.5-flash-image for: Puerto Vallarta
+Trying gemini-2.5-flash-image for: Paris France
+Trying gemini-2.5-flash-image for: Athens Greece
+Trying gemini-2.5-flash-image for: Paris france
+Trying gemini-2.5-flash-image for: Olympic National Park
+Trying gemini-2.5-flash-image for: Santo Domingo
+[gemini-2.5-flash-image] Γ£ô image generated successfully
+[gemini-2.5-flash-image] Γ£ô image generated successfully
+[gemini-2.5-flash-image] Γ£ô image generated successfully
+[gemini-2.5-flash-image] Γ£ô image generated successfully
+ POST /api/generate-poster 200 in 7.2s (next.js: 104ms, application-code: 7.1s)
+Trying gemini-2.5-flash-image for: Madrid Spain
+ POST /api/generate-poster 200 in 7.4s (next.js: 62ms, application-code: 7.3s)
+Trying gemini-2.5-flash-image for: Portland Oregon
+ POST /api/generate-poster 200 in 7.7s (next.js: 158ms, application-code: 7.5s)
+ POST /api/generate-poster 200 in 7.9s (next.js: 173ms, application-code: 7.7s)
+[gemini-2.5-flash-image] Γ£ô image generated successfully
+ POST /api/generate-poster 200 in 9.2s (next.js: 135ms, application-code: 9.0s)
+[gemini-2.5-flash-image] Γ£ô image generated successfully
+ POST /api/generate-poster 200 in 9.8s (next.js: 165ms, application-code: 9.6s)
+[gemini-2.5-flash-image] Γ£ô image generated successfully
+[gemini-2.5-flash-image] Γ£ô image generated successfully
+ POST /api/generate-poster 200 in 6.6s (next.js: 5ms, application-code: 6.6s)
+ POST /api/generate-poster 200 in 6.7s (next.js: 2ms, application-code: 6.7s)
+ GET /api/cover-image?destination=Paris%20france&count=10 200 in 78ms (next.js: 4ms, application-code: 74ms)
+ GET /trips 200 in 422ms (next.js: 82ms, application-code: 340ms)
+ GET /trips 200 in 199ms (next.js: 72ms, application-code: 127ms)
+ GET /trips 200 in 123ms (next.js: 29ms, application-code: 93ms)
+ GET /trips 200 in 123ms (next.js: 75ms, application-code: 48ms)
+ GET /trips 200 in 125ms (next.js: 53ms, application-code: 72ms)
+ GET /trips 200 in 126ms (next.js: 3ms, application-code: 123ms)
+ GET /trips 200 in 132ms (next.js: 6ms, application-code: 126ms)
+ GET /trips 200 in 111ms (next.js: 8ms, application-code: 104ms)
+ GET /trips 200 in 117ms (next.js: 20ms, application-code: 96ms)
+ GET /trips 200 in 119ms (next.js: 4ms, application-code: 115ms)
+ GET /trips 200 in 119ms (next.js: 58ms, application-code: 61ms)
+ GET /trips 200 in 122ms (next.js: 41ms, application-code: 81ms)
+ GET /trips 200 in 150ms (next.js: 7ms, application-code: 143ms)
+ GET /trips 200 in 112ms (next.js: 9ms, application-code: 102ms)
+ GET /trips 200 in 100ms (next.js: 7ms, application-code: 93ms)
+ GET /trips 200 in 99ms (next.js: 21ms, application-code: 79ms)
+ GET /trips 200 in 99ms (next.js: 34ms, application-code: 65ms)
+ GET /trips 200 in 83ms (next.js: 34ms, application-code: 49ms)
+ GET /trips 200 in 134ms (next.js: 2ms, application-code: 132ms)
+ GET /trips 200 in 114ms (next.js: 5ms, application-code: 109ms)
+ GET /trips 200 in 108ms (next.js: 30ms, application-code: 78ms)
+ GET /trips 200 in 110ms (next.js: 14ms, application-code: 96ms)
+ GET /trips 200 in 109ms (next.js: 49ms, application-code: 60ms)
+ GET /trips 200 in 59ms (next.js: 8ms, application-code: 51ms)
+ GET /trips 200 in 103ms (next.js: 2ms, application-code: 100ms)
+ GET /trips 200 in 89ms (next.js: 4ms, application-code: 85ms)
+ GET /trips 200 in 76ms (next.js: 3ms, application-code: 73ms)
+ GET /trips 200 in 94ms (next.js: 18ms, application-code: 76ms)
+ GET /trips 200 in 94ms (next.js: 34ms, application-code: 59ms)
+ GET /trips 200 in 65ms (next.js: 2ms, application-code: 63ms)
+ GET /trips 200 in 131ms (next.js: 5ms, application-code: 127ms)
+ GET /trips 200 in 114ms (next.js: 4ms, application-code: 110ms)
+ GET /trips 200 in 97ms (next.js: 46ms, application-code: 50ms)
+ GET /trips 200 in 101ms (next.js: 5ms, application-code: 96ms)
+ GET /trips 200 in 101ms (next.js: 25ms, application-code: 75ms)
+ GET /trips 200 in 80ms (next.js: 2ms, application-code: 78ms)
+ GET /trips 200 in 144ms (next.js: 6ms, application-code: 137ms)
+ GET /trips 200 in 147ms (next.js: 24ms, application-code: 123ms)
+ GET /trips 200 in 102ms (next.js: 23ms, application-code: 79ms)
+ GET /trips 200 in 104ms (next.js: 5ms, application-code: 99ms)
+ GET /trips 200 in 104ms (next.js: 40ms, application-code: 63ms)
+ GET /trips 200 in 103ms (next.js: 7ms, application-code: 96ms)
+ GET /trips 200 in 173ms (next.js: 6ms, application-code: 166ms)
+ GET /trips 200 in 147ms (next.js: 12ms, application-code: 135ms)
+ GET /trips 200 in 112ms (next.js: 24ms, application-code: 88ms)
+ GET /trips 200 in 113ms (next.js: 75ms, application-code: 37ms)
+ GET /trips 200 in 116ms (next.js: 5ms, application-code: 110ms)
+ GET /trips 200 in 63ms (next.js: 3ms, application-code: 61ms)
+ GET /trips 200 in 126ms (next.js: 6ms, application-code: 120ms)
+ GET /trips 200 in 125ms (next.js: 26ms, application-code: 100ms)
+ GET /trips 200 in 86ms (next.js: 7ms, application-code: 80ms)
+ GET /trips 200 in 89ms (next.js: 23ms, application-code: 66ms)
+ GET /trips 200 in 88ms (next.js: 38ms, application-code: 50ms)
+ GET /trips 200 in 79ms (next.js: 28ms, application-code: 51ms)
+ GET /trips 200 in 115ms (next.js: 5ms, application-code: 110ms)
+ GET /trips 200 in 93ms (next.js: 3ms, application-code: 90ms)
+ GET /trips 200 in 76ms (next.js: 9ms, application-code: 67ms)
+ GET /trips 200 in 75ms (next.js: 25ms, application-code: 50ms)
+ GET /trips 200 in 94ms (next.js: 41ms, application-code: 53ms)
+ GET /trips 200 in 74ms (next.js: 33ms, application-code: 41ms)
+ GET /trips 200 in 69ms (next.js: 3ms, application-code: 66ms)
+ GET /trips 200 in 49ms (next.js: 2ms, application-code: 47ms)
+ GET /trips 200 in 29ms (next.js: 3ms, application-code: 26ms)
+ GET / 200 in 694ms (next.js: 494ms, application-code: 199ms)
+ GET /trips 200 in 46ms (next.js: 12ms, application-code: 35ms)
+ GET /trips 200 in 18ms (next.js: 3ms, application-code: 15ms)
+ GET /api/cover-image?destination=Bali%20Indonesia&count=10 200 in 347ms (next.js: 191ms, application-code: 156ms)
+ GET /api/cover-image?destination=Iceland%20Northern%20Lights&count=10 200 in 355ms (next.js: 93ms, application-code: 262ms)
+ GET / 200 in 101ms (next.js: 4ms, application-code: 96ms)
+ GET /trips 200 in 25ms (next.js: 6ms, application-code: 19ms)
+ GET /trips 200 in 26ms (next.js: 9ms, application-code: 17ms)
+ GET /api/cover-image?destination=Morocco%20Marrakech&count=10 200 in 90ms (next.js: 13ms, application-code: 77ms)
+ GET /api/cover-image?destination=Santorini%20Greece&count=10 200 in 92ms (next.js: 4ms, application-code: 88ms)
+ GET /trips/59e7a1d5-bf28-479e-93d9-76aeb3eb2263 200 in 804ms (next.js: 769ms, application-code: 35ms)
+ GET /trips 200 in 18ms (next.js: 4ms, application-code: 14ms)
+ GET /api/cover-image?destination=Iceland%20Northern%20Lights&count=10 200 in 119ms (next.js: 3ms, application-code: 115ms)
+ GET /api/cover-image?destination=New%20Zealand%20Mountains&count=10 200 in 123ms (next.js: 10ms, application-code: 113ms)
+Trying gemini-2.5-flash-image for: Tokyo, Kyoto
+Trying gemini-2.5-flash-image for: Tokyo, Kyoto
+[gemini-2.5-flash-image] Γ£ô image generated successfully
+[gemini-2.5-flash-image] Γ£ô image generated successfully
+ POST /api/generate-poster 200 in 7.6s (next.js: 3ms, application-code: 7.6s)
+ POST /api/generate-poster 200 in 8.3s (next.js: 114ms, application-code: 8.2s)
+ GET /trips/59e7a1d5-bf28-479e-93d9-76aeb3eb2263 200 in 35ms (next.js: 13ms, application-code: 21ms)
+ GET /trips 200 in 18ms (next.js: 3ms, application-code: 15ms)
+ GET /api/cover-image?destination=Dubrovnik%20Croatia&count=10 200 in 103ms (next.js: 3ms, application-code: 100ms)
+ GET /api/cover-image?destination=Patagonia%20Argentina&count=10 200 in 106ms (next.js: 11ms, application-code: 95ms)
+ GET /trips/59e7a1d5-bf28-479e-93d9-76aeb3eb2263 200 in 30ms (next.js: 9ms, application-code: 21ms)
+ GET /trips 200 in 21ms (next.js: 3ms, application-code: 18ms)
+ GET /api/cover-image?destination=Patagonia%20Argentina&count=10 200 in 90ms (next.js: 5ms, application-code: 85ms)
+ GET /api/cover-image?destination=Amalfi%20Coast%20Italy&count=10 200 in 141ms (next.js: 3ms, application-code: 138ms)
+ GET /trips/01624469-a516-4633-a69d-e83743d1d44b 200 in 36ms (next.js: 13ms, application-code: 22ms)
+Gemini dining response (first 300): {
+  "name": "Six Seven Restaurant",
+  "description": "Local seafood leads the seasonal menus at this New American spot with views in the Edgewater Hotel. Features outdoor seating, a fireplace, and great cocktails.",
+  "cuisine_type": "New American",
+  "price_range": "$$$$",
+  "avg_meal_cost": 100,
+ 
+ POST /api/parse-dining 200 in 5.7s (next.js: 301ms, application-code: 5.4s)
+Gemini dining response (first 300): {
+  "name": "",
+  "description": "",
+  "cuisine_type": "Other",
+  "price_range": "",
+  "avg_meal_cost": 0,
+  "currency": "",
+  "location_name": "",
+  "address": "",
+  "neighborhood": "",
+  "hours": "",
+  "rating": 0,
+  "review_count": 0,
+  "known_for": "",
+  "reservation_required": false,
+  "dietary
+ POST /api/parse-dining 200 in 5.0s (next.js: 105ms, application-code: 4.9s)
+Γ£ô Compiled in 617ms
+Γ£ô Compiled in 298ms
+ GET /trips/01624469-a516-4633-a69d-e83743d1d44b 200 in 629ms (next.js: 487ms, application-code: 142ms)
+ GET /trips/01624469-a516-4633-a69d-e83743d1d44b 200 in 50ms (next.js: 4ms, application-code: 46ms)
+ GET /trips 200 in 113ms (next.js: 85ms, application-code: 28ms)
+Γ£ô Compiled in 344ms
+Γ¿» ./src/app/trips/page.js:746:86
+Expected '</', got '}'
+  744 | ...ip} className="block">
+  745 | ...nded-2xl overflow-hidden aspect-[3/4] flex flex-col justify-end shadow-sm hover:shadow...
+> 746 | ...ounds ΓÇö two-layer crossfade, lightened */}
+      |                                             ^
+  747 | ...? (
+  748 | ...
+  749 | ...
+
+Parsing ecmascript source code failed
+
+Import traces:
+  Client Component Browser:
+    ./src/app/trips/page.js [Client Component Browser]
+    ./src/app/trips/page.js [Server Component]
+
+  Client Component SSR:
+    ./src/app/trips/page.js [Client Component SSR]
+    ./src/app/trips/page.js [Server Component]
+
+
+[browser] ./src/app/trips/page.js:746:86
+Expected '</', got '}'
+  744 | ...ip} className="block">
+  745 | ...nded-2xl overflow-hidden aspect-[3/4] flex flex-col justify-end shadow-sm hover:shadow...
+> 746 | ...ounds ΓÇö two-layer crossfade, lightened */}
+      |                                             ^
+  747 | ...? (
+  748 | ...
+  749 | ...
+
+Parsing ecmascript source code failed
+
+Import traces:
+  Client Component Browser:
+    ./src/app/trips/page.js [Client Component Browser]
+    ./src/app/trips/page.js [Server Component]
+
+  Client Component SSR:
+    ./src/app/trips/page.js [Client Component SSR]
+    ./src/app/trips/page.js [Server Component] 
+[browser] ./src/app/trips/page.js:746:86
+Expected '</', got '}'
+  744 | ...ip} className="block">
+  745 | ...nded-2xl overflow-hidden aspect-[3/4] flex flex-col justify-end shadow-sm hover:shadow...
+> 746 | ...ounds ΓÇö two-layer crossfade, lightened */}
+      |                                             ^
+  747 | ...? (
+  748 | ...
+  749 | ...
+
+Parsing ecmascript source code failed
+
+Import traces:
+  Client Component Browser:
+    ./src/app/trips/page.js [Client Component Browser]
+    ./src/app/trips/page.js [Server Component]
+
+  Client Component SSR:
+    ./src/app/trips/page.js [Client Component SSR]
+    ./src/app/trips/page.js [Server Component] 
+Γ¿» ./src/app/trips/page.js:746:86
+Expected '</', got '}'
+  744 | ...ip} className="block">
+  745 | ...nded-2xl overflow-hidden aspect-[3/4] flex flex-col justify-end shadow-sm hover:shadow...
+> 746 | ...ounds ΓÇö two-layer crossfade, lightened */}
+      |                                             ^
+  747 | ...? (
+  748 | ...
+  749 | ...
+
+Parsing ecmascript source code failed
+
+Import traces:
+  Client Component Browser:
+    ./src/app/trips/page.js [Client Component Browser]
+    ./src/app/trips/page.js [Server Component]
+
+  Client Component SSR:
+    ./src/app/trips/page.js [Client Component SSR]
+    ./src/app/trips/page.js [Server Component]
+
+
+ GET /trips 500 in 516ms (next.js: 279ms, application-code: 236ms)
+[browser] ./src/app/trips/page.js:746:86
+Expected '</', got '}'
+  744 | ...ip} className="block">
+  745 | ...nded-2xl overflow-hidden aspect-[3/4] flex flex-col justify-end shadow-sm hover:shadow...
+> 746 | ...ounds ΓÇö two-layer crossfade, lightened */}
+      |                                             ^
+  747 | ...? (
+  748 | ...
+  749 | ...
+
+Parsing ecmascript source code failed
+
+Import traces:
+  Client Component Browser:
+    ./src/app/trips/page.js [Client Component Browser]
+    ./src/app/trips/page.js [Server Component]
+
+  Client Component SSR:
+    ./src/app/trips/page.js [Client Component SSR]
+    ./src/app/trips/page.js [Server Component] 
+ GET /trips 500 in 64ms (next.js: 16ms, application-code: 48ms)
+Γ¿» ./src/app/trips/page.js:746:86
+Expected '</', got '}'
+  744 | ...ip} className="block">
+  745 | ...nded-2xl overflow-hidden aspect-[3/4] flex flex-col justify-end shadow-sm hover:shadow...
+> 746 | ...ounds ΓÇö two-layer crossfade, lightened */}
+      |                                             ^
+  747 | ...? (
+  748 | ...
+  749 | ...
+
+Parsing ecmascript source code failed
+
+Import traces:
+  Client Component Browser:
+    ./src/app/trips/page.js [Client Component Browser]
+    ./src/app/trips/page.js [Server Component]
+
+  Client Component SSR:
+    ./src/app/trips/page.js [Client Component SSR]
+    ./src/app/trips/page.js [Server Component]
+
+
+Γ¿» ./src/app/trips/page.js:746:86
+Expected '</', got '}'
+  744 | ...ip} className="block">
+  745 | ...nded-2xl overflow-hidden aspect-[3/4] flex flex-col justify-end shadow-sm hover:shadow...
+> 746 | ...ounds ΓÇö two-layer crossfade, lightened */}
+      |                                             ^
+  747 | ...? (
+  748 | ...
+  749 | ...
+
+Parsing ecmascript source code failed
+
+Import traces:
+  Client Component Browser:
+    ./src/app/trips/page.js [Client Component Browser]
+    ./src/app/trips/page.js [Server Component]
+
+  Client Component SSR:
+    ./src/app/trips/page.js [Client Component SSR]
+    ./src/app/trips/page.js [Server Component]
+
+
+[browser] ./src/app/trips/page.js:746:86
+Expected '</', got '}'
+  744 | ...ip} className="block">
+  745 | ...nded-2xl overflow-hidden aspect-[3/4] flex flex-col justify-end shadow-sm hover:shadow...
+> 746 | ...ounds ΓÇö two-layer crossfade, lightened */}
+      |                                             ^
+  747 | ...? (
+  748 | ...
+  749 | ...
+
+Parsing ecmascript source code failed
+
+Import traces:
+  Client Component Browser:
+    ./src/app/trips/page.js [Client Component Browser]
+    ./src/app/trips/page.js [Server Component]
+
+  Client Component SSR:
+    ./src/app/trips/page.js [Client Component SSR]
+    ./src/app/trips/page.js [Server Component] 
+ GET /trips 500 in 48ms (next.js: 17ms, application-code: 31ms)
+ GET /trips 500 in 51ms (next.js: 36ms, application-code: 15ms)
+[browser] Uncaught Error: ./src/app/trips/page.js:746:86
+Expected '</', got '}'
+  744 | ...ip} className="block">
+  745 | ...nded-2xl overflow-hidden aspect-[3/4] flex flex-col justify-end shadow-sm hover:shadow...
+> 746 | ...ounds ΓÇö two-layer crossfade, lightened */}
+      |                                             ^
+  747 | ...? (
+  748 | ...
+  749 | ...
+
+Parsing ecmascript source code failed
+
+Import traces:
+  Client Component Browser:
+    ./src/app/trips/page.js [Client Component Browser]
+    ./src/app/trips/page.js [Server Component]
+
+  Client Component SSR:
+    ./src/app/trips/page.js [Client Component SSR]
+    ./src/app/trips/page.js [Server Component]
+
+
+    at <unknown> (Error: ./src/app/trips/page.js:746:86)
+    at <unknown> (Error: (./src/app/trips/page.js:746:86)
+[browser] ./src/app/trips/page.js:746:86
+Expected '</', got '}'
+  744 | ...ip} className="block">
+  745 | ...nded-2xl overflow-hidden aspect-[3/4] flex flex-col justify-end shadow-sm hover:shadow...
+> 746 | ...ounds ΓÇö two-layer crossfade, lightened */}
+      |                                             ^
+  747 | ...? (
+  748 | ...
+  749 | ...
+
+Parsing ecmascript source code failed
+
+Import traces:
+  Client Component Browser:
+    ./src/app/trips/page.js [Client Component Browser]
+    ./src/app/trips/page.js [Server Component]
+
+  Client Component SSR:
+    ./src/app/trips/page.js [Client Component SSR]
+    ./src/app/trips/page.js [Server Component] 
+[browser] ./src/app/trips/page.js:746:86
+Expected '</', got '}'
+  744 | ...ip} className="block">
+  745 | ...nded-2xl overflow-hidden aspect-[3/4] flex flex-col justify-end shadow-sm hover:shadow...
+> 746 | ...ounds ΓÇö two-layer crossfade, lightened */}
+      |                                             ^
+  747 | ...? (
+  748 | ...
+  749 | ...
+
+Parsing ecmascript source code failed
+
+Import traces:
+  Client Component Browser:
+    ./src/app/trips/page.js [Client Component Browser]
+    ./src/app/trips/page.js [Server Component]
+
+  Client Component SSR:
+    ./src/app/trips/page.js [Client Component SSR]
+    ./src/app/trips/page.js [Server Component] 
+Γ¿» ./src/app/trips/page.js:746:86
+Expected '</', got '}'
+  744 | ...ip} className="block">
+  745 | ...nded-2xl overflow-hidden aspect-[3/4] flex flex-col justify-end shadow-sm hover:shadow...
+> 746 | ...ounds ΓÇö two-layer crossfade, lightened */}
+      |                                             ^
+  747 | ...? (
+  748 | ...
+  749 | ...
+
+Parsing ecmascript source code failed
+
+Import traces:
+  Client Component Browser:
+    ./src/app/trips/page.js [Client Component Browser]
+    ./src/app/trips/page.js [Server Component]
+
+  Client Component SSR:
+    ./src/app/trips/page.js [Client Component SSR]
+    ./src/app/trips/page.js [Server Component]
+
+
+ GET /trips 500 in 14ms (next.js: 7ms, application-code: 7ms)
+[browser] Uncaught Error: ./src/app/trips/page.js:746:86
+Expected '</', got '}'
+  744 | ...ip} className="block">
+  745 | ...nded-2xl overflow-hidden aspect-[3/4] flex flex-col justify-end shadow-sm hover:shadow...
+> 746 | ...ounds ΓÇö two-layer crossfade, lightened */}
+      |                                             ^
+  747 | ...? (
+  748 | ...
+  749 | ...
+
+Parsing ecmascript source code failed
+
+Import traces:
+  Client Component Browser:
+    ./src/app/trips/page.js [Client Component Browser]
+    ./src/app/trips/page.js [Server Component]
+
+  Client Component SSR:
+    ./src/app/trips/page.js [Client Component SSR]
+    ./src/app/trips/page.js [Server Component]
+
+
+    at <unknown> (Error: ./src/app/trips/page.js:746:86)
+    at <unknown> (Error: (./src/app/trips/page.js:746:86)
+[browser] ./src/app/trips/page.js:746:86
+Expected '</', got '}'
+  744 | ...ip} className="block">
+  745 | ...nded-2xl overflow-hidden aspect-[3/4] flex flex-col justify-end shadow-sm hover:shadow...
+> 746 | ...ounds ΓÇö two-layer crossfade, lightened */}
+      |                                             ^
+  747 | ...? (
+  748 | ...
+  749 | ...
+
+Parsing ecmascript source code failed
+
+Import traces:
+  Client Component Browser:
+    ./src/app/trips/page.js [Client Component Browser]
+    ./src/app/trips/page.js [Server Component]
+
+  Client Component SSR:
+    ./src/app/trips/page.js [Client Component SSR]
+    ./src/app/trips/page.js [Server Component] 
+[browser] ./src/app/trips/page.js:746:86
+Expected '</', got '}'
+  744 | ...ip} className="block">
+  745 | ...nded-2xl overflow-hidden aspect-[3/4] flex flex-col justify-end shadow-sm hover:shadow...
+> 746 | ...ounds ΓÇö two-layer crossfade, lightened */}
+      |                                             ^
+  747 | ...? (
+  748 | ...
+  749 | ...
+
+Parsing ecmascript source code failed
+
+Import traces:
+  Client Component Browser:
+    ./src/app/trips/page.js [Client Component Browser]
+    ./src/app/trips/page.js [Server Component]
+
+  Client Component SSR:
+    ./src/app/trips/page.js [Client Component SSR]
+    ./src/app/trips/page.js [Server Component] 
+Γ¿» ./src/app/trips/page.js:746:86
+Expected '</', got '}'
+  744 | ...ip} className="block">
+  745 | ...nded-2xl overflow-hidden aspect-[3/4] flex flex-col justify-end shadow-sm hover:shadow...
+> 746 | ...ounds ΓÇö two-layer crossfade, lightened */}
+      |                                             ^
+  747 | ...? (
+  748 | ...
+  749 | ...
+
+Parsing ecmascript source code failed
+
+Import traces:
+  Client Component Browser:
+    ./src/app/trips/page.js [Client Component Browser]
+    ./src/app/trips/page.js [Server Component]
+
+  Client Component SSR:
+    ./src/app/trips/page.js [Client Component SSR]
+    ./src/app/trips/page.js [Server Component]
+
+
+ GET /trips 500 in 12ms (next.js: 6ms, application-code: 6ms)
+[browser] Uncaught Error: ./src/app/trips/page.js:746:86
+Expected '</', got '}'
+  744 | ...ip} className="block">
+  745 | ...nded-2xl overflow-hidden aspect-[3/4] flex flex-col justify-end shadow-sm hover:shadow...
+> 746 | ...ounds ΓÇö two-layer crossfade, lightened */}
+      |                                             ^
+  747 | ...? (
+  748 | ...
+  749 | ...
+
+Parsing ecmascript source code failed
+
+Import traces:
+  Client Component Browser:
+    ./src/app/trips/page.js [Client Component Browser]
+    ./src/app/trips/page.js [Server Component]
+
+  Client Component SSR:
+    ./src/app/trips/page.js [Client Component SSR]
+    ./src/app/trips/page.js [Server Component]
+
+
+    at <unknown> (Error: ./src/app/trips/page.js:746:86)
+    at <unknown> (Error: (./src/app/trips/page.js:746:86)
+[browser] ./src/app/trips/page.js:746:86
+Expected '</', got '}'
+  744 | ...ip} className="block">
+  745 | ...nded-2xl overflow-hidden aspect-[3/4] flex flex-col justify-end shadow-sm hover:shadow...
+> 746 | ...ounds ΓÇö two-layer crossfade, lightened */}
+      |                                             ^
+  747 | ...? (
+  748 | ...
+  749 | ...
+
+Parsing ecmascript source code failed
+
+Import traces:
+  Client Component Browser:
+    ./src/app/trips/page.js [Client Component Browser]
+    ./src/app/trips/page.js [Server Component]
+
+  Client Component SSR:
+    ./src/app/trips/page.js [Client Component SSR]
+    ./src/app/trips/page.js [Server Component] 
+[browser] ./src/app/trips/page.js:746:86
+Expected '</', got '}'
+  744 | ...ip} className="block">
+  745 | ...nded-2xl overflow-hidden aspect-[3/4] flex flex-col justify-end shadow-sm hover:shadow...
+> 746 | ...ounds ΓÇö two-layer crossfade, lightened */}
+      |                                             ^
+  747 | ...? (
+  748 | ...
+  749 | ...
+
+Parsing ecmascript source code failed
+
+Import traces:
+  Client Component Browser:
+    ./src/app/trips/page.js [Client Component Browser]
+    ./src/app/trips/page.js [Server Component]
+
+  Client Component SSR:
+    ./src/app/trips/page.js [Client Component SSR]
+    ./src/app/trips/page.js [Server Component] 
+Γ£ô Compiled in 68ms
+ GET /trips 200 in 50ms (next.js: 5ms, application-code: 45ms)
+ GET /trips 200 in 159ms (next.js: 51ms, application-code: 107ms)
+ GET /archived 200 in 127ms (next.js: 104ms, application-code: 24ms)
+ GET /trips 200 in 21ms (next.js: 3ms, application-code: 18ms)
+ GET /trips 200 in 1090ms (next.js: 347ms, application-code: 743ms)
+ GET /trips 200 in 469ms (next.js: 36ms, application-code: 433ms)
+ GET /trips 200 in 202ms (next.js: 6ms, application-code: 196ms)
+ GET /trips 200 in 222ms (next.js: 42ms, application-code: 180ms)
+ GET /trips 200 in 222ms (next.js: 120ms, application-code: 103ms)
+ GET /trips 200 in 222ms (next.js: 140ms, application-code: 83ms)
+ GET /trips 200 in 161ms (next.js: 5ms, application-code: 156ms)
+ GET /trips 200 in 134ms (next.js: 4ms, application-code: 130ms)
+ GET /trips 200 in 126ms (next.js: 8ms, application-code: 118ms)
+ GET /trips 200 in 99ms (next.js: 24ms, application-code: 75ms)
+ GET /trips 200 in 150ms (next.js: 31ms, application-code: 119ms)
+ GET /trips 200 in 124ms (next.js: 49ms, application-code: 75ms)
+ GET /trips 200 in 144ms (next.js: 4ms, application-code: 140ms)
+ GET /trips 200 in 125ms (next.js: 5ms, application-code: 120ms)
+ GET /trips 200 in 117ms (next.js: 3ms, application-code: 114ms)
+ GET /trips 200 in 116ms (next.js: 21ms, application-code: 96ms)
+ GET /trips 200 in 118ms (next.js: 28ms, application-code: 90ms)
+ GET /trips 200 in 95ms (next.js: 28ms, application-code: 67ms)
+ GET /trips 200 in 129ms (next.js: 3ms, application-code: 126ms)
+ GET /trips 200 in 114ms (next.js: 3ms, application-code: 110ms)
+ GET /trips 200 in 114ms (next.js: 25ms, application-code: 88ms)
+ GET /trips 200 in 118ms (next.js: 7ms, application-code: 111ms)
+ GET /trips 200 in 97ms (next.js: 9ms, application-code: 88ms)
+ GET /trips 200 in 92ms (next.js: 22ms, application-code: 70ms)
+ GET /trips 200 in 153ms (next.js: 4ms, application-code: 149ms)
+ GET /trips 200 in 134ms (next.js: 8ms, application-code: 126ms)
+ GET /trips 200 in 122ms (next.js: 31ms, application-code: 91ms)
+ GET /trips 200 in 127ms (next.js: 6ms, application-code: 121ms)
+ GET /trips 200 in 103ms (next.js: 28ms, application-code: 75ms)
+ GET /trips 200 in 107ms (next.js: 8ms, application-code: 99ms)
+ GET /trips 200 in 144ms (next.js: 6ms, application-code: 138ms)
+ GET /trips 200 in 127ms (next.js: 8ms, application-code: 119ms)
+ GET /trips 200 in 115ms (next.js: 10ms, application-code: 105ms)
+ GET /trips 200 in 109ms (next.js: 23ms, application-code: 86ms)
+ GET /trips 200 in 82ms (next.js: 5ms, application-code: 77ms)
+ GET /trips 200 in 85ms (next.js: 20ms, application-code: 65ms)
+ GET /trips 200 in 154ms (next.js: 5ms, application-code: 149ms)
+ GET /trips 200 in 133ms (next.js: 5ms, application-code: 129ms)
+ GET /trips 200 in 112ms (next.js: 7ms, application-code: 106ms)
+ GET /trips 200 in 112ms (next.js: 27ms, application-code: 85ms)
+ GET /trips 200 in 74ms (next.js: 8ms, application-code: 65ms)
+ GET /trips 200 in 140ms (next.js: 32ms, application-code: 107ms)
+ GET /trips 200 in 143ms (next.js: 47ms, application-code: 96ms)
+ GET /trips 200 in 145ms (next.js: 21ms, application-code: 123ms)
+ GET /trips 200 in 149ms (next.js: 5ms, application-code: 144ms)
+ GET /trips 200 in 160ms (next.js: 69ms, application-code: 91ms)
+ GET /trips 200 in 72ms (next.js: 4ms, application-code: 68ms)
+ GET /trips 200 in 114ms (next.js: 4ms, application-code: 110ms)
+ GET /trips 200 in 133ms (next.js: 6ms, application-code: 127ms)
+ GET /trips 200 in 133ms (next.js: 22ms, application-code: 112ms)
+ GET /trips 200 in 134ms (next.js: 42ms, application-code: 92ms)
+ GET /trips 200 in 80ms (next.js: 12ms, application-code: 68ms)
+ GET /trips 200 in 72ms (next.js: 23ms, application-code: 48ms)
+ GET /trips 200 in 80ms (next.js: 4ms, application-code: 76ms)
+ GET /trips 200 in 52ms (next.js: 6ms, application-code: 45ms)
+ GET /trips 200 in 54ms (next.js: 24ms, application-code: 31ms)
+Γ£ô Compiled in 150ms
+ GET /trips 200 in 233ms (next.js: 122ms, application-code: 111ms)
+[browser] The final argument passed to useEffect changed size between renders. The order and size of this array must remain constant.
+
+Previous: [[object Object],[object Object],[object Object],[object Object],[object Object],[object Object],[object Object], false]
+Incoming: [false] 
+    at DashboardPage (src/app/trips/page.js:375:12)
+    at Set.forEach (<anonymous>)
+  373 |   const [newCardImages, setNewCardImages] = useState([]);
+  374 |
+> 375 |   useEffect(() => {
+      |            ^
+  376 |     // Draw exclusively from the pre-generated image bank in Supabase storage
+  377 |     async function loadNewCardBg() {
+  378 |       try { (src/app/trips/page.js:375:12)
+[bank] Generating 1/5: Rome Italy
+[bank] Generating 2/5: Barcelona Spain
+[bank] Generating 3/5: London England
+[bank] Generating 4/5: Amsterdam Netherlands
+[bank] Generating 5/5: Santorini Greece
+ GET /api/generate-bank?limit=5 200 in 45s (next.js: 949ms, application-code: 44s)
+ GET /api/generate-bank?status=1 200 in 324ms (next.js: 5ms, application-code: 319ms)
+[bank] Generating 1/50: Santorini Greece
+[bank] Generating 2/50: Prague Czech Republic
+[bank] Generating 3/50: Vienna Austria
+[bank] Generating 4/50: Dubrovnik Croatia
+[bank] Generating 5/50: Amalfi Coast Italy
+[bank] Generating 6/50: Edinburgh Scotland
+[bank] Generating 7/50: Lisbon Portugal
+[bank] Generating 8/50: Swiss Alps Switzerland
+[bank] Generating 9/50: Reykjavik Iceland
+[bank] Generating 10/50: Istanbul Turkey
+[bank] Generating 11/50: Budapest Hungary
+[bank] Generating 12/50: Cinque Terre Italy
+[bank] Generating 13/50: Norwegian Fjords Norway
+[bank] Generating 14/50: Bruges Belgium
+[bank] Generating 15/50: Tokyo Japan
+[bank] Generating 16/50: Kyoto Japan
+[bank] Generating 17/50: Bali Indonesia
+[bank] Generating 18/50: Bangkok Thailand
+[bank] Generating 19/50: Singapore
+[bank] Generating 20/50: Hong Kong
+[bank] Generating 21/50: Seoul South Korea
+[bank] Generating 22/50: Hanoi Vietnam
+[bank] Generating 23/50: Angkor Wat Cambodia
+[bank] Generating 24/50: Jaipur India
+[bank] Generating 25/50: Maldives
+[bank] Generating 26/50: Phuket Thailand
+[bank] Generating 27/50: Great Wall of China
+[bank] Generating 28/50: Kathmandu Nepal
+[bank] Generating 29/50: Luang Prabang Laos
+[bank] Generating 30/50: Petra Jordan
+[bank] Generating 31/50: Dubai UAE
+[bank] Generating 32/50: Zhangjiajie China
+[bank] Generating 33/50: Ha Long Bay Vietnam
+[bank] Generating 34/50: Sri Lanka
+[bank] Generating 35/50: New York City USA
+[bank] Generating 36/50: Machu Picchu Peru
+[bank] Generating 37/50: Rio de Janeiro Brazil
+[bank] Generating 38/50: Havana Cuba
+[bank] Generating 39/50: Grand Canyon USA
+[bank] Generating 40/50: Patagonia Argentina
+[bank] Generating 41/50: Mexico City Mexico
+[bank] Generating 42/50: San Francisco USA
+[bank] Generating 43/50: Cartagena Colombia
+[bank] Generating 44/50: Banff National Park Canada
+[bank] Generating 45/50: Costa Rica
+[bank] Generating 46/50: Buenos Aires Argentina
+[bank] Generating 47/50: Yellowstone USA
+[bank] Generating 48/50: Tulum Mexico
+[bank] Generating 49/50: Galapagos Islands Ecuador
+[bank] Generating 50/50: Niagara Falls Canada
+ GET /api/generate-bank?limit=50 200 in 5.9min (next.js: 3ms, application-code: 5.9min)
+Γ£ô Compiled in 226ms
+ GET /trips 200 in 183ms (next.js: 134ms, application-code: 50ms)
+Γ£ô Compiled in 71ms
+ GET /trips 200 in 64ms (next.js: 42ms, application-code: 22ms)
+Γ£ô Compiled in 121ms
+ GET /trips 200 in 83ms (next.js: 51ms, application-code: 33ms)
+Γ£ô Compiled in 95ms
+ GET /trips 200 in 75ms (next.js: 47ms, application-code: 28ms)
+Γ£ô Compiled in 54ms
+ GET /trips 200 in 72ms (next.js: 46ms, application-code: 26ms)
+Γ£ô Compiled in 142ms
+ GET /trips 200 in 72ms (next.js: 44ms, application-code: 28ms)
+ GET /trips 200 in 191ms (next.js: 3ms, application-code: 188ms)
+Γ£ô Compiled in 73ms
+ GET /trips 200 in 118ms (next.js: 79ms, application-code: 39ms)
+ GET /trips 200 in 132ms (next.js: 4ms, application-code: 129ms)
+Γ£ô Compiled in 79ms
+ GET /trips 200 in 153ms (next.js: 86ms, application-code: 68ms)
+Γ£ô Compiled in 116ms
+[browser] The final argument passed to useEffect changed size between renders. The order and size of this array must remain constant.
+
+Previous: [false]
+Incoming: [[object Object],[object Object],[object Object],[object Object],[object Object],[object Object],[object Object], false] 
+    at DashboardPage (src/app/trips/page.js:375:12)
+    at Set.forEach (<anonymous>)
+  373 |   const [newCardImages, setNewCardImages] = useState([]);
+  374 |
+> 375 |   useEffect(() => {
+      |            ^
+  376 |     // Draw exclusively from the pre-generated image bank in Supabase storage
+  377 |     async function loadNewCardBg() {
+  378 |       try { (src/app/trips/page.js:375:12)
+ GET /trips 200 in 141ms (next.js: 78ms, application-code: 63ms)
+ GET /trips 200 in 172ms (next.js: 4ms, application-code: 168ms)
+Γ£ô Compiled in 129ms
+ GET /trips 200 in 115ms (next.js: 72ms, application-code: 43ms)
+Γ£ô Compiled in 100ms
+ GET /trips 200 in 105ms (next.js: 68ms, application-code: 37ms)
+Γ£ô Compiled in 57ms
+ GET /trips 200 in 91ms (next.js: 59ms, application-code: 31ms)
+ GET /trips 200 in 147ms (next.js: 4ms, application-code: 143ms)
+Γ£ô Compiled in 91ms
+ GET /trips 200 in 104ms (next.js: 71ms, application-code: 33ms)
+ GET /trips 200 in 121ms (next.js: 3ms, application-code: 117ms)
+Γ£ô Compiled in 71ms
+ GET /trips 200 in 95ms (next.js: 61ms, application-code: 34ms)
+ GET /trips 200 in 202ms (next.js: 5ms, application-code: 197ms)
+Γ£ô Compiled in 67ms
+ GET /trips 200 in 144ms (next.js: 100ms, application-code: 44ms)
+Γ£ô Compiled in 74ms
+ GET /trips 200 in 122ms (next.js: 77ms, application-code: 45ms)
+ GET /trips 200 in 119ms (next.js: 3ms, application-code: 116ms)
+Γ£ô Compiled in 59ms
+ GET /trips 200 in 125ms (next.js: 75ms, application-code: 50ms)
+Γ£ô Compiled in 78ms
+ GET /trips 200 in 100ms (next.js: 68ms, application-code: 32ms)
+Γ£ô Compiled in 372ms
+ GET /trips 200 in 620ms (next.js: 410ms, application-code: 210ms)
+Γ£ô Compiled in 364ms
+[browser] The final argument passed to useEffect changed size between renders. The order and size of this array must remain constant.
+
+Previous: [[object Object],[object Object],[object Object],[object Object],[object Object],[object Object],[object Object], false]
+Incoming: [false] 
+    at DashboardPage (src/app/trips/page.js:375:12)
+    at Set.forEach (<anonymous>)
+  373 |   const [newCardImages, setNewCardImages] = useState([]);
+  374 |
+> 375 |   useEffect(() => {
+      |            ^
+  376 |     // Draw exclusively from the pre-generated image bank in Supabase storage
+  377 |     async function loadNewCardBg() {
+  378 |       try { (src/app/trips/page.js:375:12)
+ GET /trips 200 in 697ms (next.js: 510ms, application-code: 187ms)
+ GET /trips 200 in 912ms (next.js: 6ms, application-code: 906ms)
+ GET /trips 200 in 74ms (next.js: 5ms, application-code: 69ms)
+ GET /trips 200 in 69ms (next.js: 9ms, application-code: 60ms)
+Γ£ô Compiled in 303ms
+ GET /trips 200 in 303ms (next.js: 256ms, application-code: 47ms)
+ GET /trips 200 in 257ms (next.js: 3ms, application-code: 254ms)
+ GET /trips 200 in 40ms (next.js: 6ms, application-code: 34ms)
+ GET /trips/ed3509a1-91ec-4997-9485-10ca6e0095b0 200 in 286ms (next.js: 154ms, application-code: 132ms)
+ GET /trips/ed3509a1-91ec-4997-9485-10ca6e0095b0 200 in 345ms (next.js: 4ms, application-code: 341ms)
+ GET /trips 200 in 50ms (next.js: 7ms, application-code: 43ms)
+Trying gemini-2.5-flash-image for: Bordeaux France
+[gemini-2.5-flash-image] Γ£ô image generated successfully
+ POST /api/generate-poster 200 in 9.0s (next.js: 92ms, application-code: 8.9s)
+Γ£ô Compiled in 352ms
+ GET /trips 200 in 395ms (next.js: 282ms, application-code: 113ms)
+ GET /trips 200 in 487ms (next.js: 4ms, application-code: 484ms)
+Γ£ô Compiled in 414ms
+ GET /trips 200 in 188ms (next.js: 151ms, application-code: 36ms)
+Γ£ô Compiled in 64ms
+ GET /trips 200 in 118ms (next.js: 70ms, application-code: 48ms)
+ GET /trips 200 in 216ms (next.js: 5ms, application-code: 211ms)
+Γ£ô Compiled in 520ms
+ GET /trips 200 in 1196ms (next.js: 840ms, application-code: 356ms)
+ GET /trips 200 in 973ms (next.js: 8ms, application-code: 965ms)
+ GET /trips 200 in 188ms (next.js: 56ms, application-code: 132ms)
+Γ£ô Compiled in 283ms
+ GET /trips 200 in 672ms (next.js: 483ms, application-code: 188ms)
+ GET /trips 200 in 1487ms (next.js: 117ms, application-code: 1370ms)
+Γ£ô Compiled in 493ms
+ GET /trips 200 in 1156ms (next.js: 664ms, application-code: 492ms)
+Γ£ô Compiled in 179ms
+ GET /trips 200 in 164ms (next.js: 104ms, application-code: 61ms)
+Γ£ô Compiled in 87ms
+ GET /trips 200 in 163ms (next.js: 112ms, application-code: 51ms)
+Γ£ô Compiled in 84ms
+ GET /trips 200 in 129ms (next.js: 73ms, application-code: 56ms)
+ GET /trips 200 in 633ms (next.js: 6ms, application-code: 627ms)
+Γ£ô Compiled in 271ms
+ GET /trips 200 in 384ms (next.js: 260ms, application-code: 124ms)
+Γ£ô Compiled in 282ms
+Γ¿» ./src/components/GlobeCanvas.js:389:28
+await isn't allowed in non-async function
+  387 |     const pins = [];
+  388 |     // Geocode all trips in parallel
+> 389 |     const geocodeResults = await Promise.all(
+      |                            ^^^^^
+  390 |       trips.map((trip) => geocode(trip.destination))
+  391 |     );
+  392 |     for (let ti = 0; ti < trips.length; ti++) {
+
+Parsing ecmascript source code failed
+
+Import traces:
+  Client Component Browser:
+    ./src/components/GlobeCanvas.js [Client Component Browser]
+    ./src/app/trips/page.js [Client Component Browser]
+    ./src/app/trips/page.js [Server Component]
+
+  Client Component SSR:
+    ./src/components/GlobeCanvas.js [Client Component SSR]
+    ./src/app/trips/page.js [Client Component SSR]
+    ./src/app/trips/page.js [Server Component]
+
+
+[browser] ./src/components/GlobeCanvas.js:389:28
+await isn't allowed in non-async function
+  387 |     const pins = [];
+  388 |     // Geocode all trips in parallel
+> 389 |     const geocodeResults = await Promise.all(
+      |                            ^^^^^
+  390 |       trips.map((trip) => geocode(trip.destination))
+  391 |     );
+  392 |     for (let ti = 0; ti < trips.length; ti++) {
+
+Parsing ecmascript source code failed
+
+Import traces:
+  Client Component Browser:
+    ./src/components/GlobeCanvas.js [Client Component Browser]
+    ./src/app/trips/page.js [Client Component Browser]
+    ./src/app/trips/page.js [Server Component]
+
+  Client Component SSR:
+    ./src/components/GlobeCanvas.js [Client Component SSR]
+    ./src/app/trips/page.js [Client Component SSR]
+    ./src/app/trips/page.js [Server Component] 
+ GET /trips 500 in 106ms (next.js: 46ms, application-code: 60ms)
+[browser] ./src/components/GlobeCanvas.js:389:28
+await isn't allowed in non-async function
+  387 |     const pins = [];
+  388 |     // Geocode all trips in parallel
+> 389 |     const geocodeResults = await Promise.all(
+      |                            ^^^^^
+  390 |       trips.map((trip) => geocode(trip.destination))
+  391 |     );
+  392 |     for (let ti = 0; ti < trips.length; ti++) {
+
+Parsing ecmascript source code failed
+
+Import traces:
+  Client Component Browser:
+    ./src/components/GlobeCanvas.js [Client Component Browser]
+    ./src/app/trips/page.js [Client Component Browser]
+    ./src/app/trips/page.js [Server Component]
+
+  Client Component SSR:
+    ./src/components/GlobeCanvas.js [Client Component SSR]
+    ./src/app/trips/page.js [Client Component SSR]
+    ./src/app/trips/page.js [Server Component] 
+Γ¿» ./src/components/GlobeCanvas.js:389:28
+await isn't allowed in non-async function
+  387 |     const pins = [];
+  388 |     // Geocode all trips in parallel
+> 389 |     const geocodeResults = await Promise.all(
+      |                            ^^^^^
+  390 |       trips.map((trip) => geocode(trip.destination))
+  391 |     );
+  392 |     for (let ti = 0; ti < trips.length; ti++) {
+
+Parsing ecmascript source code failed
+
+Import traces:
+  Client Component Browser:
+    ./src/components/GlobeCanvas.js [Client Component Browser]
+    ./src/app/trips/page.js [Client Component Browser]
+    ./src/app/trips/page.js [Server Component]
+
+  Client Component SSR:
+    ./src/components/GlobeCanvas.js [Client Component SSR]
+    ./src/app/trips/page.js [Client Component SSR]
+    ./src/app/trips/page.js [Server Component]
+
+
+ GET /trips 500 in 35ms (next.js: 18ms, application-code: 17ms)
+[browser] Uncaught Error: ./src/components/GlobeCanvas.js:389:28
+await isn't allowed in non-async function
+  387 |     const pins = [];
+  388 |     // Geocode all trips in parallel
+> 389 |     const geocodeResults = await Promise.all(
+      |                            ^^^^^
+  390 |       trips.map((trip) => geocode(trip.destination))
+  391 |     );
+  392 |     for (let ti = 0; ti < trips.length; ti++) {
+
+Parsing ecmascript source code failed
+
+Import traces:
+  Client Component Browser:
+    ./src/components/GlobeCanvas.js [Client Component Browser]
+    ./src/app/trips/page.js [Client Component Browser]
+    ./src/app/trips/page.js [Server Component]
+
+  Client Component SSR:
+    ./src/components/GlobeCanvas.js [Client Component SSR]
+    ./src/app/trips/page.js [Client Component SSR]
+    ./src/app/trips/page.js [Server Component]
+
+
+    at <unknown> (Error: ./src/components/GlobeCanvas.js:389:28)
+    at <unknown> (Error: (./src/components/GlobeCanvas.js:389:28)
+[browser] ./src/components/GlobeCanvas.js:389:28
+await isn't allowed in non-async function
+  387 |     const pins = [];
+  388 |     // Geocode all trips in parallel
+> 389 |     const geocodeResults = await Promise.all(
+      |                            ^^^^^
+  390 |       trips.map((trip) => geocode(trip.destination))
+  391 |     );
+  392 |     for (let ti = 0; ti < trips.length; ti++) {
+
+Parsing ecmascript source code failed
+
+Import traces:
+  Client Component Browser:
+    ./src/components/GlobeCanvas.js [Client Component Browser]
+    ./src/app/trips/page.js [Client Component Browser]
+    ./src/app/trips/page.js [Server Component]
+
+  Client Component SSR:
+    ./src/components/GlobeCanvas.js [Client Component SSR]
+    ./src/app/trips/page.js [Client Component SSR]
+    ./src/app/trips/page.js [Server Component] 
+[browser] ./src/components/GlobeCanvas.js:389:28
+await isn't allowed in non-async function
+  387 |     const pins = [];
+  388 |     // Geocode all trips in parallel
+> 389 |     const geocodeResults = await Promise.all(
+      |                            ^^^^^
+  390 |       trips.map((trip) => geocode(trip.destination))
+  391 |     );
+  392 |     for (let ti = 0; ti < trips.length; ti++) {
+
+Parsing ecmascript source code failed
+
+Import traces:
+  Client Component Browser:
+    ./src/components/GlobeCanvas.js [Client Component Browser]
+    ./src/app/trips/page.js [Client Component Browser]
+    ./src/app/trips/page.js [Server Component]
+
+  Client Component SSR:
+    ./src/components/GlobeCanvas.js [Client Component SSR]
+    ./src/app/trips/page.js [Client Component SSR]
+    ./src/app/trips/page.js [Server Component] 
+Γ£ô Compiled in 66ms
+ GET /trips 200 in 435ms (next.js: 99ms, application-code: 336ms)
+ GET /trips 200 in 38ms (next.js: 3ms, application-code: 35ms)
+Γ£ô Compiled in 68ms
+ GET /trips 200 in 108ms (next.js: 72ms, application-code: 36ms)
+Γ£ô Compiled in 68ms
+ GET /trips 200 in 129ms (next.js: 86ms, application-code: 42ms)
+ GET /api/cover-image?destination=Portland%20Oregon&count=10 200 in 594ms (next.js: 200ms, application-code: 394ms)
+Γ£ô Compiled in 349ms
+ GET /trips 200 in 322ms (next.js: 227ms, application-code: 96ms)
+Γ£ô Compiled in 239ms
+ GET /trips 200 in 580ms (next.js: 295ms, application-code: 285ms)
+[browser] Uncaught ReferenceError: canCycleImages is not defined
+    at TripCard (src/app/trips/page.js:327:8)
+    at <unknown> (src/app/trips/page.js:754:18)
+    at Array.map (<anonymous>)
+    at DashboardPage (src/app/trips/page.js:754:18)
+  325 |
+  326 |       {/* Image cycling arrows ΓÇö hover only, outside Link */}
+> 327 |       {canCycleImages && hovered && (
+      |        ^
+  328 |         <>
+  329 |           <button
+  330 |             onClick={(e) => { e.preventDefault(); e.stopPropagation(); onCycleImage(-1); }}
+ΓÜá Fast Refresh had to perform a full reload due to a runtime error.
+Γ£ô Compiled in 87ms
+ GET /trips 200 in 542ms (next.js: 89ms, application-code: 454ms)
+Γ£ô Compiled in 125ms
+ GET /trips 200 in 337ms (next.js: 275ms, application-code: 62ms)
+ GET /trips 200 in 154ms (next.js: 6ms, application-code: 148ms)
+ POST /api/generate-poster 200 in 406ms (next.js: 87ms, application-code: 319ms)
+ POST /api/generate-poster 200 in 120ms (next.js: 1942┬╡s, application-code: 118ms)
+ POST /api/generate-poster 200 in 104ms (next.js: 5ms, application-code: 99ms)
+ POST /api/generate-poster 200 in 126ms (next.js: 3ms, application-code: 123ms)
+ POST /api/generate-poster 200 in 136ms (next.js: 4ms, application-code: 131ms)
+ POST /api/generate-poster 200 in 209ms (next.js: 1785┬╡s, application-code: 207ms)
+ POST /api/generate-poster 200 in 119ms (next.js: 3ms, application-code: 115ms)
+ POST /api/generate-poster 200 in 143ms (next.js: 11ms, application-code: 132ms)
+ POST /api/generate-poster 200 in 108ms (next.js: 1658┬╡s, application-code: 106ms)
+ GET /trips 200 in 35ms (next.js: 4ms, application-code: 31ms)
+ POST /api/generate-poster 200 in 232ms (next.js: 2ms, application-code: 230ms)
+ POST /api/generate-poster 200 in 138ms (next.js: 2ms, application-code: 136ms)
+ POST /api/generate-poster 200 in 248ms (next.js: 3ms, application-code: 244ms)
+ POST /api/generate-poster 200 in 193ms (next.js: 3ms, application-code: 189ms)
+Γ£ô Compiled in 197ms
+ GET /trips 200 in 340ms (next.js: 203ms, application-code: 137ms)
+ GET /trips 200 in 384ms (next.js: 11ms, application-code: 373ms)
+ POST /api/generate-poster 200 in 322ms (next.js: 83ms, application-code: 239ms)
+ POST /api/generate-poster 200 in 110ms (next.js: 1944┬╡s, application-code: 108ms)
+ POST /api/generate-poster 200 in 286ms (next.js: 3ms, application-code: 283ms)
+ GET /trips 200 in 42ms (next.js: 4ms, application-code: 38ms)
+ POST /api/generate-poster 200 in 178ms (next.js: 4ms, application-code: 175ms)
+ GET /trips 200 in 181ms (next.js: 136ms, application-code: 45ms)
+Γ£ô Compiled in 115ms
+ GET /trips 200 in 104ms (next.js: 75ms, application-code: 29ms)
+ GET /trips 200 in 342ms (next.js: 4ms, application-code: 339ms)
+Generate poster error: ReferenceError: body is not defined
+    at POST (src\app\api\generate-poster\route.js:124:24)
+  122 |     }
+  123 |
+> 124 |     const regenerate = body.regenerate === true;
+      |                        ^
+  125 |
+  126 |     const apiKey = process.env.GEMINI_API_KEY;
+  127 |     if (!apiKey) {
+ POST /api/generate-poster 500 in 440ms (next.js: 88ms, application-code: 352ms)
+[browser] Poster regeneration failed: Failed to generate poster image (src/app/trips/page.js:617:17)
+Generate poster error: ReferenceError: body is not defined
+    at POST (src\app\api\generate-poster\route.js:124:24)
+  122 |     }
+  123 |
+> 124 |     const regenerate = body.regenerate === true;
+      |                        ^
+  125 |
+  126 |     const apiKey = process.env.GEMINI_API_KEY;
+  127 |     if (!apiKey) {
+ POST /api/generate-poster 500 in 87ms (next.js: 3ms, application-code: 84ms)
+[browser] Poster regeneration failed: Failed to generate poster image (src/app/trips/page.js:617:17)
+Generate poster error: ReferenceError: body is not defined
+    at POST (src\app\api\generate-poster\route.js:124:24)
+  122 |     }
+  123 |
+> 124 |     const regenerate = body.regenerate === true;
+      |                        ^
+  125 |
+  126 |     const apiKey = process.env.GEMINI_API_KEY;
+  127 |     if (!apiKey) {
+ POST /api/generate-poster 500 in 94ms (next.js: 21ms, application-code: 73ms)
+[browser] Poster regeneration failed: Failed to generate poster image (src/app/trips/page.js:617:17)
+Generate poster error: ReferenceError: body is not defined
+    at POST (src\app\api\generate-poster\route.js:124:24)
+  122 |     }
+  123 |
+> 124 |     const regenerate = body.regenerate === true;
+      |                        ^
+  125 |
+  126 |     const apiKey = process.env.GEMINI_API_KEY;
+  127 |     if (!apiKey) {
+ POST /api/generate-poster 500 in 54ms (next.js: 3ms, application-code: 51ms)
+[browser] Poster regeneration failed: Failed to generate poster image (src/app/trips/page.js:617:17)
+Generate poster error: ReferenceError: body is not defined
+    at POST (src\app\api\generate-poster\route.js:124:24)
+  122 |     }
+  123 |
+> 124 |     const regenerate = body.regenerate === true;
+      |                        ^
+  125 |
+  126 |     const apiKey = process.env.GEMINI_API_KEY;
+  127 |     if (!apiKey) {
+ POST /api/generate-poster 500 in 65ms (next.js: 1614┬╡s, application-code: 63ms)
+[browser] Poster regeneration failed: Failed to generate poster image (src/app/trips/page.js:617:17)
+Generate poster error: ReferenceError: body is not defined
+    at POST (src\app\api\generate-poster\route.js:124:24)
+  122 |     }
+  123 |
+> 124 |     const regenerate = body.regenerate === true;
+      |                        ^
+  125 |
+  126 |     const apiKey = process.env.GEMINI_API_KEY;
+  127 |     if (!apiKey) {
+ POST /api/generate-poster 500 in 52ms (next.js: 2ms, application-code: 50ms)
+[browser] Poster regeneration failed: Failed to generate poster image (src/app/trips/page.js:617:17)
+Generate poster error: ReferenceError: body is not defined
+    at POST (src\app\api\generate-poster\route.js:124:24)
+  122 |     }
+  123 |
+> 124 |     const regenerate = body.regenerate === true;
+      |                        ^
+  125 |
+  126 |     const apiKey = process.env.GEMINI_API_KEY;
+  127 |     if (!apiKey) {
+ POST /api/generate-poster 500 in 45ms (next.js: 1622┬╡s, application-code: 43ms)
+[browser] Poster regeneration failed: Failed to generate poster image (src/app/trips/page.js:617:17)
+Generate poster error: ReferenceError: body is not defined
+    at POST (src\app\api\generate-poster\route.js:124:24)
+  122 |     }
+  123 |
+> 124 |     const regenerate = body.regenerate === true;
+      |                        ^
+  125 |
+  126 |     const apiKey = process.env.GEMINI_API_KEY;
+  127 |     if (!apiKey) {
+ POST /api/generate-poster 500 in 71ms (next.js: 3ms, application-code: 69ms)
+[browser] Poster regeneration failed: Failed to generate poster image (src/app/trips/page.js:617:17)
+Generate poster error: ReferenceError: body is not defined
+    at POST (src\app\api\generate-poster\route.js:124:24)
+  122 |     }
+  123 |
+> 124 |     const regenerate = body.regenerate === true;
+      |                        ^
+  125 |
+  126 |     const apiKey = process.env.GEMINI_API_KEY;
+  127 |     if (!apiKey) {
+ POST /api/generate-poster 500 in 49ms (next.js: 3ms, application-code: 46ms)
+[browser] Poster regeneration failed: Failed to generate poster image (src/app/trips/page.js:617:17)
+Generate poster error: ReferenceError: body is not defined
+    at POST (src\app\api\generate-poster\route.js:124:24)
+  122 |     }
+  123 |
+> 124 |     const regenerate = body.regenerate === true;
+      |                        ^
+  125 |
+  126 |     const apiKey = process.env.GEMINI_API_KEY;
+  127 |     if (!apiKey) {
+ POST /api/generate-poster 500 in 47ms (next.js: 1816┬╡s, application-code: 45ms)
+[browser] Poster regeneration failed: Failed to generate poster image (src/app/trips/page.js:617:17)
+Generate poster error: ReferenceError: body is not defined
+    at POST (src\app\api\generate-poster\route.js:124:24)
+  122 |     }
+  123 |
+> 124 |     const regenerate = body.regenerate === true;
+      |                        ^
+  125 |
+  126 |     const apiKey = process.env.GEMINI_API_KEY;
+  127 |     if (!apiKey) {
+ POST /api/generate-poster 500 in 48ms (next.js: 1730┬╡s, application-code: 47ms)
+[browser] Poster regeneration failed: Failed to generate poster image (src/app/trips/page.js:617:17)
+Generate poster error: ReferenceError: body is not defined
+    at POST (src\app\api\generate-poster\route.js:124:24)
+  122 |     }
+  123 |
+> 124 |     const regenerate = body.regenerate === true;
+      |                        ^
+  125 |
+  126 |     const apiKey = process.env.GEMINI_API_KEY;
+  127 |     if (!apiKey) {
+ POST /api/generate-poster 500 in 61ms (next.js: 1653┬╡s, application-code: 60ms)
+[browser] Poster regeneration failed: Failed to generate poster image (src/app/trips/page.js:617:17)
+Generate poster error: ReferenceError: body is not defined
+    at POST (src\app\api\generate-poster\route.js:124:24)
+  122 |     }
+  123 |
+> 124 |     const regenerate = body.regenerate === true;
+      |                        ^
+  125 |
+  126 |     const apiKey = process.env.GEMINI_API_KEY;
+  127 |     if (!apiKey) {
+ POST /api/generate-poster 500 in 45ms (next.js: 3ms, application-code: 42ms)
+[browser] Poster regeneration failed: Failed to generate poster image (src/app/trips/page.js:617:17)
+Generate poster error: ReferenceError: body is not defined
+    at POST (src\app\api\generate-poster\route.js:124:24)
+  122 |     }
+  123 |
+> 124 |     const regenerate = body.regenerate === true;
+      |                        ^
+  125 |
+  126 |     const apiKey = process.env.GEMINI_API_KEY;
+  127 |     if (!apiKey) {
+ POST /api/generate-poster 500 in 46ms (next.js: 3ms, application-code: 44ms)
+[browser] Poster regeneration failed: Failed to generate poster image (src/app/trips/page.js:617:17)
+ GET /trips/01624469-a516-4633-a69d-e83743d1d44b 200 in 86ms (next.js: 53ms, application-code: 33ms)
+ GET /trips 200 in 25ms (next.js: 5ms, application-code: 20ms)
+Generate poster error: ReferenceError: body is not defined
+    at POST (src\app\api\generate-poster\route.js:124:24)
+  122 |     }
+  123 |
+> 124 |     const regenerate = body.regenerate === true;
+      |                        ^
+  125 |
+  126 |     const apiKey = process.env.GEMINI_API_KEY;
+  127 |     if (!apiKey) {
+ POST /api/generate-poster 500 in 76ms (next.js: 3ms, application-code: 73ms)
+[browser] Poster regeneration failed: Failed to generate poster image (src/app/trips/page.js:617:17)
+ GET /trips 200 in 228ms (next.js: 157ms, application-code: 71ms)
+ GET /trips 200 in 239ms (next.js: 2ms, application-code: 237ms)
+Trying gemini-2.5-flash-image for: Olympic National Park
+[gemini-2.5-flash-image] Γ£ô image generated successfully
+ POST /api/generate-poster 200 in 6.9s (next.js: 109ms, application-code: 6.8s)
+Trying gemini-2.5-flash-image for: Bordeaux France
+[gemini-2.5-flash-image] Γ£ô image generated successfully
+ POST /api/generate-poster 200 in 7.1s (next.js: 27ms, application-code: 7.1s)
+Γ£ô Compiled in 664ms
+ GET /trips 200 in 502ms (next.js: 274ms, application-code: 228ms)
+ GET /trips 200 in 303ms (next.js: 3ms, application-code: 300ms)
+Γ£ô Compiled in 220ms
+ GET /trips 200 in 372ms (next.js: 239ms, application-code: 133ms)
+Γ£ô Compiled in 90ms
+ GET /trips 200 in 593ms (next.js: 156ms, application-code: 437ms)
+Trying gemini-2.5-flash-image for: Athens Greece
+[gemini-2.5-flash-image] Γ£ô image generated successfully
+ POST /api/generate-poster 200 in 7.3s (next.js: 132ms, application-code: 7.2s)
+Γ£ô Compiled in 284ms
+ GET /trips 200 in 647ms (next.js: 423ms, application-code: 224ms)
+ GET /trips 200 in 565ms (next.js: 5ms, application-code: 560ms)
+ GET /trips 200 in 54ms (next.js: 10ms, application-code: 45ms)
+ GET /archived 200 in 395ms (next.js: 141ms, application-code: 254ms)
+ GET /trips 200 in 33ms (next.js: 4ms, application-code: 30ms)
+ GET /archived 200 in 48ms (next.js: 11ms, application-code: 38ms)
+ GET /trips 200 in 24ms (next.js: 4ms, application-code: 20ms)
+Γ£ô Compiled in 552ms
+ GET /trips 200 in 781ms (next.js: 556ms, application-code: 226ms)
+Γ£ô Compiled in 66ms
+ GET /trips 200 in 147ms (next.js: 90ms, application-code: 57ms)
+Γ£ô Compiled in 68ms
+ GET /trips 200 in 158ms (next.js: 109ms, application-code: 50ms)
+[browser] Uncaught ReferenceError: useState is not defined
+    at GlobeCanvas (src/components/GlobeCanvas.js:199:51)
+    at DashboardPage (src/app/trips/page.js:659:29)
+  197 |   const interactiveRef = useRef(interactive);
+  198 |   interactiveRef.current = interactive;
+> 199 |   const [countriesVisited, setCountriesVisited] = useState(0);
+      |                                                   ^
+  200 |
+  201 |   // Count unique countries for "traveled" trips using reverse geocoding
+  202 |   useEffect(() => {
+Γ£ô Compiled in 159ms
+ΓÜá Fast Refresh had to perform a full reload due to a runtime error.
+ GET /trips 200 in 990ms (next.js: 94ms, application-code: 896ms)
+Γ£ô Compiled in 61ms
+ GET /trips 200 in 591ms (next.js: 122ms, application-code: 469ms)
+[browser] [Globe] Reverse geocode failed for [36.17, -115.14]: Failed to fetch (src/components/GlobeCanvas.js:185:13)
+Γ£ô Compiled in 343ms
+ GET /trips 200 in 965ms (next.js: 702ms, application-code: 263ms)
+[browser] Uncaught Error: Objects are not valid as a React child (found: object with keys {name, date}). If you meant to render a collection of children, use an array instead.
+    at DashboardPage (src/app/trips/page.js:692:8)
+  690 |
+  691 |       {/* Globe layer ΓÇö sits below the header so they don't overlap */}
+> 692 |       <div
+      |        ^
+  693 |         className="fixed left-0 right-0 bottom-0 transition-all duration-700 ease-in-out"
+  694 |         style={{
+  695 |           top: 200,
+Γ£ô Compiled in 212ms
+ΓÜá Fast Refresh had to perform a full reload due to a runtime error.
+ GET /trips 200 in 812ms (next.js: 122ms, application-code: 689ms)
+ GET /trips 200 in 68ms (next.js: 7ms, application-code: 61ms)
+Γ£ô Compiled in 761ms
+ GET /trips 200 in 972ms (next.js: 644ms, application-code: 328ms)
+Γ£ô Compiled in 346ms
+ GET /trips 200 in 489ms (next.js: 352ms, application-code: 137ms)
+Γ£ô Compiled in 85ms
+ GET /trips 200 in 201ms (next.js: 119ms, application-code: 82ms)
+Γ£ô Compiled in 130ms
+ GET /trips 200 in 287ms (next.js: 71ms, application-code: 215ms)
+Γ£ô Compiled in 152ms
+ GET /trips 200 in 210ms (next.js: 160ms, application-code: 50ms)
+Γ£ô Compiled in 65ms
+ GET /trips 200 in 139ms (next.js: 98ms, application-code: 41ms)
+Γ£ô Compiled in 69ms
+ GET /trips 200 in 152ms (next.js: 100ms, application-code: 52ms)
+[browser] The final argument passed to useEffect changed size between renders. The order and size of this array must remain constant.
+
+Previous: [[object Object],[object Object],[object Object],[object Object],[object Object],[object Object],[object Object],[object Object],[object Object],[object Object],[object Object],[object Object],[object Object],[object Object],[object Object],[object Object]]
+Incoming: [[object Object],[object Object],[object Object],[object Object],[object Object],[object Object],[object Object],[object Object],[object Object],[object Object],[object Object],[object Object],[object Object],[object Object],[object Object],[object Object], ] 
+    at GlobeCanvas (src/components/GlobeCanvas.js:330:12)
+    at Set.forEach (<anonymous>)
+  328 |
+  329 |   // Re-add pins when trips or flight legs change
+> 330 |   useEffect(() => {
+      |            ^
+  331 |     if (globeRef.current) addPins();
+  332 |   }, [trips, flightLegs]);
+  333 | (src/components/GlobeCanvas.js:330:12)
+ GET /trips 200 in 802ms (next.js: 86ms, application-code: 716ms)
+ GET /trips/59e7a1d5-bf28-479e-93d9-76aeb3eb2263 200 in 214ms (next.js: 89ms, application-code: 125ms)
+Gemini image response (first 300): {
+  "flights": [
+    {
+      "direction": "outbound",
+      "departure_airport": "PHX",
+      "arrival_airport": "TPE",
+      "departure_date": "2026-10-07",
+      "departure_time": "23:25",
+      "arrival_time": "05:10",
+      "airline_code": "CI",
+      "airline_name": "China Airlines",
+      "fli
+Gemini raw response: {
+  "flights": [
+    {
+      "direction": "outbound",
+      "departure_airport": "PHX",
+      "arrival_airport": "TPE",
+      "departure_date": "2026-10-07",
+      "departure_time": "23:25",
+      "ar
+ POST /api/parse-flight 200 in 9.1s (next.js: 268ms, application-code: 8.8s)
+ GET /trips 200 in 114ms (next.js: 31ms, application-code: 83ms)
+ GET /trips 200 in 192ms (next.js: 10ms, application-code: 183ms)
+ GET /trips/59e7a1d5-bf28-479e-93d9-76aeb3eb2263 200 in 176ms (next.js: 36ms, application-code: 140ms)
+ GET /trips 200 in 25ms (next.js: 3ms, application-code: 22ms)
+ GET /archived 200 in 87ms (next.js: 59ms, application-code: 27ms)
+ GET /trips 200 in 26ms (next.js: 3ms, application-code: 23ms)
+ GET /trips 200 in 59ms (next.js: 3ms, application-code: 55ms)
+ GET /trips 200 in 43ms (next.js: 3ms, application-code: 41ms)
+Γ£ô Compiled in 334ms
+ GET /trips 200 in 1353ms (next.js: 970ms, application-code: 383ms)
+Γ£ô Compiled in 125ms
+ GET /trips 200 in 185ms (next.js: 150ms, application-code: 36ms)
+ GET /trips 200 in 329ms (next.js: 4ms, application-code: 325ms)
+ GET /trips/59e7a1d5-bf28-479e-93d9-76aeb3eb2263 200 in 205ms (next.js: 76ms, application-code: 129ms)
+Gemini image response (first 300): {
+  "flights": [
+    {
+      "direction": "outbound",
+      "departure_airport": "PHX",
+      "arrival_airport": "SEA",
+      "departure_date": "2026-10-07",
+      "departure_time": "08:05",
+      "arrival_time": "11:10",
+      "airline_code": "AS",
+      "airline_name": "Alaska",
+      "flight_numb
+Gemini raw response: {
+  "flights": [
+    {
+      "direction": "outbound",
+      "departure_airport": "PHX",
+      "arrival_airport": "SEA",
+      "departure_date": "2026-10-07",
+      "departure_time": "08:05",
+      "ar
+ POST /api/parse-flight 200 in 12.6s (next.js: 103ms, application-code: 12.5s)
+ GET /trips 200 in 41ms (next.js: 6ms, application-code: 34ms)
+Γ£ô Compiled in 369ms
+ GET /trips 200 in 847ms (next.js: 606ms, application-code: 242ms)
+Γ£ô Compiled in 129ms
+ GET /trips 200 in 219ms (next.js: 142ms, application-code: 77ms)
+Γ£ô Compiled in 64ms
+ GET /trips 200 in 145ms (next.js: 97ms, application-code: 48ms)
+Γ£ô Compiled in 296ms
+ GET /trips 200 in 337ms (next.js: 72ms, application-code: 265ms)
+Γ£ô Compiled in 448ms
+ GET /archived 200 in 460ms (next.js: 224ms, application-code: 236ms)
+ GET /trips/ece4f11d-7839-43b1-a505-959b0090576c 200 in 783ms (next.js: 712ms, application-code: 71ms)
+Γ£ô Compiled in 1143ms
+ GET /archived 200 in 942ms (next.js: 676ms, application-code: 266ms)
+ GET /archived 200 in 69ms (next.js: 11ms, application-code: 58ms)
+ GET /trips 200 in 253ms (next.js: 155ms, application-code: 98ms)
+ GET /archived 200 in 60ms (next.js: 21ms, application-code: 39ms)
+Γ£ô Compiled in 393ms
+Γ¿» ./src/app/archived/page.js:156:15
+Expected '</', got 'jsx text'
+  154 |             <div className="w-32"></div>
+  155 |           </div>
+> 156 |         </div>
+      |               ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+> 157 |       </header>
+      | ^^^^^^
+  158 |
+  159 |       <main className="relative z-10 max-w-5xl mx-auto px-6 py-10">
+  160 |         {trips.length === 0 ? (
+
+Parsing ecmascript source code failed
+
+Import traces:
+  Client Component Browser:
+    ./src/app/archived/page.js [Client Component Browser]
+    ./src/app/archived/page.js [Server Component]
+
+  Client Component SSR:
+    ./src/app/archived/page.js [Client Component SSR]
+    ./src/app/archived/page.js [Server Component]
+
+
+[browser] ./src/app/archived/page.js:156:15
+Expected '</', got 'jsx text'
+  154 |             <div className="w-32"></div>
+  155 |           </div>
+> 156 |         </div>
+      |               ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+> 157 |       </header>
+      | ^^^^^^
+  158 |
+  159 |       <main className="relative z-10 max-w-5xl mx-auto px-6 py-10">
+  160 |         {trips.length === 0 ? (
+
+Parsing ecmascript source code failed
+
+Import traces:
+  Client Component Browser:
+    ./src/app/archived/page.js [Client Component Browser]
+    ./src/app/archived/page.js [Server Component]
+
+  Client Component SSR:
+    ./src/app/archived/page.js [Client Component SSR]
+    ./src/app/archived/page.js [Server Component] 
+ GET /archived 500 in 290ms (next.js: 115ms, application-code: 175ms)
+[browser] ./src/app/archived/page.js:156:15
+Expected '</', got 'jsx text'
+  154 |             <div className="w-32"></div>
+  155 |           </div>
+> 156 |         </div>
+      |               ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+> 157 |       </header>
+      | ^^^^^^
+  158 |
+  159 |       <main className="relative z-10 max-w-5xl mx-auto px-6 py-10">
+  160 |         {trips.length === 0 ? (
+
+Parsing ecmascript source code failed
+
+Import traces:
+  Client Component Browser:
+    ./src/app/archived/page.js [Client Component Browser]
+    ./src/app/archived/page.js [Server Component]
+
+  Client Component SSR:
+    ./src/app/archived/page.js [Client Component SSR]
+    ./src/app/archived/page.js [Server Component] 
+[browser] ./src/app/archived/page.js:156:15
+Expected '</', got 'jsx text'
+  154 |             <div className="w-32"></div>
+  155 |           </div>
+> 156 |         </div>
+      |               ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+> 157 |       </header>
+      | ^^^^^^
+  158 |
+  159 |       <main className="relative z-10 max-w-5xl mx-auto px-6 py-10">
+  160 |         {trips.length === 0 ? (
+
+Parsing ecmascript source code failed
+
+Import traces:
+  Client Component Browser:
+    ./src/app/archived/page.js [Client Component Browser]
+    ./src/app/archived/page.js [Server Component]
+
+  Client Component SSR:
+    ./src/app/archived/page.js [Client Component SSR]
+    ./src/app/archived/page.js [Server Component] 
+Γ¿» ./src/app/archived/page.js:156:15
+Expected '</', got 'jsx text'
+  154 |             <div className="w-32"></div>
+  155 |           </div>
+> 156 |         </div>
+      |               ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+> 157 |       </header>
+      | ^^^^^^
+  158 |
+  159 |       <main className="relative z-10 max-w-5xl mx-auto px-6 py-10">
+  160 |         {trips.length === 0 ? (
+
+Parsing ecmascript source code failed
+
+Import traces:
+  Client Component Browser:
+    ./src/app/archived/page.js [Client Component Browser]
+    ./src/app/archived/page.js [Server Component]
+
+  Client Component SSR:
+    ./src/app/archived/page.js [Client Component SSR]
+    ./src/app/archived/page.js [Server Component]
+
+
+ GET /archived 500 in 69ms (next.js: 48ms, application-code: 21ms)
+[browser] ./src/app/archived/page.js:156:15
+Expected '</', got 'jsx text'
+  154 |             <div className="w-32"></div>
+  155 |           </div>
+> 156 |         </div>
+      |               ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+> 157 |       </header>
+      | ^^^^^^
+  158 |
+  159 |       <main className="relative z-10 max-w-5xl mx-auto px-6 py-10">
+  160 |         {trips.length === 0 ? (
+
+Parsing ecmascript source code failed
+
+Import traces:
+  Client Component Browser:
+    ./src/app/archived/page.js [Client Component Browser]
+    ./src/app/archived/page.js [Server Component]
+
+  Client Component SSR:
+    ./src/app/archived/page.js [Client Component SSR]
+    ./src/app/archived/page.js [Server Component] 
+Γ¿» ./src/app/archived/page.js:156:15
+Expected '</', got 'jsx text'
+  154 |             <div className="w-32"></div>
+  155 |           </div>
+> 156 |         </div>
+      |               ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+> 157 |       </header>
+      | ^^^^^^
+  158 |
+  159 |       <main className="relative z-10 max-w-5xl mx-auto px-6 py-10">
+  160 |         {trips.length === 0 ? (
+
+Parsing ecmascript source code failed
+
+Import traces:
+  Client Component Browser:
+    ./src/app/archived/page.js [Client Component Browser]
+    ./src/app/archived/page.js [Server Component]
+
+  Client Component SSR:
+    ./src/app/archived/page.js [Client Component SSR]
+    ./src/app/archived/page.js [Server Component]
+
+
+ GET /archived 500 in 29ms (next.js: 14ms, application-code: 15ms)
+[browser] ./src/app/archived/page.js:156:15
+Expected '</', got 'jsx text'
+  154 |             <div className="w-32"></div>
+  155 |           </div>
+> 156 |         </div>
+      |               ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+> 157 |       </header>
+      | ^^^^^^
+  158 |
+  159 |       <main className="relative z-10 max-w-5xl mx-auto px-6 py-10">
+  160 |         {trips.length === 0 ? (
+
+Parsing ecmascript source code failed
+
+Import traces:
+  Client Component Browser:
+    ./src/app/archived/page.js [Client Component Browser]
+    ./src/app/archived/page.js [Server Component]
+
+  Client Component SSR:
+    ./src/app/archived/page.js [Client Component SSR]
+    ./src/app/archived/page.js [Server Component] 
+[browser] Uncaught Error: ./src/app/archived/page.js:156:15
+Expected '</', got 'jsx text'
+  154 |             <div className="w-32"></div>
+  155 |           </div>
+> 156 |         </div>
+      |               ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+> 157 |       </header>
+      | ^^^^^^
+  158 |
+  159 |       <main className="relative z-10 max-w-5xl mx-auto px-6 py-10">
+  160 |         {trips.length === 0 ? (
+
+Parsing ecmascript source code failed
+
+Import traces:
+  Client Component Browser:
+    ./src/app/archived/page.js [Client Component Browser]
+    ./src/app/archived/page.js [Server Component]
+
+  Client Component SSR:
+    ./src/app/archived/page.js [Client Component SSR]
+    ./src/app/archived/page.js [Server Component]
+
+
+    at <unknown> (Error: ./src/app/archived/page.js:156:15)
+    at <unknown> (Error: (./src/app/archived/page.js:156:15)
+[browser] ./src/app/archived/page.js:156:15
+Expected '</', got 'jsx text'
+  154 |             <div className="w-32"></div>
+  155 |           </div>
+> 156 |         </div>
+      |               ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+> 157 |       </header>
+      | ^^^^^^
+  158 |
+  159 |       <main className="relative z-10 max-w-5xl mx-auto px-6 py-10">
+  160 |         {trips.length === 0 ? (
+
+Parsing ecmascript source code failed
+
+Import traces:
+  Client Component Browser:
+    ./src/app/archived/page.js [Client Component Browser]
+    ./src/app/archived/page.js [Server Component]
+
+  Client Component SSR:
+    ./src/app/archived/page.js [Client Component SSR]
+    ./src/app/archived/page.js [Server Component] 
+[browser] ./src/app/archived/page.js:156:15
+Expected '</', got 'jsx text'
+  154 |             <div className="w-32"></div>
+  155 |           </div>
+> 156 |         </div>
+      |               ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+> 157 |       </header>
+      | ^^^^^^
+  158 |
+  159 |       <main className="relative z-10 max-w-5xl mx-auto px-6 py-10">
+  160 |         {trips.length === 0 ? (
+
+Parsing ecmascript source code failed
+
+Import traces:
+  Client Component Browser:
+    ./src/app/archived/page.js [Client Component Browser]
+    ./src/app/archived/page.js [Server Component]
+
+  Client Component SSR:
+    ./src/app/archived/page.js [Client Component SSR]
+    ./src/app/archived/page.js [Server Component] 
+[browser] ./src/app/archived/page.js:156:15
+Expected '</', got 'jsx text'
+  154 |             <div className="w-32"></div>
+  155 |           </div>
+> 156 |         </div>
+      |               ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+> 157 |       </header>
+      | ^^^^^^
+  158 |
+  159 |       <main className="relative z-10 max-w-5xl mx-auto px-6 py-10">
+  160 |         {trips.length === 0 ? (
+
+Parsing ecmascript source code failed
+
+Import traces:
+  Client Component Browser:
+    ./src/app/archived/page.js [Client Component Browser]
+    ./src/app/archived/page.js [Server Component]
+
+  Client Component SSR:
+    ./src/app/archived/page.js [Client Component SSR]
+    ./src/app/archived/page.js [Server Component] 
+Γ£ô Compiled in 84ms
+ GET /archived 200 in 824ms (next.js: 318ms, application-code: 506ms)
+Γ£ô Compiled in 69ms
+ GET /archived 200 in 604ms (next.js: 93ms, application-code: 511ms)
+ GET /trips 200 in 181ms (next.js: 97ms, application-code: 84ms)
+Trying gemini-2.5-flash-image for: Kyoto
+Trying gemini-2.5-flash-image for: Las Vegas
+Trying gemini-2.5-flash-image for: Cancun Mexico
+ POST /api/generate-poster 200 in 989ms (next.js: 430ms, application-code: 558ms)
+ POST /api/generate-poster 200 in 444ms (next.js: 46ms, application-code: 398ms)
+Trying gemini-2.5-flash-image for: Las Vegas
+Trying gemini-2.5-flash-image for: Cancun Mexico
+Trying gemini-2.5-flash-image for: Kyoto
+[gemini-2.5-flash-image] Γ£ô image generated successfully
+[gemini-2.5-flash-image] Γ£ô image generated successfully
+[gemini-2.5-flash-image] Γ£ô image generated successfully
+[gemini-2.5-flash-image] Γ£ô image generated successfully
+[gemini-2.5-flash-image] Γ£ô image generated successfully
+[gemini-2.5-flash-image] Γ£ô image generated successfully
+ POST /api/generate-poster 200 in 7.4s (next.js: 6ms, application-code: 7.4s)
+ POST /api/generate-poster 200 in 8.6s (next.js: 450ms, application-code: 8.1s)
+ POST /api/generate-poster 200 in 8.9s (next.js: 293ms, application-code: 8.6s)
+ POST /api/generate-poster 200 in 9.0s (next.js: 463ms, application-code: 8.5s)
+ POST /api/generate-poster 200 in 8.1s (next.js: 12ms, application-code: 8.1s)
+ POST /api/generate-poster 200 in 8.5s (next.js: 5ms, application-code: 8.5s)
+ GET /archived 200 in 36ms (next.js: 17ms, application-code: 19ms)
+Γ£ô Compiled in 402ms
+ GET /archived 200 in 379ms (next.js: 230ms, application-code: 149ms)
+ GET /trips 200 in 63ms (next.js: 33ms, application-code: 30ms)
+Γ£ô Compiled in 427ms
+[browser] ./src/app/trips/page.js:995:1
+Unexpected token. Did you mean `{'}'}` or `&rbrace;`?
+  993 |     </div>
+  994 |   );
+> 995 | }
+      | ^
+  996 |
+
+Parsing ecmascript source code failed
+
+Import traces:
+  Client Component Browser:
+    ./src/app/trips/page.js [Client Component Browser]
+    ./src/app/trips/page.js [Server Component]
+
+  Client Component SSR:
+    ./src/app/trips/page.js [Client Component SSR]
+    ./src/app/trips/page.js [Server Component] 
+Γ¿» ./src/app/trips/page.js:995:1
+Unexpected token. Did you mean `{'}'}` or `&rbrace;`?
+  993 |     </div>
+  994 |   );
+> 995 | }
+      | ^
+  996 |
+
+Parsing ecmascript source code failed
+
+Import traces:
+  Client Component Browser:
+    ./src/app/trips/page.js [Client Component Browser]
+    ./src/app/trips/page.js [Server Component]
+
+  Client Component SSR:
+    ./src/app/trips/page.js [Client Component SSR]
+    ./src/app/trips/page.js [Server Component]
+
+
+[browser] ./src/app/trips/page.js:995:1
+Unexpected token. Did you mean `{'}'}` or `&rbrace;`?
+  993 |     </div>
+  994 |   );
+> 995 | }
+      | ^
+  996 |
+
+Parsing ecmascript source code failed
+
+Import traces:
+  Client Component Browser:
+    ./src/app/trips/page.js [Client Component Browser]
+    ./src/app/trips/page.js [Server Component]
+
+  Client Component SSR:
+    ./src/app/trips/page.js [Client Component SSR]
+    ./src/app/trips/page.js [Server Component] 
+ GET /trips 500 in 198ms (next.js: 87ms, application-code: 111ms)
+Γ¿» ./src/app/trips/page.js:995:1
+Unexpected token. Did you mean `{'}'}` or `&rbrace;`?
+  993 |     </div>
+  994 |   );
+> 995 | }
+      | ^
+  996 |
+
+Parsing ecmascript source code failed
+
+Import traces:
+  Client Component Browser:
+    ./src/app/trips/page.js [Client Component Browser]
+    ./src/app/trips/page.js [Server Component]
+
+  Client Component SSR:
+    ./src/app/trips/page.js [Client Component SSR]
+    ./src/app/trips/page.js [Server Component]
+
+
+[browser] ./src/app/trips/page.js:995:1
+Unexpected token. Did you mean `{'}'}` or `&rbrace;`?
+  993 |     </div>
+  994 |   );
+> 995 | }
+      | ^
+  996 |
+
+Parsing ecmascript source code failed
+
+Import traces:
+  Client Component Browser:
+    ./src/app/trips/page.js [Client Component Browser]
+    ./src/app/trips/page.js [Server Component]
+
+  Client Component SSR:
+    ./src/app/trips/page.js [Client Component SSR]
+    ./src/app/trips/page.js [Server Component] 
+ GET /trips 500 in 84ms (next.js: 15ms, application-code: 68ms)
+Γ¿» ./src/app/trips/page.js:995:1
+Unexpected token. Did you mean `{'}'}` or `&rbrace;`?
+  993 |     </div>
+  994 |   );
+> 995 | }
+      | ^
+  996 |
+
+Parsing ecmascript source code failed
+
+Import traces:
+  Client Component Browser:
+    ./src/app/trips/page.js [Client Component Browser]
+    ./src/app/trips/page.js [Server Component]
+
+  Client Component SSR:
+    ./src/app/trips/page.js [Client Component SSR]
+    ./src/app/trips/page.js [Server Component]
+
+
+[browser] ./src/app/trips/page.js:995:1
+Unexpected token. Did you mean `{'}'}` or `&rbrace;`?
+  993 |     </div>
+  994 |   );
+> 995 | }
+      | ^
+  996 |
+
+Parsing ecmascript source code failed
+
+Import traces:
+  Client Component Browser:
+    ./src/app/trips/page.js [Client Component Browser]
+    ./src/app/trips/page.js [Server Component]
+
+  Client Component SSR:
+    ./src/app/trips/page.js [Client Component SSR]
+    ./src/app/trips/page.js [Server Component] 
+ GET /trips 500 in 32ms (next.js: 19ms, application-code: 12ms)
+[browser] ./src/app/trips/page.js:995:1
+Unexpected token. Did you mean `{'}'}` or `&rbrace;`?
+  993 |     </div>
+  994 |   );
+> 995 | }
+      | ^
+  996 |
+
+Parsing ecmascript source code failed
+
+Import traces:
+  Client Component Browser:
+    ./src/app/trips/page.js [Client Component Browser]
+    ./src/app/trips/page.js [Server Component]
+
+  Client Component SSR:
+    ./src/app/trips/page.js [Client Component SSR]
+    ./src/app/trips/page.js [Server Component] 
+Γ¿» ./src/app/trips/page.js:995:1
+Unexpected token. Did you mean `{'}'}` or `&rbrace;`?
+  993 |     </div>
+  994 |   );
+> 995 | }
+      | ^
+  996 |
+
+Parsing ecmascript source code failed
+
+Import traces:
+  Client Component Browser:
+    ./src/app/trips/page.js [Client Component Browser]
+    ./src/app/trips/page.js [Server Component]
+
+  Client Component SSR:
+    ./src/app/trips/page.js [Client Component SSR]
+    ./src/app/trips/page.js [Server Component]
+
+
+ GET /trips 500 in 25ms (next.js: 11ms, application-code: 14ms)
+[browser] ./src/app/trips/page.js:995:1
+Unexpected token. Did you mean `{'}'}` or `&rbrace;`?
+  993 |     </div>
+  994 |   );
+> 995 | }
+      | ^
+  996 |
+
+Parsing ecmascript source code failed
+
+Import traces:
+  Client Component Browser:
+    ./src/app/trips/page.js [Client Component Browser]
+    ./src/app/trips/page.js [Server Component]
+
+  Client Component SSR:
+    ./src/app/trips/page.js [Client Component SSR]
+    ./src/app/trips/page.js [Server Component] 
+[browser] Uncaught Error: ./src/app/trips/page.js:995:1
+Unexpected token. Did you mean `{'}'}` or `&rbrace;`?
+  993 |     </div>
+  994 |   );
+> 995 | }
+      | ^
+  996 |
+
+Parsing ecmascript source code failed
+
+Import traces:
+  Client Component Browser:
+    ./src/app/trips/page.js [Client Component Browser]
+    ./src/app/trips/page.js [Server Component]
+
+  Client Component SSR:
+    ./src/app/trips/page.js [Client Component SSR]
+    ./src/app/trips/page.js [Server Component]
+
+
+    at <unknown> (Error: ./src/app/trips/page.js:995:1)
+    at <unknown> (Error: (./src/app/trips/page.js:995:1)
+[browser] ./src/app/trips/page.js:995:1
+Unexpected token. Did you mean `{'}'}` or `&rbrace;`?
+  993 |     </div>
+  994 |   );
+> 995 | }
+      | ^
+  996 |
+
+Parsing ecmascript source code failed
+
+Import traces:
+  Client Component Browser:
+    ./src/app/trips/page.js [Client Component Browser]
+    ./src/app/trips/page.js [Server Component]
+
+  Client Component SSR:
+    ./src/app/trips/page.js [Client Component SSR]
+    ./src/app/trips/page.js [Server Component] 
+[browser] ./src/app/trips/page.js:995:1
+Unexpected token. Did you mean `{'}'}` or `&rbrace;`?
+  993 |     </div>
+  994 |   );
+> 995 | }
+      | ^
+  996 |
+
+Parsing ecmascript source code failed
+
+Import traces:
+  Client Component Browser:
+    ./src/app/trips/page.js [Client Component Browser]
+    ./src/app/trips/page.js [Server Component]
+
+  Client Component SSR:
+    ./src/app/trips/page.js [Client Component SSR]
+    ./src/app/trips/page.js [Server Component] 
+Γ£ô Compiled in 117ms
+ GET /trips 200 in 820ms (next.js: 288ms, application-code: 532ms)
+Γ£ô Compiled in 131ms
+ GET /trips 200 in 229ms (next.js: 169ms, application-code: 60ms)
+Γ¿» ./src/app/trips/page.js:820:13
+Expected ',', got '{'
+  818 |         </div>
+  819 |       </div>
+> 820 |       </div>{/* end header layer */}
+      |             ^
+  821 |
+  822 |       {/* Content layer ΓÇö cards */}
+  823 |       <div
+
+Parsing ecmascript source code failed
+
+Import traces:
+  Client Component Browser:
+    ./src/app/trips/page.js [Client Component Browser]
+    ./src/app/trips/page.js [Server Component]
+
+  Client Component SSR:
+    ./src/app/trips/page.js [Client Component SSR]
+    ./src/app/trips/page.js [Server Component]
+
+
+Γ£ô Compiled in 8ms
+[browser] ./src/app/trips/page.js:820:13
+Expected ',', got '{'
+  818 |         </div>
+  819 |       </div>
+> 820 |       </div>{/* end header layer */}
+      |             ^
+  821 |
+  822 |       {/* Content layer ΓÇö cards */}
+  823 |       <div
+
+Parsing ecmascript source code failed
+
+Import traces:
+  Client Component Browser:
+    ./src/app/trips/page.js [Client Component Browser]
+    ./src/app/trips/page.js [Server Component]
+
+  Client Component SSR:
+    ./src/app/trips/page.js [Client Component SSR]
+    ./src/app/trips/page.js [Server Component] 
+ GET /trips 500 in 278ms (next.js: 172ms, application-code: 107ms)
+[browser] ./src/app/trips/page.js:820:13
+Expected ',', got '{'
+  818 |         </div>
+  819 |       </div>
+> 820 |       </div>{/* end header layer */}
+      |             ^
+  821 |
+  822 |       {/* Content layer ΓÇö cards */}
+  823 |       <div
+
+Parsing ecmascript source code failed
+
+Import traces:
+  Client Component Browser:
+    ./src/app/trips/page.js [Client Component Browser]
+    ./src/app/trips/page.js [Server Component]
+
+  Client Component SSR:
+    ./src/app/trips/page.js [Client Component SSR]
+    ./src/app/trips/page.js [Server Component] 
+Γ¿» ./src/app/trips/page.js:820:13
+Expected ',', got '{'
+  818 |         </div>
+  819 |       </div>
+> 820 |       </div>{/* end header layer */}
+      |             ^
+  821 |
+  822 |       {/* Content layer ΓÇö cards */}
+  823 |       <div
+
+Parsing ecmascript source code failed
+
+Import traces:
+  Client Component Browser:
+    ./src/app/trips/page.js [Client Component Browser]
+    ./src/app/trips/page.js [Server Component]
+
+  Client Component SSR:
+    ./src/app/trips/page.js [Client Component SSR]
+    ./src/app/trips/page.js [Server Component]
+
+
+ GET /trips 500 in 150ms (next.js: 58ms, application-code: 92ms)
+[browser] ./src/app/trips/page.js:820:13
+Expected ',', got '{'
+  818 |         </div>
+  819 |       </div>
+> 820 |       </div>{/* end header layer */}
+      |             ^
+  821 |
+  822 |       {/* Content layer ΓÇö cards */}
+  823 |       <div
+
+Parsing ecmascript source code failed
+
+Import traces:
+  Client Component Browser:
+    ./src/app/trips/page.js [Client Component Browser]
+    ./src/app/trips/page.js [Server Component]
+
+  Client Component SSR:
+    ./src/app/trips/page.js [Client Component SSR]
+    ./src/app/trips/page.js [Server Component] 
+Γ¿» ./src/app/trips/page.js:820:13
+Expected ',', got '{'
+  818 |         </div>
+  819 |       </div>
+> 820 |       </div>{/* end header layer */}
+      |             ^
+  821 |
+  822 |       {/* Content layer ΓÇö cards */}
+  823 |       <div
+
+Parsing ecmascript source code failed
+
+Import traces:
+  Client Component Browser:
+    ./src/app/trips/page.js [Client Component Browser]
+    ./src/app/trips/page.js [Server Component]
+
+  Client Component SSR:
+    ./src/app/trips/page.js [Client Component SSR]
+    ./src/app/trips/page.js [Server Component]
+
+
+Γ¿» ./src/app/trips/page.js:820:13
+Expected ',', got '{'
+  818 |         </div>
+  819 |       </div>
+> 820 |       </div>{/* end header layer */}
+      |             ^
+  821 |
+  822 |       {/* Content layer ΓÇö cards */}
+  823 |       <div
+
+Parsing ecmascript source code failed
+
+Import traces:
+  Client Component Browser:
+    ./src/app/trips/page.js [Client Component Browser]
+    ./src/app/trips/page.js [Server Component]
+
+  Client Component SSR:
+    ./src/app/trips/page.js [Client Component SSR]
+    ./src/app/trips/page.js [Server Component]
+
+
+ GET /trips 500 in 182ms (next.js: 73ms, application-code: 109ms)
+[browser] ./src/app/trips/page.js:820:13
+Expected ',', got '{'
+  818 |         </div>
+  819 |       </div>
+> 820 |       </div>{/* end header layer */}
+      |             ^
+  821 |
+  822 |       {/* Content layer ΓÇö cards */}
+  823 |       <div
+
+Parsing ecmascript source code failed
+
+Import traces:
+  Client Component Browser:
+    ./src/app/trips/page.js [Client Component Browser]
+    ./src/app/trips/page.js [Server Component]
+
+  Client Component SSR:
+    ./src/app/trips/page.js [Client Component SSR]
+    ./src/app/trips/page.js [Server Component] 
+ GET /trips 500 in 229ms (next.js: 148ms, application-code: 81ms)
+[browser] Uncaught Error: ./src/app/trips/page.js:820:13
+Expected ',', got '{'
+  818 |         </div>
+  819 |       </div>
+> 820 |       </div>{/* end header layer */}
+      |             ^
+  821 |
+  822 |       {/* Content layer ΓÇö cards */}
+  823 |       <div
+
+Parsing ecmascript source code failed
+
+Import traces:
+  Client Component Browser:
+    ./src/app/trips/page.js [Client Component Browser]
+    ./src/app/trips/page.js [Server Component]
+
+  Client Component SSR:
+    ./src/app/trips/page.js [Client Component SSR]
+    ./src/app/trips/page.js [Server Component]
+
+
+    at <unknown> (Error: ./src/app/trips/page.js:820:13)
+    at <unknown> (Error: (./src/app/trips/page.js:820:13)
+[browser] ./src/app/trips/page.js:820:13
+Expected ',', got '{'
+  818 |         </div>
+  819 |       </div>
+> 820 |       </div>{/* end header layer */}
+      |             ^
+  821 |
+  822 |       {/* Content layer ΓÇö cards */}
+  823 |       <div
+
+Parsing ecmascript source code failed
+
+Import traces:
+  Client Component Browser:
+    ./src/app/trips/page.js [Client Component Browser]
+    ./src/app/trips/page.js [Server Component]
+
+  Client Component SSR:
+    ./src/app/trips/page.js [Client Component SSR]
+    ./src/app/trips/page.js [Server Component] 
+[browser] ./src/app/trips/page.js:820:13
+Expected ',', got '{'
+  818 |         </div>
+  819 |       </div>
+> 820 |       </div>{/* end header layer */}
+      |             ^
+  821 |
+  822 |       {/* Content layer ΓÇö cards */}
+  823 |       <div
+
+Parsing ecmascript source code failed
+
+Import traces:
+  Client Component Browser:
+    ./src/app/trips/page.js [Client Component Browser]
+    ./src/app/trips/page.js [Server Component]
+
+  Client Component SSR:
+    ./src/app/trips/page.js [Client Component SSR]
+    ./src/app/trips/page.js [Server Component] 
+Γ£ô Compiled in 77ms
+ GET /trips 200 in 533ms (next.js: 123ms, application-code: 410ms)
+ GET /archived 200 in 66ms (next.js: 35ms, application-code: 32ms)
+ GET /trips 200 in 26ms (next.js: 4ms, application-code: 22ms)
+Γ£ô Compiled in 113ms
+ GET /trips 200 in 162ms (next.js: 113ms, application-code: 49ms)
+Γ£ô Compiled in 58ms
+ GET /trips 200 in 106ms (next.js: 77ms, application-code: 29ms)
+ GET /archived 200 in 198ms (next.js: 154ms, application-code: 44ms)
+ GET /trips 200 in 38ms (next.js: 8ms, application-code: 30ms)
+ GET /archived 200 in 32ms (next.js: 5ms, application-code: 27ms)
+ GET /trips 200 in 36ms (next.js: 4ms, application-code: 31ms)
+ GET /archived 200 in 34ms (next.js: 6ms, application-code: 28ms)
+ GET /trips 200 in 28ms (next.js: 6ms, application-code: 22ms)
+ GET / 200 in 70ms (next.js: 44ms, application-code: 27ms)
+ GET /trips 200 in 171ms (next.js: 8ms, application-code: 163ms)
+ GET /trips 200 in 32ms (next.js: 7ms, application-code: 25ms)
+Γ£ô Compiled in 720ms
+ GET /trips 200 in 587ms (next.js: 387ms, application-code: 200ms)
+Γ£ô Compiled in 116ms
+ GET /trips 200 in 367ms (next.js: 112ms, application-code: 256ms)
+ GET / 200 in 451ms (next.js: 115ms, application-code: 336ms)
+ GET /trips 200 in 44ms (next.js: 5ms, application-code: 39ms)
+ GET /trips 200 in 44ms (next.js: 26ms, application-code: 17ms)
+Γ£ô Compiled in 1020ms
+ GET /trips 200 in 662ms (next.js: 271ms, application-code: 391ms)
+ GET /trips 200 in 212ms (next.js: 80ms, application-code: 132ms)
+Γ£ô Compiled in 218ms
+ GET /trips 200 in 146ms (next.js: 87ms, application-code: 60ms)
+Γ£ô Compiled in 98ms
+ GET /trips 200 in 141ms (next.js: 101ms, application-code: 40ms)
+Γ£ô Compiled in 93ms
+ GET /trips 200 in 160ms (next.js: 110ms, application-code: 50ms)
+Γ£ô Compiled in 61ms
+ GET /trips 200 in 407ms (next.js: 362ms, application-code: 46ms)
+ GET / 200 in 125ms (next.js: 86ms, application-code: 38ms)
+ GET /trips 200 in 57ms (next.js: 4ms, application-code: 54ms)
+ GET /trips 200 in 32ms (next.js: 2ms, application-code: 29ms)
+ GET /trips/01624469-a516-4633-a69d-e83743d1d44b 200 in 239ms (next.js: 111ms, application-code: 128ms)
+Γ£ô Compiled in 995ms
+ GET /trips/01624469-a516-4633-a69d-e83743d1d44b 200 in 1723ms (next.js: 763ms, application-code: 960ms)
+ GET /trips/01624469-a516-4633-a69d-e83743d1d44b 200 in 388ms (next.js: 110ms, application-code: 278ms)
+ GET /trips/01624469-a516-4633-a69d-e83743d1d44b 200 in 115ms (next.js: 13ms, application-code: 102ms)
+ GET /trips/01624469-a516-4633-a69d-e83743d1d44b 200 in 903ms (next.js: 8ms, application-code: 894ms)
+Γ£ô Compiled in 130ms
+ GET /trips/01624469-a516-4633-a69d-e83743d1d44b 200 in 148ms (next.js: 102ms, application-code: 46ms)
+Γ£ô Compiled in 62ms
+ GET /trips/01624469-a516-4633-a69d-e83743d1d44b 200 in 163ms (next.js: 119ms, application-code: 44ms)
+Γ£ô Compiled in 74ms
+ GET /trips/01624469-a516-4633-a69d-e83743d1d44b 200 in 171ms (next.js: 110ms, application-code: 61ms)
+Γ£ô Compiled in 60ms
+ GET /trips/01624469-a516-4633-a69d-e83743d1d44b 200 in 233ms (next.js: 117ms, application-code: 116ms)
+Γ£ô Compiled in 206ms
+ GET /trips/01624469-a516-4633-a69d-e83743d1d44b 200 in 389ms (next.js: 219ms, application-code: 170ms)
+Γ£ô Compiled in 616ms
+ GET /trips/01624469-a516-4633-a69d-e83743d1d44b 200 in 2.9s (next.js: 762ms, application-code: 2.1s)
+Γ£ô Compiled in 137ms
+ GET /trips/01624469-a516-4633-a69d-e83743d1d44b 200 in 300ms (next.js: 159ms, application-code: 142ms)
+Γ£ô Compiled in 373ms
+ GET /trips/01624469-a516-4633-a69d-e83743d1d44b 200 in 434ms (next.js: 168ms, application-code: 266ms)
+Γ£ô Compiled in 260ms
+ GET /trips/01624469-a516-4633-a69d-e83743d1d44b 200 in 706ms (next.js: 381ms, application-code: 325ms)
+Γ£ô Compiled in 231ms
+ GET /trips/01624469-a516-4633-a69d-e83743d1d44b 200 in 696ms (next.js: 464ms, application-code: 231ms)
+Γ£ô Compiled in 585ms
+ GET /trips/01624469-a516-4633-a69d-e83743d1d44b 200 in 1597ms (next.js: 1177ms, application-code: 420ms)
+Γ£ô Compiled in 133ms
+ GET /trips/01624469-a516-4633-a69d-e83743d1d44b 200 in 172ms (next.js: 113ms, application-code: 60ms)
+Γ£ô Compiled in 94ms
+ GET /trips/01624469-a516-4633-a69d-e83743d1d44b 200 in 189ms (next.js: 122ms, application-code: 67ms)
+Γ£ô Compiled in 167ms
+ GET /trips/01624469-a516-4633-a69d-e83743d1d44b 200 in 161ms (next.js: 104ms, application-code: 57ms)
+Γ£ô Compiled in 103ms
+ GET /trips/01624469-a516-4633-a69d-e83743d1d44b 200 in 612ms (next.js: 560ms, application-code: 52ms)
+Γ£ô Compiled in 72ms
+ GET /trips/01624469-a516-4633-a69d-e83743d1d44b 200 in 154ms (next.js: 111ms, application-code: 43ms)
+Γ£ô Compiled in 56ms
+ GET /trips/01624469-a516-4633-a69d-e83743d1d44b 200 in 129ms (next.js: 91ms, application-code: 39ms)
+Γ£ô Compiled in 56ms
+ GET /trips/01624469-a516-4633-a69d-e83743d1d44b 200 in 169ms (next.js: 103ms, application-code: 66ms)
+Γ£ô Compiled in 55ms
+ GET /trips/01624469-a516-4633-a69d-e83743d1d44b 200 in 132ms (next.js: 95ms, application-code: 37ms)
+Γ£ô Compiled in 70ms
+ GET /trips/01624469-a516-4633-a69d-e83743d1d44b 200 in 137ms (next.js: 102ms, application-code: 35ms)
+Γ£ô Compiled in 89ms
+ GET /trips/01624469-a516-4633-a69d-e83743d1d44b 200 in 174ms (next.js: 117ms, application-code: 57ms)
+Γ£ô Compiled in 201ms
+ GET /trips/01624469-a516-4633-a69d-e83743d1d44b 200 in 291ms (next.js: 104ms, application-code: 187ms)
+Γ£ô Compiled in 149ms
+ GET /trips/01624469-a516-4633-a69d-e83743d1d44b 200 in 310ms (next.js: 185ms, application-code: 125ms)
+Γ£ô Compiled in 66ms
+ GET /trips/01624469-a516-4633-a69d-e83743d1d44b 200 in 134ms (next.js: 88ms, application-code: 46ms)
+Γ£ô Compiled in 117ms
+ GET /trips/01624469-a516-4633-a69d-e83743d1d44b 200 in 142ms (next.js: 93ms, application-code: 49ms)
+Γ£ô Compiled in 80ms
+ GET /trips/01624469-a516-4633-a69d-e83743d1d44b 200 in 135ms (next.js: 92ms, application-code: 44ms)
+Γ£ô Compiled in 181ms
+ GET /trips/01624469-a516-4633-a69d-e83743d1d44b 200 in 225ms (next.js: 130ms, application-code: 96ms)
+Γ£ô Compiled in 93ms
+ GET /trips/01624469-a516-4633-a69d-e83743d1d44b 200 in 135ms (next.js: 89ms, application-code: 46ms)
+Γ£ô Compiled in 74ms
+ GET /trips/01624469-a516-4633-a69d-e83743d1d44b 200 in 138ms (next.js: 95ms, application-code: 43ms)
+Γ£ô Compiled in 152ms
+ GET /trips/01624469-a516-4633-a69d-e83743d1d44b 200 in 154ms (next.js: 106ms, application-code: 48ms)
+Γ£ô Compiled in 67ms
+ GET /trips/01624469-a516-4633-a69d-e83743d1d44b 200 in 142ms (next.js: 94ms, application-code: 49ms)
+Γ£ô Compiled in 89ms
+ GET /trips/01624469-a516-4633-a69d-e83743d1d44b 200 in 133ms (next.js: 101ms, application-code: 32ms)
+Γ£ô Compiled in 87ms
+ GET /trips/01624469-a516-4633-a69d-e83743d1d44b 200 in 159ms (next.js: 130ms, application-code: 29ms)
+Γ£ô Compiled in 66ms
+ GET /trips/01624469-a516-4633-a69d-e83743d1d44b 200 in 164ms (next.js: 112ms, application-code: 52ms)
+Γ£ô Compiled in 53ms
+ GET /trips/01624469-a516-4633-a69d-e83743d1d44b 200 in 156ms (next.js: 101ms, application-code: 55ms)
+Γ£ô Compiled in 116ms
+ GET /trips/01624469-a516-4633-a69d-e83743d1d44b 200 in 118ms (next.js: 78ms, application-code: 40ms)
+Γ£ô Compiled in 57ms
+ GET /trips/01624469-a516-4633-a69d-e83743d1d44b 200 in 119ms (next.js: 82ms, application-code: 37ms)
+Γ£ô Compiled in 56ms
+ GET /trips/01624469-a516-4633-a69d-e83743d1d44b 200 in 142ms (next.js: 98ms, application-code: 44ms)
+Γ£ô Compiled in 166ms
+ GET /trips/01624469-a516-4633-a69d-e83743d1d44b 200 in 353ms (next.js: 147ms, application-code: 206ms)
+Γ£ô Compiled in 77ms
+ GET /trips/01624469-a516-4633-a69d-e83743d1d44b 200 in 124ms (next.js: 85ms, application-code: 38ms)
+Γ£ô Compiled in 114ms
+ GET /trips/01624469-a516-4633-a69d-e83743d1d44b 200 in 449ms (next.js: 80ms, application-code: 369ms)
+Γ£ô Compiled in 91ms
+ GET /trips/01624469-a516-4633-a69d-e83743d1d44b 200 in 150ms (next.js: 111ms, application-code: 39ms)
+Γ£ô Compiled in 106ms
+ GET /trips/01624469-a516-4633-a69d-e83743d1d44b 200 in 127ms (next.js: 95ms, application-code: 33ms)
+Γ£ô Compiled in 81ms
+ GET /trips/01624469-a516-4633-a69d-e83743d1d44b 200 in 159ms (next.js: 95ms, application-code: 65ms)
+Γ£ô Compiled in 106ms
+ GET /trips/01624469-a516-4633-a69d-e83743d1d44b 200 in 133ms (next.js: 87ms, application-code: 46ms)
+Γ£ô Compiled in 76ms
+ GET /trips/01624469-a516-4633-a69d-e83743d1d44b 200 in 138ms (next.js: 93ms, application-code: 45ms)
+Γ£ô Compiled in 96ms
+ GET /trips/01624469-a516-4633-a69d-e83743d1d44b 200 in 152ms (next.js: 115ms, application-code: 37ms)
+ GET /trips/01624469-a516-4633-a69d-e83743d1d44b 200 in 696ms (next.js: 45ms, application-code: 651ms)
+ GET / 200 in 41ms (next.js: 27ms, application-code: 14ms)
+ GET /trips 200 in 90ms (next.js: 67ms, application-code: 23ms)
+ GET /trips 200 in 30ms (next.js: 6ms, application-code: 23ms)
+ GET /trips/01624469-a516-4633-a69d-e83743d1d44b 200 in 96ms (next.js: 12ms, application-code: 83ms)
+ GET / 200 in 14ms (next.js: 2ms, application-code: 12ms)
+Γ£ô Compiled in 589ms
+ GET /trips/01624469-a516-4633-a69d-e83743d1d44b 200 in 1104ms (next.js: 782ms, application-code: 322ms)
+Γ£ô Compiled in 189ms
+ GET /trips/01624469-a516-4633-a69d-e83743d1d44b 200 in 235ms (next.js: 155ms, application-code: 80ms)
+Γ£ô Compiled in 506ms
+ GET /trips/01624469-a516-4633-a69d-e83743d1d44b 200 in 1435ms (next.js: 646ms, application-code: 789ms)
+Γ£ô Compiled in 79ms
+ GET /trips/01624469-a516-4633-a69d-e83743d1d44b 200 in 328ms (next.js: 137ms, application-code: 191ms)
+Γ£ô Compiled in 85ms
+ GET /trips/01624469-a516-4633-a69d-e83743d1d44b 200 in 167ms (next.js: 120ms, application-code: 47ms)
+Γ£ô Compiled in 69ms
+ GET /trips/01624469-a516-4633-a69d-e83743d1d44b 200 in 156ms (next.js: 116ms, application-code: 39ms)
+Γ£ô Compiled in 445ms
+ GET /trips/01624469-a516-4633-a69d-e83743d1d44b 200 in 1001ms (next.js: 664ms, application-code: 336ms)
+Γ£ô Compiled in 125ms
+ GET /trips/01624469-a516-4633-a69d-e83743d1d44b 200 in 179ms (next.js: 107ms, application-code: 72ms)
+Γ£ô Compiled in 194ms
+ GET /trips/01624469-a516-4633-a69d-e83743d1d44b 200 in 789ms (next.js: 126ms, application-code: 663ms)
+Γ£ô Compiled in 169ms
+ GET /trips/01624469-a516-4633-a69d-e83743d1d44b 200 in 629ms (next.js: 406ms, application-code: 222ms)
+Γ£ô Compiled in 73ms
+ GET /trips/01624469-a516-4633-a69d-e83743d1d44b 200 in 147ms (next.js: 102ms, application-code: 45ms)
+Γ£ô Compiled in 812ms
+ GET /trips/01624469-a516-4633-a69d-e83743d1d44b 200 in 1261ms (next.js: 823ms, application-code: 438ms)
+Γ£ô Compiled in 78ms
+ GET /trips/01624469-a516-4633-a69d-e83743d1d44b 200 in 181ms (next.js: 121ms, application-code: 61ms)
+Γ£ô Compiled in 153ms
+ GET /trips/01624469-a516-4633-a69d-e83743d1d44b 200 in 148ms (next.js: 98ms, application-code: 50ms)
+Γ£ô Compiled in 141ms
+ GET /trips/01624469-a516-4633-a69d-e83743d1d44b 200 in 987ms (next.js: 637ms, application-code: 350ms)
+Γ£ô Compiled in 249ms
+ GET /trips/01624469-a516-4633-a69d-e83743d1d44b 200 in 190ms (next.js: 135ms, application-code: 55ms)
+Γ£ô Compiled in 247ms
+ GET /trips/01624469-a516-4633-a69d-e83743d1d44b 200 in 441ms (next.js: 226ms, application-code: 215ms)
+Γ£ô Compiled in 105ms
+ GET /trips/01624469-a516-4633-a69d-e83743d1d44b 200 in 375ms (next.js: 180ms, application-code: 195ms)
+Γ£ô Compiled in 184ms
+ GET /trips/01624469-a516-4633-a69d-e83743d1d44b 200 in 353ms (next.js: 146ms, application-code: 207ms)
+Γ£ô Compiled in 114ms
+ GET /trips/01624469-a516-4633-a69d-e83743d1d44b 200 in 164ms (next.js: 114ms, application-code: 50ms)
+Γ£ô Compiled in 137ms
+ GET /trips/01624469-a516-4633-a69d-e83743d1d44b 200 in 211ms (next.js: 161ms, application-code: 50ms)
+Γ£ô Compiled in 218ms
+ GET /trips/01624469-a516-4633-a69d-e83743d1d44b 200 in 725ms (next.js: 329ms, application-code: 396ms)
+Γ£ô Compiled in 183ms
+ GET /trips/01624469-a516-4633-a69d-e83743d1d44b 200 in 728ms (next.js: 121ms, application-code: 607ms)
+Γ£ô Compiled in 466ms
+ GET /trips/01624469-a516-4633-a69d-e83743d1d44b 200 in 561ms (next.js: 397ms, application-code: 164ms)
+Γ£ô Compiled in 314ms
+ GET /trips/01624469-a516-4633-a69d-e83743d1d44b 200 in 780ms (next.js: 457ms, application-code: 323ms)
+Γ£ô Compiled in 164ms
+ GET /trips/01624469-a516-4633-a69d-e83743d1d44b 200 in 372ms (next.js: 171ms, application-code: 202ms)
+Γ£ô Compiled in 154ms
+ GET /trips/01624469-a516-4633-a69d-e83743d1d44b 200 in 181ms (next.js: 135ms, application-code: 46ms)
+Γ£ô Compiled in 353ms
+ GET /trips/01624469-a516-4633-a69d-e83743d1d44b 200 in 673ms (next.js: 505ms, application-code: 168ms)
+Γ£ô Compiled in 59ms
+ GET /trips/01624469-a516-4633-a69d-e83743d1d44b 200 in 417ms (next.js: 353ms, application-code: 64ms)
+Γ£ô Compiled in 1099ms
+Γ£ô Compiled in 302ms
+ GET /trips/01624469-a516-4633-a69d-e83743d1d44b 200 in 4.1s (next.js: 651ms, application-code: 3.4s)
+ GET /trips/01624469-a516-4633-a69d-e83743d1d44b 200 in 304ms (next.js: 185ms, application-code: 119ms)
+ GET /trips/01624469-a516-4633-a69d-e83743d1d44b 200 in 304ms (next.js: 274ms, application-code: 29ms)
+ GET /trips/01624469-a516-4633-a69d-e83743d1d44b 200 in 3.3s (next.js: 584ms, application-code: 2.7s)
+ GET /trips/01624469-a516-4633-a69d-e83743d1d44b 200 in 3.3s (next.js: 1014ms, application-code: 2.3s)
+Γ£ô Compiled in 104ms
+ GET /trips/01624469-a516-4633-a69d-e83743d1d44b 200 in 762ms (next.js: 673ms, application-code: 89ms)
+Γ£ô Compiled in 133ms
+ GET /trips/01624469-a516-4633-a69d-e83743d1d44b 200 in 329ms (next.js: 179ms, application-code: 150ms)
+Γ£ô Compiled in 247ms
+ GET /trips/01624469-a516-4633-a69d-e83743d1d44b 200 in 420ms (next.js: 231ms, application-code: 189ms)
+Γ£ô Compiled in 147ms
+ GET /trips/01624469-a516-4633-a69d-e83743d1d44b 200 in 394ms (next.js: 106ms, application-code: 288ms)
+Γ£ô Compiled in 260ms
+ GET /trips/01624469-a516-4633-a69d-e83743d1d44b 200 in 666ms (next.js: 158ms, application-code: 509ms)
+Γ£ô Compiled in 126ms
+ GET /trips/01624469-a516-4633-a69d-e83743d1d44b 200 in 290ms (next.js: 145ms, application-code: 145ms)
+Γ£ô Compiled in 129ms
+ GET /trips/01624469-a516-4633-a69d-e83743d1d44b 200 in 172ms (next.js: 115ms, application-code: 58ms)
+Γ£ô Compiled in 124ms
+ GET /trips/01624469-a516-4633-a69d-e83743d1d44b 200 in 342ms (next.js: 182ms, application-code: 160ms)
+Γ£ô Compiled in 232ms
+ GET /trips/01624469-a516-4633-a69d-e83743d1d44b 200 in 164ms (next.js: 121ms, application-code: 43ms)
+Γ£ô Compiled in 700ms
+ GET /trips/01624469-a516-4633-a69d-e83743d1d44b 200 in 1567ms (next.js: 1237ms, application-code: 331ms)
+Γ£ô Compiled in 141ms
+ GET /trips/01624469-a516-4633-a69d-e83743d1d44b 200 in 179ms (next.js: 110ms, application-code: 69ms)
+Γ£ô Compiled in 63ms
+ GET /trips/01624469-a516-4633-a69d-e83743d1d44b 200 in 197ms (next.js: 126ms, application-code: 71ms)
+Γ£ô Compiled in 259ms
+ GET /trips/01624469-a516-4633-a69d-e83743d1d44b 200 in 521ms (next.js: 338ms, application-code: 184ms)
+Γ£ô Compiled in 144ms
+ GET /trips/01624469-a516-4633-a69d-e83743d1d44b 200 in 193ms (next.js: 131ms, application-code: 63ms)
+Γ£ô Compiled in 163ms
+ GET /trips/01624469-a516-4633-a69d-e83743d1d44b 200 in 165ms (next.js: 111ms, application-code: 54ms)
+Γ£ô Compiled in 72ms
+ GET /trips/01624469-a516-4633-a69d-e83743d1d44b 200 in 198ms (next.js: 124ms, application-code: 74ms)
+Γ£ô Compiled in 114ms
+ GET /trips/01624469-a516-4633-a69d-e83743d1d44b 200 in 153ms (next.js: 110ms, application-code: 44ms)
+Γ£ô Compiled in 54ms
+ GET /trips/01624469-a516-4633-a69d-e83743d1d44b 200 in 142ms (next.js: 94ms, application-code: 48ms)
+Γ£ô Compiled in 46ms
+ GET /trips/01624469-a516-4633-a69d-e83743d1d44b 200 in 297ms (next.js: 99ms, application-code: 198ms)
+Γ£ô Compiled in 213ms
+ GET /trips/01624469-a516-4633-a69d-e83743d1d44b 200 in 353ms (next.js: 153ms, application-code: 200ms)
+Γ£ô Compiled in 105ms
+ GET /trips/01624469-a516-4633-a69d-e83743d1d44b 200 in 166ms (next.js: 126ms, application-code: 40ms)
+Γ£ô Compiled in 106ms
+ GET /trips/01624469-a516-4633-a69d-e83743d1d44b 200 in 294ms (next.js: 153ms, application-code: 142ms)
+Γ£ô Compiled in 61ms
+ GET /trips/01624469-a516-4633-a69d-e83743d1d44b 200 in 151ms (next.js: 101ms, application-code: 49ms)
+Γ£ô Compiled in 93ms
+ GET /trips/01624469-a516-4633-a69d-e83743d1d44b 200 in 129ms (next.js: 88ms, application-code: 41ms)
+Γ£ô Compiled in 47ms
+ GET /trips/01624469-a516-4633-a69d-e83743d1d44b 200 in 149ms (next.js: 103ms, application-code: 46ms)
+Γ£ô Compiled in 61ms
+ GET /trips/01624469-a516-4633-a69d-e83743d1d44b 200 in 236ms (next.js: 115ms, application-code: 121ms)
+Γ£ô Compiled in 103ms
+ GET /trips/01624469-a516-4633-a69d-e83743d1d44b 200 in 136ms (next.js: 102ms, application-code: 34ms)
+Γ£ô Compiled in 68ms
+ GET /trips/01624469-a516-4633-a69d-e83743d1d44b 200 in 142ms (next.js: 103ms, application-code: 40ms)
+Γ£ô Compiled in 89ms
+ GET /trips/01624469-a516-4633-a69d-e83743d1d44b 200 in 149ms (next.js: 101ms, application-code: 47ms)
+Γ£ô Compiled in 61ms
+ GET /trips/01624469-a516-4633-a69d-e83743d1d44b 200 in 150ms (next.js: 101ms, application-code: 49ms)
+Γ£ô Compiled in 80ms
+ GET /trips/01624469-a516-4633-a69d-e83743d1d44b 200 in 158ms (next.js: 91ms, application-code: 67ms)
+Γ£ô Compiled in 55ms
+ GET /trips/01624469-a516-4633-a69d-e83743d1d44b 200 in 144ms (next.js: 101ms, application-code: 43ms)
+Γ£ô Compiled in 52ms
+ GET /trips/01624469-a516-4633-a69d-e83743d1d44b 200 in 141ms (next.js: 99ms, application-code: 42ms)
+Γ£ô Compiled in 57ms
+ GET /trips/01624469-a516-4633-a69d-e83743d1d44b 200 in 157ms (next.js: 93ms, application-code: 64ms)
+Γ£ô Compiled in 53ms
+ GET /trips/01624469-a516-4633-a69d-e83743d1d44b 200 in 137ms (next.js: 102ms, application-code: 35ms)
+Γ£ô Compiled in 56ms
+ GET /trips/01624469-a516-4633-a69d-e83743d1d44b 200 in 288ms (next.js: 131ms, application-code: 157ms)
+Γ£ô Compiled in 68ms
+ GET /trips/01624469-a516-4633-a69d-e83743d1d44b 200 in 263ms (next.js: 145ms, application-code: 119ms)
+Γ£ô Compiled in 49ms
+ GET /trips/01624469-a516-4633-a69d-e83743d1d44b 200 in 214ms (next.js: 98ms, application-code: 116ms)
+Γ£ô Compiled in 120ms
+ GET /trips/01624469-a516-4633-a69d-e83743d1d44b 200 in 153ms (next.js: 105ms, application-code: 48ms)
+Γ£ô Compiled in 53ms
+ GET /trips/01624469-a516-4633-a69d-e83743d1d44b 200 in 128ms (next.js: 87ms, application-code: 42ms)
+Γ£ô Compiled in 52ms
+ GET /trips/01624469-a516-4633-a69d-e83743d1d44b 200 in 114ms (next.js: 76ms, application-code: 38ms)
+Γ£ô Compiled in 59ms
+ GET /trips/01624469-a516-4633-a69d-e83743d1d44b 200 in 172ms (next.js: 117ms, application-code: 55ms)
+Γ£ô Compiled in 54ms
+ GET /trips/01624469-a516-4633-a69d-e83743d1d44b 200 in 132ms (next.js: 96ms, application-code: 36ms)
+Γ£ô Compiled in 58ms
+ GET /trips/01624469-a516-4633-a69d-e83743d1d44b 200 in 160ms (next.js: 100ms, application-code: 60ms)
+Γ£ô Compiled in 48ms
+ GET /trips/01624469-a516-4633-a69d-e83743d1d44b 200 in 119ms (next.js: 85ms, application-code: 35ms)
+Γ£ô Compiled in 52ms
+ GET /trips/01624469-a516-4633-a69d-e83743d1d44b 200 in 186ms (next.js: 96ms, application-code: 90ms)
+Γ£ô Compiled in 161ms
+ GET /trips/01624469-a516-4633-a69d-e83743d1d44b 200 in 288ms (next.js: 138ms, application-code: 150ms)
+Γ£ô Compiled in 84ms
+ GET /trips/01624469-a516-4633-a69d-e83743d1d44b 200 in 152ms (next.js: 108ms, application-code: 44ms)
+Γ£ô Compiled in 60ms
+ GET /trips/01624469-a516-4633-a69d-e83743d1d44b 200 in 128ms (next.js: 88ms, application-code: 40ms)
+Γ£ô Compiled in 93ms
+ GET /trips/01624469-a516-4633-a69d-e83743d1d44b 200 in 146ms (next.js: 102ms, application-code: 44ms)
+Γ£ô Compiled in 196ms
+ GET /trips/01624469-a516-4633-a69d-e83743d1d44b 200 in 164ms (next.js: 96ms, application-code: 68ms)
+Γ£ô Compiled in 49ms
+ GET /trips/01624469-a516-4633-a69d-e83743d1d44b 200 in 122ms (next.js: 79ms, application-code: 42ms)
+Γ£ô Compiled in 70ms
+ GET /trips/01624469-a516-4633-a69d-e83743d1d44b 200 in 190ms (next.js: 127ms, application-code: 64ms)
+Γ£ô Compiled in 45ms
+ GET /trips/01624469-a516-4633-a69d-e83743d1d44b 200 in 160ms (next.js: 96ms, application-code: 63ms)
+Γ£ô Compiled in 67ms
+ GET /trips/01624469-a516-4633-a69d-e83743d1d44b 200 in 113ms (next.js: 86ms, application-code: 27ms)
+Γ£ô Compiled in 52ms
+ GET /trips/01624469-a516-4633-a69d-e83743d1d44b 200 in 148ms (next.js: 102ms, application-code: 46ms)
+Γ£ô Compiled in 59ms
+ GET /trips/01624469-a516-4633-a69d-e83743d1d44b 200 in 156ms (next.js: 93ms, application-code: 62ms)
+Γ£ô Compiled in 54ms
+ GET /trips/01624469-a516-4633-a69d-e83743d1d44b 200 in 199ms (next.js: 122ms, application-code: 77ms)
+ GET /trips/01624469-a516-4633-a69d-e83743d1d44b 200 in 929ms (next.js: 72ms, application-code: 857ms)
+Γ£ô Compiled in 471ms
+ GET /trips/01624469-a516-4633-a69d-e83743d1d44b 200 in 928ms (next.js: 540ms, application-code: 388ms)
+Γ£ô Compiled in 132ms
+ GET /trips/01624469-a516-4633-a69d-e83743d1d44b 200 in 164ms (next.js: 91ms, application-code: 72ms)
+Γ£ô Compiled in 276ms
+ GET /trips/01624469-a516-4633-a69d-e83743d1d44b 200 in 370ms (next.js: 257ms, application-code: 113ms)
+Γ£ô Compiled in 371ms
+ GET /trips/01624469-a516-4633-a69d-e83743d1d44b 200 in 742ms (next.js: 437ms, application-code: 304ms)
+Γ£ô Compiled in 202ms
+ GET /trips/01624469-a516-4633-a69d-e83743d1d44b 200 in 167ms (next.js: 107ms, application-code: 59ms)
+Γ£ô Compiled in 397ms
+ GET /trips/01624469-a516-4633-a69d-e83743d1d44b 200 in 879ms (next.js: 550ms, application-code: 329ms)
+Γ£ô Compiled in 0ms
+ GET /trips/01624469-a516-4633-a69d-e83743d1d44b 200 in 1152ms (next.js: 753ms, application-code: 399ms)
+Γ£ô Compiled in 279ms
+ GET /trips/01624469-a516-4633-a69d-e83743d1d44b 200 in 156ms (next.js: 112ms, application-code: 44ms)
+Γ£ô Compiled in 166ms
+ GET /trips/01624469-a516-4633-a69d-e83743d1d44b 200 in 169ms (next.js: 107ms, application-code: 62ms)
+Γ£ô Compiled in 145ms
+ GET /trips/01624469-a516-4633-a69d-e83743d1d44b 200 in 183ms (next.js: 119ms, application-code: 65ms)
+Γ£ô Compiled in 78ms
+ GET /trips/01624469-a516-4633-a69d-e83743d1d44b 200 in 140ms (next.js: 105ms, application-code: 35ms)
+Γ£ô Compiled in 62ms
+ GET /trips/01624469-a516-4633-a69d-e83743d1d44b 200 in 159ms (next.js: 127ms, application-code: 32ms)
+Γ£ô Compiled in 66ms
+ GET /trips/01624469-a516-4633-a69d-e83743d1d44b 200 in 132ms (next.js: 91ms, application-code: 41ms)
+ GET /trips/01624469-a516-4633-a69d-e83743d1d44b 200 in 1157ms (next.js: 49ms, application-code: 1108ms)
+Γ£ô Compiled in 451ms
+ GET /trips/01624469-a516-4633-a69d-e83743d1d44b 200 in 1407ms (next.js: 905ms, application-code: 502ms)
+ GET /trips/01624469-a516-4633-a69d-e83743d1d44b 200 in 567ms (next.js: 29ms, application-code: 538ms)
+Γ£ô Compiled in 212ms
+ GET /trips/01624469-a516-4633-a69d-e83743d1d44b 200 in 374ms (next.js: 241ms, application-code: 133ms)
+[browser] Failed to create itinerary: {
+  code: 'PGRST204',
+  details: null,
+  hint: null,
+  message: "Could not find the 'num_travelers' column of 'itineraries' in the schema cache"
+} 
+    at createItinerary (src/app/trips/[id]/page.js:299:15)
+  297 |
+  298 |     if (insertError) {
+> 299 |       console.error("Failed to create itinerary:", insertError);
+      |               ^
+  300 |       alert("Failed to create itinerary: " + insertError.message);
+  301 |       return;
+  302 |     } (src/app/trips/[id]/page.js:299:15)
+[browser] Failed to create itinerary: {
+  code: 'PGRST204',
+  details: null,
+  hint: null,
+  message: "Could not find the 'num_travelers' column of 'itineraries' in the schema cache"
+} 
+    at createItinerary (src/app/trips/[id]/page.js:299:15)
+  297 |
+  298 |     if (insertError) {
+> 299 |       console.error("Failed to create itinerary:", insertError);
+      |               ^
+  300 |       alert("Failed to create itinerary: " + insertError.message);
+  301 |       return;
+  302 |     } (src/app/trips/[id]/page.js:299:15)
+ GET /trips/01624469-a516-4633-a69d-e83743d1d44b 200 in 564ms (next.js: 13ms, application-code: 551ms)
+ GET /trips/01624469-a516-4633-a69d-e83743d1d44b 200 in 68ms (next.js: 9ms, application-code: 59ms)
+Γ£ô Compiled in 322ms
+ GET /trips/01624469-a516-4633-a69d-e83743d1d44b 200 in 1602ms (next.js: 1018ms, application-code: 583ms)
+Γ£ô Compiled in 157ms
+ GET /trips/01624469-a516-4633-a69d-e83743d1d44b 200 in 220ms (next.js: 144ms, application-code: 76ms)
+Γ£ô Compiled in 110ms
+ GET /trips/01624469-a516-4633-a69d-e83743d1d44b 200 in 374ms (next.js: 101ms, application-code: 273ms)
+Γ£ô Compiled in 294ms
+ GET /trips/01624469-a516-4633-a69d-e83743d1d44b 200 in 910ms (next.js: 598ms, application-code: 312ms)
+Γ£ô Compiled in 284ms
+ GET /trips/01624469-a516-4633-a69d-e83743d1d44b 200 in 645ms (next.js: 126ms, application-code: 519ms)
+Γ£ô Compiled in 128ms
+ GET /trips/01624469-a516-4633-a69d-e83743d1d44b 200 in 319ms (next.js: 167ms, application-code: 152ms)
+ GET /trips/01624469-a516-4633-a69d-e83743d1d44b 200 in 950ms (next.js: 64ms, application-code: 886ms)
+Γ£ô Compiled in 997ms
+Γ£ô Compiled in 178ms
+Γ£ô Compiled in 513ms
+ GET /trips/01624469-a516-4633-a69d-e83743d1d44b 200 in 979ms (next.js: 442ms, application-code: 538ms)
+ GET /trips/01624469-a516-4633-a69d-e83743d1d44b 200 in 200ms (next.js: 13ms, application-code: 187ms)
+ GET /trips/01624469-a516-4633-a69d-e83743d1d44b 200 in 57ms (next.js: 10ms, application-code: 47ms)
+Γ£ô Compiled in 96ms
+ GET /trips/01624469-a516-4633-a69d-e83743d1d44b 200 in 163ms (next.js: 106ms, application-code: 57ms)
+Γ£ô Compiled in 85ms
+ GET /trips/01624469-a516-4633-a69d-e83743d1d44b 200 in 509ms (next.js: 151ms, application-code: 358ms)
+Γ£ô Compiled in 110ms
+ GET /trips/01624469-a516-4633-a69d-e83743d1d44b 200 in 158ms (next.js: 115ms, application-code: 43ms)
+Γ£ô Compiled in 75ms
+ GET /trips/01624469-a516-4633-a69d-e83743d1d44b 200 in 139ms (next.js: 100ms, application-code: 40ms)
+Γ£ô Compiled in 117ms
+ GET /trips/01624469-a516-4633-a69d-e83743d1d44b 200 in 164ms (next.js: 92ms, application-code: 72ms)
+Γ£ô Compiled in 133ms
+ GET /trips/01624469-a516-4633-a69d-e83743d1d44b 200 in 206ms (next.js: 172ms, application-code: 33ms)
+Γ£ô Compiled in 126ms
+ GET /trips/01624469-a516-4633-a69d-e83743d1d44b 200 in 166ms (next.js: 106ms, application-code: 60ms)
+Γ£ô Compiled in 95ms
+ GET /trips/01624469-a516-4633-a69d-e83743d1d44b 200 in 291ms (next.js: 114ms, application-code: 177ms)
+Γ£ô Compiled in 288ms
+ GET /trips/01624469-a516-4633-a69d-e83743d1d44b 200 in 178ms (next.js: 88ms, application-code: 91ms)
+ GET /trips/01624469-a516-4633-a69d-e83743d1d44b 200 in 45ms (next.js: 8ms, application-code: 36ms)
+Γ£ô Compiled in 61ms
+ GET /trips/01624469-a516-4633-a69d-e83743d1d44b 200 in 145ms (next.js: 96ms, application-code: 49ms)
+Γ£ô Compiled in 61ms
+ GET /trips/01624469-a516-4633-a69d-e83743d1d44b 200 in 125ms (next.js: 89ms, application-code: 36ms)
+Γ£ô Compiled in 75ms
+ GET /trips/01624469-a516-4633-a69d-e83743d1d44b 200 in 294ms (next.js: 115ms, application-code: 180ms)
+Γ£ô Compiled in 89ms
+ GET /trips/01624469-a516-4633-a69d-e83743d1d44b 200 in 147ms (next.js: 103ms, application-code: 44ms)
+Γ£ô Compiled in 71ms
+ GET /trips/01624469-a516-4633-a69d-e83743d1d44b 200 in 516ms (next.js: 101ms, application-code: 415ms)
+Γ£ô Compiled in 168ms
+ GET /trips/01624469-a516-4633-a69d-e83743d1d44b 200 in 284ms (next.js: 164ms, application-code: 120ms)
+Γ£ô Compiled in 113ms
+ GET /trips/01624469-a516-4633-a69d-e83743d1d44b 200 in 279ms (next.js: 122ms, application-code: 156ms)
+Γ£ô Compiled in 314ms
+ GET /trips/01624469-a516-4633-a69d-e83743d1d44b 200 in 199ms (next.js: 152ms, application-code: 48ms)
+Γ£ô Compiled in 115ms
+ GET /trips/01624469-a516-4633-a69d-e83743d1d44b 200 in 298ms (next.js: 158ms, application-code: 140ms)
+Γ£ô Compiled in 367ms
+Γ£ô Compiled in 119ms
+ GET /trips/01624469-a516-4633-a69d-e83743d1d44b 200 in 225ms (next.js: 137ms, application-code: 87ms)
+ GET /trips/01624469-a516-4633-a69d-e83743d1d44b 200 in 38ms (next.js: 4ms, application-code: 34ms)
+Γ£ô Compiled in 127ms
+ GET /trips/01624469-a516-4633-a69d-e83743d1d44b 200 in 188ms (next.js: 136ms, application-code: 52ms)
+Γ£ô Compiled in 84ms
+ GET /trips/01624469-a516-4633-a69d-e83743d1d44b 200 in 429ms (next.js: 142ms, application-code: 286ms)
+Γ£ô Compiled in 205ms
+ GET /trips/01624469-a516-4633-a69d-e83743d1d44b 200 in 183ms (next.js: 133ms, application-code: 50ms)
+Γ£ô Compiled in 82ms
+ GET /trips/01624469-a516-4633-a69d-e83743d1d44b 200 in 150ms (next.js: 102ms, application-code: 48ms)
+Γ£ô Compiled in 72ms
+ GET /trips/01624469-a516-4633-a69d-e83743d1d44b 200 in 152ms (next.js: 111ms, application-code: 41ms)
+Γ£ô Compiled in 54ms
+ GET /trips/01624469-a516-4633-a69d-e83743d1d44b 200 in 222ms (next.js: 115ms, application-code: 107ms)
+Γ£ô Compiled in 96ms
+ GET /trips/01624469-a516-4633-a69d-e83743d1d44b 200 in 271ms (next.js: 211ms, application-code: 60ms)
+Γ£ô Compiled in 155ms
+ GET /trips/01624469-a516-4633-a69d-e83743d1d44b 200 in 312ms (next.js: 240ms, application-code: 72ms)
+Γ£ô Compiled in 50ms
+Γ£ô Compiled in 143ms
+ GET /trips/01624469-a516-4633-a69d-e83743d1d44b 200 in 889ms (next.js: 107ms, application-code: 782ms)
+ GET /trips/01624469-a516-4633-a69d-e83743d1d44b 200 in 395ms (next.js: 45ms, application-code: 350ms)
+Γ£ô Compiled in 146ms
+Γ£ô Compiled in 514ms
+ GET /trips/01624469-a516-4633-a69d-e83743d1d44b 200 in 473ms (next.js: 224ms, application-code: 250ms)
+ GET /trips/01624469-a516-4633-a69d-e83743d1d44b 200 in 52ms (next.js: 8ms, application-code: 45ms)
+Γ£ô Compiled in 141ms
+ GET /trips/01624469-a516-4633-a69d-e83743d1d44b 200 in 509ms (next.js: 328ms, application-code: 181ms)
+Γ£ô Compiled in 248ms
+ GET /trips/01624469-a516-4633-a69d-e83743d1d44b 200 in 325ms (next.js: 204ms, application-code: 121ms)
+Γ£ô Compiled in 79ms
+ GET /trips/01624469-a516-4633-a69d-e83743d1d44b 200 in 207ms (next.js: 158ms, application-code: 49ms)
+Γ£ô Compiled in 51ms
+ GET /trips/01624469-a516-4633-a69d-e83743d1d44b 200 in 169ms (next.js: 94ms, application-code: 74ms)
+Γ£ô Compiled in 122ms
+ GET /trips/01624469-a516-4633-a69d-e83743d1d44b 200 in 215ms (next.js: 156ms, application-code: 59ms)
+Γ£ô Compiled in 196ms
+ GET /trips/01624469-a516-4633-a69d-e83743d1d44b 200 in 617ms (next.js: 380ms, application-code: 238ms)
+Γ£ô Compiled in 261ms
+ GET /trips/01624469-a516-4633-a69d-e83743d1d44b 200 in 309ms (next.js: 214ms, application-code: 95ms)
+Γ£ô Compiled in 119ms
+ GET /trips/01624469-a516-4633-a69d-e83743d1d44b 200 in 159ms (next.js: 119ms, application-code: 40ms)
+Γ£ô Compiled in 147ms
+ GET /trips/01624469-a516-4633-a69d-e83743d1d44b 200 in 190ms (next.js: 134ms, application-code: 56ms)
+ GET /trips/01624469-a516-4633-a69d-e83743d1d44b 200 in 1641ms (next.js: 336ms, application-code: 1305ms)
+Γ£ô Compiled in 533ms
+ GET /trips/01624469-a516-4633-a69d-e83743d1d44b 200 in 1405ms (next.js: 1072ms, application-code: 334ms)
+Γ£ô Compiled in 145ms
+ GET /trips/01624469-a516-4633-a69d-e83743d1d44b 200 in 226ms (next.js: 166ms, application-code: 60ms)
+Γ£ô Compiled in 88ms
+ GET /trips/01624469-a516-4633-a69d-e83743d1d44b 200 in 169ms (next.js: 114ms, application-code: 54ms)
+Γ£ô Compiled in 654ms
+ GET /trips/01624469-a516-4633-a69d-e83743d1d44b 200 in 1809ms (next.js: 933ms, application-code: 876ms)
+Γ£ô Compiled in 1141ms
+ GET /trips/01624469-a516-4633-a69d-e83743d1d44b 200 in 1815ms (next.js: 1278ms, application-code: 537ms)
+Γ£ô Compiled in 1068ms
+ GET /trips/01624469-a516-4633-a69d-e83743d1d44b 200 in 997ms (next.js: 590ms, application-code: 407ms)
+Γ£ô Compiled in 107ms
+ GET /trips/01624469-a516-4633-a69d-e83743d1d44b 200 in 141ms (next.js: 86ms, application-code: 55ms)
+Γ£ô Compiled in 116ms
+ GET /trips/01624469-a516-4633-a69d-e83743d1d44b 200 in 140ms (next.js: 70ms, application-code: 70ms)
+Γ£ô Compiled in 462ms
+ GET /trips/01624469-a516-4633-a69d-e83743d1d44b 200 in 2.5s (next.js: 1931ms, application-code: 609ms)
+Γ£ô Compiled in 105ms
+ GET /trips/01624469-a516-4633-a69d-e83743d1d44b 200 in 226ms (next.js: 86ms, application-code: 140ms)
+Γ£ô Compiled in 221ms
+ GET /trips/01624469-a516-4633-a69d-e83743d1d44b 200 in 124ms (next.js: 73ms, application-code: 51ms)
+Γ£ô Compiled in 84ms
+ GET /trips/01624469-a516-4633-a69d-e83743d1d44b 200 in 128ms (next.js: 79ms, application-code: 49ms)
+Γ£ô Compiled in 377ms
+ GET /trips/01624469-a516-4633-a69d-e83743d1d44b 200 in 358ms (next.js: 140ms, application-code: 219ms)
+Γ£ô Compiled in 130ms
+ GET /trips/01624469-a516-4633-a69d-e83743d1d44b 200 in 166ms (next.js: 129ms, application-code: 36ms)
+Γ£ô Compiled in 92ms
+ GET /trips/01624469-a516-4633-a69d-e83743d1d44b 200 in 138ms (next.js: 93ms, application-code: 44ms)
+Γ£ô Compiled in 117ms
+ GET /trips/01624469-a516-4633-a69d-e83743d1d44b 200 in 129ms (next.js: 73ms, application-code: 56ms)
+Γ£ô Compiled in 562ms
+ GET /trips/01624469-a516-4633-a69d-e83743d1d44b 200 in 1190ms (next.js: 703ms, application-code: 487ms)
+[browser] Uncaught ReferenceError: showAddEvent is not defined
+    at DayPopout (src/app/trips/[id]/page.js:1687:17)
+    at TripDetailPage (src/app/trips/[id]/page.js:1351:11)
+  1685 |             <div className="flex items-center justify-between mb-2">
+  1686 |               <div className="text-xs font-medium text-stone-400 uppercase tracking-wide...
+> 1687 |               {!showAddEvent && (
+       |                 ^
+  1688 |                 <button
+  1689 |                   onClick={() => setShowAddEvent(true)}
+  1690 |                   className="flex items-center gap-1 text-[#da7b4a] hover:text-[#b5552a]...
+Γ£ô Compiled in 142ms
+ΓÜá Fast Refresh had to perform a full reload due to a runtime error.
+ GET /trips/01624469-a516-4633-a69d-e83743d1d44b 200 in 3.3s (next.js: 103ms, application-code: 3.2s)
+Γ£ô Compiled in 289ms
+ GET /trips/01624469-a516-4633-a69d-e83743d1d44b 200 in 434ms (next.js: 232ms, application-code: 202ms)
+Γ£ô Compiled in 524ms
+ GET /trips/01624469-a516-4633-a69d-e83743d1d44b 200 in 449ms (next.js: 237ms, application-code: 212ms)
+Γ£ô Compiled in 167ms
+ GET /trips/01624469-a516-4633-a69d-e83743d1d44b 200 in 113ms (next.js: 73ms, application-code: 40ms)
+Γ£ô Compiled in 193ms
+ GET /trips/01624469-a516-4633-a69d-e83743d1d44b 200 in 280ms (next.js: 112ms, application-code: 169ms)
+ GET /trips/01624469-a516-4633-a69d-e83743d1d44b 200 in 1284ms (next.js: 12ms, application-code: 1272ms)
+Γ£ô Compiled in 548ms
+ GET /trips/01624469-a516-4633-a69d-e83743d1d44b 200 in 1070ms (next.js: 771ms, application-code: 299ms)
+Γ£ô Compiled in 275ms
+ GET /trips/01624469-a516-4633-a69d-e83743d1d44b 200 in 981ms (next.js: 96ms, application-code: 885ms)
+Γ£ô Compiled in 115ms
+ GET /trips/01624469-a516-4633-a69d-e83743d1d44b 200 in 242ms (next.js: 113ms, application-code: 129ms)
+Γ£ô Compiled in 176ms
+ GET /trips/01624469-a516-4633-a69d-e83743d1d44b 200 in 105ms (next.js: 75ms, application-code: 30ms)
+Γ£ô Compiled in 140ms
+ GET /trips/01624469-a516-4633-a69d-e83743d1d44b 200 in 126ms (next.js: 91ms, application-code: 35ms)
+ GET /trips/01624469-a516-4633-a69d-e83743d1d44b 200 in 633ms (next.js: 13ms, application-code: 620ms)
+ GET /trips/01624469-a516-4633-a69d-e83743d1d44b 200 in 753ms (next.js: 308ms, application-code: 446ms)
+Γ£ô Compiled in 712ms
+ GET /trips/01624469-a516-4633-a69d-e83743d1d44b 200 in 3.0s (next.js: 833ms, application-code: 2.1s)
+Γ£ô Compiled in 399ms
+ GET /trips/01624469-a516-4633-a69d-e83743d1d44b 200 in 452ms (next.js: 197ms, application-code: 255ms)
+Γ£ô Compiled in 118ms
+ GET /trips/01624469-a516-4633-a69d-e83743d1d44b 200 in 245ms (next.js: 87ms, application-code: 158ms)
+[browser] Uncaught ReferenceError: UserEventCard is not defined
+    at eval (src/app/trips/[id]/page.js:1685:18)
+    at Array.map (<anonymous>)
+    at DayPopout (src/app/trips/[id]/page.js:1684:33)
+    at TripDetailPage (src/app/trips/[id]/page.js:1351:11)
+  1683 |               {/* User-created events ΓÇö each field editable in place */}
+  1684 |               {sortedActivities.map((activity) => (
+> 1685 |                 <UserEventCard
+       |                  ^
+  1686 |                   key={activity.id}
+  1687 |                   activity={activity}
+  1688 |                   onUpdate={(updates) => handleUpdateActivity(activity.id, updates)}
+ GET /trips 200 in 876ms (next.js: 168ms, application-code: 708ms)
+Γ£ô Compiled in 349ms
+ GET /trips 200 in 244ms (next.js: 122ms, application-code: 122ms)
+ GET /trips 200 in 121ms (next.js: 91ms, application-code: 30ms)
+ GET /trips/01624469-a516-4633-a69d-e83743d1d44b 200 in 2.0s (next.js: 178ms, application-code: 1824ms)
+Γ£ô Compiled in 316ms
+ GET /trips/01624469-a516-4633-a69d-e83743d1d44b 200 in 688ms (next.js: 409ms, application-code: 278ms)
+Γ£ô Compiled in 189ms
+ GET /trips/01624469-a516-4633-a69d-e83743d1d44b 200 in 133ms (next.js: 78ms, application-code: 54ms)
+Γ£ô Compiled in 116ms
+ GET /trips/01624469-a516-4633-a69d-e83743d1d44b 200 in 125ms (next.js: 83ms, application-code: 43ms)
+[browser] Uncaught ReferenceError: sortedItinEvents is not defined
+    at DayPopout (src/app/trips/[id]/page.js:1675:16)
+    at TripDetailPage (src/app/trips/[id]/page.js:1351:11)
+  1673 |             <div className="space-y-1.5">
+  1674 |               {/* Itinerary events from option selections */}
+> 1675 |               {sortedItinEvents.map((evt, i) => {
+       |                ^
+  1676 |                 const c = colorMap[evt.type] || colorMap.activity;
+  1677 |                 return (
+  1678 |                   <div key={`itin-${i}`} className={`flex items-center gap-2.5 ${c.bg} b...
+Γ£ô Compiled in 102ms
+ΓÜá Fast Refresh had to perform a full reload due to a runtime error.
+ GET /trips/01624469-a516-4633-a69d-e83743d1d44b 200 in 968ms (next.js: 77ms, application-code: 890ms)
+Γ£ô Compiled in 223ms
+ GET /trips/01624469-a516-4633-a69d-e83743d1d44b 200 in 262ms (next.js: 87ms, application-code: 175ms)
+Γ£ô Compiled in 153ms
+ GET /trips/01624469-a516-4633-a69d-e83743d1d44b 200 in 290ms (next.js: 131ms, application-code: 159ms)
+Γ£ô Compiled in 195ms
+ GET /trips/01624469-a516-4633-a69d-e83743d1d44b 200 in 346ms (next.js: 171ms, application-code: 174ms)
+Γ£ô Compiled in 117ms
+ GET /trips/01624469-a516-4633-a69d-e83743d1d44b 200 in 361ms (next.js: 92ms, application-code: 269ms)
+Γ£ô Compiled in 92ms
+ GET /trips/01624469-a516-4633-a69d-e83743d1d44b 200 in 345ms (next.js: 84ms, application-code: 262ms)
+Γ£ô Compiled in 113ms
+ GET /trips/01624469-a516-4633-a69d-e83743d1d44b 200 in 124ms (next.js: 88ms, application-code: 37ms)
+Γ£ô Compiled in 68ms
+ GET /trips/01624469-a516-4633-a69d-e83743d1d44b 200 in 131ms (next.js: 76ms, application-code: 55ms)
+ GET /trips/01624469-a516-4633-a69d-e83743d1d44b 200 in 1734ms (next.js: 80ms, application-code: 1655ms)
+Γ£ô Compiled in 600ms
+ GET /trips/01624469-a516-4633-a69d-e83743d1d44b 200 in 332ms (next.js: 200ms, application-code: 132ms)
+Γ£ô Compiled in 172ms
+ GET /trips/01624469-a516-4633-a69d-e83743d1d44b 200 in 439ms (next.js: 250ms, application-code: 189ms)
+Γ£ô Compiled in 277ms
+ GET /trips/01624469-a516-4633-a69d-e83743d1d44b 200 in 345ms (next.js: 146ms, application-code: 198ms)
+Γ£ô Compiled in 85ms
+ GET /trips/01624469-a516-4633-a69d-e83743d1d44b 200 in 288ms (next.js: 234ms, application-code: 54ms)
+Γ£ô Compiled in 62ms
+ GET /trips/01624469-a516-4633-a69d-e83743d1d44b 200 in 196ms (next.js: 106ms, application-code: 90ms)
+Γ£ô Compiled in 116ms
+ GET /trips/01624469-a516-4633-a69d-e83743d1d44b 200 in 208ms (next.js: 105ms, application-code: 103ms)
+Γ£ô Compiled in 105ms
+ GET /trips/01624469-a516-4633-a69d-e83743d1d44b 200 in 115ms (next.js: 84ms, application-code: 31ms)
+Γ£ô Compiled in 80ms
+ GET /trips/01624469-a516-4633-a69d-e83743d1d44b 200 in 159ms (next.js: 103ms, application-code: 56ms)
+Γ£ô Compiled in 220ms
+ GET /trips/01624469-a516-4633-a69d-e83743d1d44b 200 in 329ms (next.js: 102ms, application-code: 227ms)
+Γ£ô Compiled in 76ms
+ GET /trips/01624469-a516-4633-a69d-e83743d1d44b 200 in 235ms (next.js: 94ms, application-code: 141ms)
+Γ£ô Compiled in 67ms
+ GET /trips/01624469-a516-4633-a69d-e83743d1d44b 200 in 608ms (next.js: 60ms, application-code: 549ms)
+Γ£ô Compiled in 592ms
+ GET /trips/01624469-a516-4633-a69d-e83743d1d44b 200 in 314ms (next.js: 101ms, application-code: 213ms)
+ GET /trips/01624469-a516-4633-a69d-e83743d1d44b 200 in 38ms (next.js: 5ms, application-code: 33ms)
+Γ£ô Compiled in 428ms
+ GET /trips/01624469-a516-4633-a69d-e83743d1d44b 200 in 535ms (next.js: 288ms, application-code: 247ms)
+Γ£ô Compiled in 147ms
+ GET /trips/01624469-a516-4633-a69d-e83743d1d44b 200 in 456ms (next.js: 248ms, application-code: 209ms)
+Γ£ô Compiled in 118ms
+ GET /trips/01624469-a516-4633-a69d-e83743d1d44b 200 in 267ms (next.js: 120ms, application-code: 148ms)
+Γ£ô Compiled in 114ms
+ GET /trips/01624469-a516-4633-a69d-e83743d1d44b 200 in 319ms (next.js: 109ms, application-code: 211ms)
+[browser] Uncaught ReferenceError: OptionEventCard is not defined
+    at eval (src/app/trips/[id]/page.js:1682:22)
+    at Array.map (<anonymous>)
+    at DayPopout (src/app/trips/[id]/page.js:1677:29)
+    at TripDetailPage (src/app/trips/[id]/page.js:1351:11)
+  1680 |                   const canEditTime = item.type !== "flight" && item._record && item._ta...
+  1681 |                   return (
+> 1682 |                     <OptionEventCard
+       |                      ^
+  1683 |                       key={item.sortKey}
+  1684 |                       item={item}
+  1685 |                       colors={c}
+Γ£ô Compiled in 191ms
+ΓÜá Fast Refresh had to perform a full reload due to a runtime error.
+ GET /trips/01624469-a516-4633-a69d-e83743d1d44b 200 in 1780ms (next.js: 149ms, application-code: 1631ms)
+Γ£ô Compiled in 297ms
+ GET /trips/01624469-a516-4633-a69d-e83743d1d44b 200 in 734ms (next.js: 482ms, application-code: 252ms)
+Γ£ô Compiled in 80ms
+ GET /trips/01624469-a516-4633-a69d-e83743d1d44b 200 in 596ms (next.js: 90ms, application-code: 507ms)
+Γ£ô Compiled in 143ms
+ GET /trips/01624469-a516-4633-a69d-e83743d1d44b 200 in 296ms (next.js: 166ms, application-code: 131ms)
+Γ£ô Compiled in 98ms
+ GET /trips/01624469-a516-4633-a69d-e83743d1d44b 200 in 164ms (next.js: 98ms, application-code: 65ms)
+Γ£ô Compiled in 101ms
+ GET /trips/01624469-a516-4633-a69d-e83743d1d44b 200 in 140ms (next.js: 99ms, application-code: 41ms)
+Γ£ô Compiled in 108ms
+ GET /trips/01624469-a516-4633-a69d-e83743d1d44b 200 in 161ms (next.js: 115ms, application-code: 46ms)
+Γ£ô Compiled in 123ms
+ GET /trips/01624469-a516-4633-a69d-e83743d1d44b 200 in 275ms (next.js: 133ms, application-code: 142ms)
+Γ£ô Compiled in 94ms
+ GET /trips/01624469-a516-4633-a69d-e83743d1d44b 200 in 269ms (next.js: 124ms, application-code: 145ms)
+Γ£ô Compiled in 87ms
+ GET /trips/01624469-a516-4633-a69d-e83743d1d44b 200 in 158ms (next.js: 101ms, application-code: 57ms)
+Γ£ô Compiled in 86ms
+ GET /trips/01624469-a516-4633-a69d-e83743d1d44b 200 in 186ms (next.js: 138ms, application-code: 49ms)
+Γ£ô Compiled in 544ms
+ GET /trips/01624469-a516-4633-a69d-e83743d1d44b 200 in 987ms (next.js: 703ms, application-code: 284ms)
+Γ£ô Compiled in 125ms
+ GET /trips/01624469-a516-4633-a69d-e83743d1d44b 200 in 234ms (next.js: 148ms, application-code: 86ms)
+Γ£ô Compiled in 747ms
+ GET /trips/01624469-a516-4633-a69d-e83743d1d44b 200 in 1579ms (next.js: 1117ms, application-code: 461ms)
+Γ£ô Compiled in 91ms
+ GET /trips/01624469-a516-4633-a69d-e83743d1d44b 200 in 364ms (next.js: 298ms, application-code: 66ms)
+Γ£ô Compiled in 95ms
+ GET /trips/01624469-a516-4633-a69d-e83743d1d44b 200 in 165ms (next.js: 114ms, application-code: 51ms)
+ GET /trips/01624469-a516-4633-a69d-e83743d1d44b 200 in 3.1s (next.js: 467ms, application-code: 2.6s)
+ GET /trips/01624469-a516-4633-a69d-e83743d1d44b 200 in 339ms (next.js: 75ms, application-code: 264ms)
+ GET /trips/01624469-a516-4633-a69d-e83743d1d44b 200 in 879ms (next.js: 308ms, application-code: 571ms)
+Γ£ô Compiled in 593ms
+ GET /trips/01624469-a516-4633-a69d-e83743d1d44b 200 in 1717ms (next.js: 1253ms, application-code: 465ms)
+ GET /trips/01624469-a516-4633-a69d-e83743d1d44b 200 in 2.7s (next.js: 479ms, application-code: 2.2s)
+ GET /trips/01624469-a516-4633-a69d-e83743d1d44b 200 in 795ms (next.js: 301ms, application-code: 493ms)
+ GET /trips/01624469-a516-4633-a69d-e83743d1d44b 200 in 153ms (next.js: 22ms, application-code: 131ms)
+Γ£ô Compiled in 659ms
+ GET /trips/01624469-a516-4633-a69d-e83743d1d44b 200 in 1242ms (next.js: 840ms, application-code: 401ms)
+Γ£ô Compiled in 165ms
+ GET /trips/01624469-a516-4633-a69d-e83743d1d44b 200 in 211ms (next.js: 108ms, application-code: 103ms)
+[browser] Uncaught ReferenceError: untimedEvents is not defined
+    at eval (src/app/trips/[id]/page.js:1745:48)
+    at Array.map (<anonymous>)
+    at DayPopout (src/app/trips/[id]/page.js:1743:35)
+    at TripDetailPage (src/app/trips/[id]/page.js:1387:11)
+  1743 |               {allDayEventsSorted.map((item, eventIdx) => {
+  1744 |                 const isUntimed = !item.sortTime;
+> 1745 |                 const untimedIdx = isUntimed ? untimedEvents.indexOf(item) : -1;
+       |                                                ^
+  1746 |
+  1747 |                 const dragProps = isUntimed ? {
+  1748 |                   draggable: true,
+Γ£ô Compiled in 108ms
+ΓÜá Fast Refresh had to perform a full reload due to a runtime error.
+ GET /trips/01624469-a516-4633-a69d-e83743d1d44b 200 in 1624ms (next.js: 120ms, application-code: 1504ms)
+ GET /trips/01624469-a516-4633-a69d-e83743d1d44b 200 in 211ms (next.js: 17ms, application-code: 194ms)
+Γ£ô Compiled in 116ms
+ GET /trips/01624469-a516-4633-a69d-e83743d1d44b 200 in 230ms (next.js: 153ms, application-code: 77ms)
+Γ£ô Compiled in 1467ms
+Γ£ô Compiled in 639ms
+ GET /trips/01624469-a516-4633-a69d-e83743d1d44b 200 in 1302ms (next.js: 871ms, application-code: 430ms)
+ GET /trips/01624469-a516-4633-a69d-e83743d1d44b 200 in 135ms (next.js: 10ms, application-code: 126ms)
+ GET /trips/01624469-a516-4633-a69d-e83743d1d44b 200 in 43ms (next.js: 6ms, application-code: 37ms)
+Γ£ô Compiled in 108ms
+ GET /trips/01624469-a516-4633-a69d-e83743d1d44b 200 in 197ms (next.js: 126ms, application-code: 71ms)
+Γ£ô Compiled in 148ms
+ GET /trips/01624469-a516-4633-a69d-e83743d1d44b 200 in 180ms (next.js: 134ms, application-code: 47ms)
+Γ£ô Compiled in 116ms
+ GET /trips/01624469-a516-4633-a69d-e83743d1d44b 200 in 197ms (next.js: 145ms, application-code: 52ms)
+Γ£ô Compiled in 85ms
+ GET /trips/01624469-a516-4633-a69d-e83743d1d44b 200 in 348ms (next.js: 277ms, application-code: 72ms)
+Γ£ô Compiled in 113ms
+ GET /trips/01624469-a516-4633-a69d-e83743d1d44b 200 in 177ms (next.js: 143ms, application-code: 34ms)
+Γ£ô Compiled in 131ms
+ GET /trips/01624469-a516-4633-a69d-e83743d1d44b 200 in 611ms (next.js: 93ms, application-code: 518ms)
+Γ£ô Compiled in 159ms
+ GET /trips/01624469-a516-4633-a69d-e83743d1d44b 200 in 351ms (next.js: 202ms, application-code: 149ms)
+Γ£ô Compiled in 163ms
+ GET /trips/01624469-a516-4633-a69d-e83743d1d44b 200 in 207ms (next.js: 159ms, application-code: 48ms)
+Γ£ô Compiled in 155ms
+ GET /trips/01624469-a516-4633-a69d-e83743d1d44b 200 in 136ms (next.js: 97ms, application-code: 39ms)
+Γ£ô Compiled in 185ms
+ GET /trips/01624469-a516-4633-a69d-e83743d1d44b 200 in 149ms (next.js: 96ms, application-code: 54ms)
+Γ£ô Compiled in 283ms
+ GET /trips/01624469-a516-4633-a69d-e83743d1d44b 200 in 186ms (next.js: 99ms, application-code: 87ms)
+ GET /trips/01624469-a516-4633-a69d-e83743d1d44b 200 in 37ms (next.js: 2ms, application-code: 35ms)
+Γ£ô Compiled in 68ms
+ GET /trips/01624469-a516-4633-a69d-e83743d1d44b 200 in 141ms (next.js: 102ms, application-code: 40ms)
+Γ£ô Compiled in 59ms
+ GET /trips/01624469-a516-4633-a69d-e83743d1d44b 200 in 176ms (next.js: 85ms, application-code: 90ms)
+Γ£ô Compiled in 66ms
+ GET /trips/01624469-a516-4633-a69d-e83743d1d44b 200 in 147ms (next.js: 101ms, application-code: 46ms)
+[browser] Uncaught ReferenceError: editingTime is not defined
+    at OptionDetail (src/components/DiningOptions.js:411:10)
+    at TripDetailPage (src/app/trips/[id]/page.js:1261:80)
+  409 |       <div className="mb-4">
+  410 |         <div className="text-xs text-slate-400 uppercase tracking-wide mb-2">Start time</...
+> 411 |         {editingTime ? (
+      |          ^
+  412 |           <div className="flex items-center gap-2">
+  413 |             <input type="time" value={timeValue} onChange={(e) => setTimeValue(e.target.v...
+  414 |               className="px-2 py-1 border border-stone-300 rounded-lg text-sm focus:ring-...
+Γ£ô Compiled in 66ms
+ΓÜá Fast Refresh had to perform a full reload due to a runtime error.
+ GET /trips/01624469-a516-4633-a69d-e83743d1d44b 200 in 917ms (next.js: 128ms, application-code: 789ms)
+[browser] Uncaught ReferenceError: editingTime is not defined
+    at OptionDetail (src/components/DiningOptions.js:406:10)
+    at TripDetailPage (src/app/trips/[id]/page.js:1262:15)
+  404 |       <div className="mb-4">
+  405 |         <div className="text-xs text-slate-400 uppercase tracking-wide mb-2">Start time</...
+> 406 |         {editingTime ? (
+      |          ^
+  407 |           <div className="flex items-center gap-2">
+  408 |             <input type="time" value={timeValue} onChange={(e) => setTimeValue(e.target.v...
+  409 |               className="px-2 py-1 border border-stone-300 rounded-lg text-sm focus:ring-...
+ΓÜá Fast Refresh had to perform a full reload due to a runtime error.
+Γ£ô Compiled in 181ms
+ GET /trips/01624469-a516-4633-a69d-e83743d1d44b 200 in 516ms (next.js: 116ms, application-code: 400ms)
+Γ£ô Compiled in 77ms
+ GET /trips/01624469-a516-4633-a69d-e83743d1d44b 200 in 310ms (next.js: 148ms, application-code: 161ms)
+Γ£ô Compiled in 63ms
+ GET /trips/01624469-a516-4633-a69d-e83743d1d44b 200 in 243ms (next.js: 113ms, application-code: 129ms)
+Γ£ô Compiled in 246ms
+ GET /trips/01624469-a516-4633-a69d-e83743d1d44b 200 in 145ms (next.js: 106ms, application-code: 39ms)
+ GET /trips/01624469-a516-4633-a69d-e83743d1d44b 200 in 88ms (next.js: 8ms, application-code: 80ms)
+Γ£ô Compiled in 62ms
+ GET /trips/01624469-a516-4633-a69d-e83743d1d44b 200 in 122ms (next.js: 96ms, application-code: 26ms)
+Γ£ô Compiled in 65ms
+ GET /trips/01624469-a516-4633-a69d-e83743d1d44b 200 in 134ms (next.js: 93ms, application-code: 40ms)
+Γ£ô Compiled in 122ms
+ GET /trips/01624469-a516-4633-a69d-e83743d1d44b 200 in 137ms (next.js: 97ms, application-code: 40ms)
+Γ£ô Compiled in 104ms
+ GET /trips/01624469-a516-4633-a69d-e83743d1d44b 200 in 218ms (next.js: 132ms, application-code: 86ms)
+Γ£ô Compiled in 119ms
+ GET /trips/01624469-a516-4633-a69d-e83743d1d44b 200 in 251ms (next.js: 140ms, application-code: 110ms)
+Γ£ô Compiled in 76ms
+ GET /trips/01624469-a516-4633-a69d-e83743d1d44b 200 in 125ms (next.js: 91ms, application-code: 34ms)
+Γ£ô Compiled in 97ms
+ GET /trips/01624469-a516-4633-a69d-e83743d1d44b 200 in 476ms (next.js: 115ms, application-code: 361ms)

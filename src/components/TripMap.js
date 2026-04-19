@@ -93,9 +93,10 @@ function createNumberedIcon(color, number) {
 function collectLocations(flightOptions, accommodationOptions, activityOptions, diningOptions, transportOptions) {
   const locations = [];
 
-  // Flights
-  const selectedFlight = (flightOptions || []).find(f => f.is_selected);
-  if (selectedFlight?.flight_legs) {
+  // Flights (supports multiple selected flight options)
+  const selectedFlights = (flightOptions || []).filter(f => f.is_selected);
+  for (const selectedFlight of selectedFlights) {
+    if (!selectedFlight?.flight_legs) continue;
     const legs = selectedFlight.flight_legs;
     const outbound = legs.filter(l => l.direction === "outbound");
     const returnLegs = legs.filter(l => l.direction === "return");
@@ -103,17 +104,17 @@ function collectLocations(flightOptions, accommodationOptions, activityOptions, 
     if (outbound.length > 0) {
       const first = outbound[0];
       const last = outbound[outbound.length - 1];
-      if (first.departure_airport) {
+      if (first.departure_airport && !locations.some(l => l.query === first.departure_airport && l.date === first.departure_date)) {
         locations.push({ type: "flight", query: first.departure_airport, name: `Depart: ${first.departure_airport}`, detail: first.airline_name || "", date: first.departure_date || null });
       }
-      if (last.arrival_airport) {
+      if (last.arrival_airport && !locations.some(l => l.query === last.arrival_airport && l.date === (last.departure_date || first.departure_date))) {
         locations.push({ type: "flight", query: last.arrival_airport, name: `Arrive: ${last.arrival_airport}`, detail: last.airline_name || "", date: last.departure_date || first.departure_date || null });
       }
     }
     if (returnLegs.length > 0) {
       const first = returnLegs[0];
       const last = returnLegs[returnLegs.length - 1];
-      if (first.departure_airport) {
+      if (first.departure_airport && !locations.some(l => l.query === first.departure_airport && l.date === first.departure_date)) {
         locations.push({ type: "flight", query: first.departure_airport, name: `Return depart: ${first.departure_airport}`, detail: first.airline_name || "", date: first.departure_date || null });
       }
       if (last.arrival_airport && !locations.some(l => l.query === last.arrival_airport && l.date === last.departure_date)) {

@@ -4,7 +4,10 @@ import { useState, useEffect, useCallback, useRef } from "react";
 import { supabase } from "@/lib/supabase";
 import { getCityName } from "@/lib/flightParser";
 import InlineConfirm from "@/components/InlineConfirm";
-import TimeSelectPopup, { to12h, formatTime12h } from "@/components/TimeSelectPopup";
+import { formatTime12h } from "@/components/TimeSelectPopup";
+import SourceThumbnails from "@/components/SourceThumbnails";
+import MiniWeekCalendar from "@/components/MiniWeekCalendar";
+import EditableNotes from "@/components/EditableNotes";
 
 // ── Category metadata ──
 const CATEGORIES = {
@@ -81,7 +84,8 @@ export default function ActivityOptions({ tripId, tripStart, tripEnd, onActivity
       .from("activity_options")
       .select("*")
       .eq("trip_id", tripId)
-      .order("sort_order", { ascending: true });
+      .order("sort_order", { ascending: true })
+      .order("created_at", { ascending: true });
     const opts = data || [];
     setOptions(opts);
     if (onActivityOptionsChange) onActivityOptionsChange(opts);
@@ -115,11 +119,25 @@ export default function ActivityOptions({ tripId, tripStart, tripEnd, onActivity
 
   async function handleSchedule(id, date) {
     await supabase.from("activity_options").update({ scheduled_date: date || null }).eq("id", id);
+    // Auto-add to itinerary when a date is set, auto-remove when cleared
+    if (onToggleSelection && activeItineraryId) {
+      const isInItinerary = (itinerarySelections || []).some(s => s.option_type === "activity" && s.option_id === id);
+      if (date && !isInItinerary) {
+        onToggleSelection("activity", id);
+      } else if (!date && isInItinerary) {
+        onToggleSelection("activity", id);
+      }
+    }
     loadOptions();
   }
 
   async function handleTimeChange(id, time, endTime) {
     await supabase.from("activity_options").update({ start_time: time || null, end_time: endTime || null }).eq("id", id);
+    loadOptions();
+  }
+
+  async function handleNotesChange(id, notes) {
+    await supabase.from("activity_options").update({ notes: notes }).eq("id", id);
     loadOptions();
   }
 
@@ -149,7 +167,8 @@ export default function ActivityOptions({ tripId, tripStart, tripEnd, onActivity
               <OptionDetail opt={{...selected, is_selected: (itinerarySelections || []).some(s => s.option_type === "activity" && s.option_id === selected.id)}} tripStart={tripStart} tripEnd={tripEnd}
                 onToggleSelected={() => handleToggleSelected(selected.id)}
                 onSchedule={(date) => handleSchedule(selected.id, date)}
-                onTimeChange={(time, endTime) => handleTimeChange(selected.id, time, endTime)} />
+                onTimeChange={(time, endTime) => handleTimeChange(selected.id, time, endTime)}
+                onNotesChange={(notes) => handleNotesChange(selected.id, notes)} />
             ) : (
               <p className="text-slate-400 text-sm italic">Select an activity to view details</p>
             )}
@@ -189,95 +208,51 @@ function OptionTab({ opt, index, isSelected, onClick, onDelete, confirmDelete, o
       onClick={onClick}
       onMouseEnter={() => setHovered(true)}
       onMouseLeave={() => setHovered(false)}
-      className={`relative p-3 rounded-xl cursor-pointer transition-all border-2 ${
+      className={`relative p-3 pr-8 rounded-xl cursor-pointer transition-all border-2 ${
         isSelected ? "border-yellow-500 bg-yellow-50 shadow-sm" : "border-slate-200 bg-white hover:border-yellow-300"
       }`}
     >
-      {/* Delete button */}
+      {/* Itinerary check icon — upper right */}
+      {opt.is_selected && (
+        <svg className="absolute top-2 right-2 w-3.5 h-3.5 text-yellow-500" fill="currentColor" viewBox="0 0 20 20">
+          <path fillRule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clipRule="evenodd" />
+        </svg>
+      )}
+
+      {/* Delete button — bottom right */}
       {hovered && (
         <button onClick={(e) => { e.stopPropagation(); onDelete(); }}
-          className="absolute top-2 right-2 text-slate-300 hover:text-red-500 transition-colors" title="Delete">
+          className="absolute bottom-2 right-2 text-slate-300 hover:text-red-500 transition-colors" title="Delete">
           <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24" strokeWidth={2}>
             <path strokeLinecap="round" strokeLinejoin="round" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
           </svg>
         </button>
       )}
       <InlineConfirm open={confirmDelete} message="Delete this activity?" onConfirm={onConfirmDelete} onCancel={onCancelDelete} />
-
-      <div className="text-[10px] font-semibold text-slate-400 mb-1 flex items-center gap-1">
-        <span className={`inline-flex items-center px-1.5 py-0.5 rounded text-[9px] font-bold ${cat.color}`}>
-          {cat.label.toUpperCase()}
-        </span>
-        {opt.is_selected && (
-          <svg className="w-3.5 h-3.5 text-yellow-500" fill="currentColor" viewBox="0 0 20 20">
-            <path fillRule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clipRule="evenodd" />
-          </svg>
-        )}
-      </div>
-      <div className="font-semibold text-sm text-slate-800 truncate">{opt.name || "Untitled"}</div>
+      <div className="font-semibold text-sm text-slate-800 line-clamp-2">{opt.name || "Untitled"}</div>
       {opt.location_name && <div className="text-xs text-slate-500 truncate">{opt.location_name}</div>}
-      <div className="flex items-center justify-between mt-1">
-        <span className="text-xs text-slate-400">
-          {opt.duration_minutes ? formatDuration(opt.duration_minutes) : ""}
-          {opt.scheduled_date ? ` · ${new Date(opt.scheduled_date + "T00:00:00").toLocaleDateString("en-US", { weekday: "short", month: "short", day: "numeric" })}` : ""}
-        </span>
-        {opt.price && <span className="text-sm font-bold text-yellow-600">{formatPrice(opt.price, opt.currency)}</span>}
-      </div>
     </div>
   );
 }
 
 // ─── OPTION DETAIL ───
-function OptionDetail({ opt, tripStart, tripEnd, onToggleSelected, onSchedule, onTimeChange }) {
-  const cat = getCategoryInfo(opt.category);
-  const [timePopupDate, setTimePopupDate] = useState(null);
-
-  // Close popup when opt changes
-  useEffect(() => {
-    setTimePopupDate(null);
-  }, [opt.id]);
-
-  function handleDayClick(dateStr) {
-    const isScheduled = opt.scheduled_date === dateStr;
-    if (isScheduled) {
-      setTimePopupDate(dateStr);
-    } else {
-      onSchedule(dateStr);
-      setTimePopupDate(dateStr);
-    }
-  }
-
-  // Build trip date range for mini calendar
-  const tripDates = [];
-  if (tripStart && tripEnd) {
-    const start = new Date(tripStart + "T00:00:00");
-    const end = new Date(tripEnd + "T00:00:00");
-    for (let d = new Date(start); d <= end; d.setDate(d.getDate() + 1)) {
-      tripDates.push(new Date(d));
-    }
-  }
-
+function OptionDetail({ opt, tripStart, tripEnd, onToggleSelected, onSchedule, onTimeChange, onNotesChange }) {
   return (
     <div>
       {/* Header */}
       <div className="flex items-start justify-between mb-4">
-        <div className="flex-1">
-          <div className="flex items-center gap-2 mb-1">
-            <span className={`inline-flex items-center px-2 py-0.5 rounded text-xs font-bold ${cat.color}`}>
-              {cat.label}
-            </span>
-            {opt.provider && <span className="text-xs text-slate-400">via {opt.provider}</span>}
-          </div>
+        <div>
           <h3 className="text-xl font-bold text-slate-800">{opt.name}</h3>
+          {opt.provider && <span className="text-xs text-slate-400">via {opt.provider}</span>}
         </div>
-        <div className="text-right">
-          {opt.price && (
-            <div className="text-2xl font-bold text-slate-800">{formatPrice(opt.price, opt.currency)}</div>
-          )}
-          {opt.price_per && opt.price_per !== "total" && (
-            <div className="text-xs text-slate-400">per {opt.price_per}</div>
-          )}
-        </div>
+        {opt.price != null && opt.price > 0 && (
+          <div className="text-right flex-shrink-0 ml-4">
+            <div className="text-2xl font-bold text-slate-800">
+              {formatPrice(opt.price, opt.currency)}
+            </div>
+            <div className="text-xs text-slate-400">{opt.price_per === "group" ? "per group" : "per person"}</div>
+          </div>
+        )}
       </div>
 
       {/* Stats row */}
@@ -287,17 +262,6 @@ function OptionDetail({ opt, tripStart, tripEnd, onToggleSelected, onSchedule, o
         )}
         {opt.start_time && (
           <div><span className="text-xs text-slate-400 uppercase tracking-wide">Start</span><div className="font-medium">{formatTime12h(opt.start_time.slice(0, 5))}</div></div>
-        )}
-        {opt.rating && (
-          <div>
-            <span className="text-xs text-slate-400 uppercase tracking-wide">Rating</span>
-            <div className="font-medium flex items-center gap-1">
-              <svg className="w-4 h-4 text-amber-400" fill="currentColor" viewBox="0 0 20 20">
-                <path d="M9.049 2.927c.3-.921 1.603-.921 1.902 0l1.07 3.292a1 1 0 00.95.69h3.462c.969 0 1.371 1.24.588 1.81l-2.8 2.034a1 1 0 00-.364 1.118l1.07 3.292c.3.921-.755 1.688-1.538 1.118l-2.8-2.034a1 1 0 00-1.175 0l-2.8 2.034c-.784.57-1.838-.197-1.539-1.118l1.07-3.292a1 1 0 00-.364-1.118L2.98 8.72c-.783-.57-.38-1.81.588-1.81h3.461a1 1 0 00.951-.69l1.07-3.292z" />
-              </svg>
-              {opt.rating}{opt.review_count ? <span className="text-xs text-slate-400">({opt.review_count.toLocaleString()})</span> : ""}
-            </div>
-          </div>
         )}
         {opt.location_name && (
           <div><span className="text-xs text-slate-400 uppercase tracking-wide">Location</span><div className="font-medium">{opt.location_name}</div></div>
@@ -311,88 +275,33 @@ function OptionDetail({ opt, tripStart, tripEnd, onToggleSelected, onSchedule, o
         </div>
       )}
 
-      {/* Schedule on calendar — day buttons open time picker */}
-      {tripDates.length > 0 && (
-        <div className="mb-4">
-          <div className="text-xs text-slate-400 uppercase tracking-wide mb-2">Schedule on calendar</div>
-          <div className="flex flex-wrap gap-1">
-            {tripDates.map((d) => {
-              const dateStr = d.toISOString().split("T")[0];
-              const isScheduled = opt.scheduled_date === dateStr;
-              return (
-                <div key={dateStr} className="relative">
-                  <button onClick={() => handleDayClick(dateStr)}
-                    className={`px-2 py-1 rounded text-xs font-medium transition-all ${
-                      isScheduled
-                        ? "bg-yellow-600 text-white shadow-sm"
-                        : "bg-slate-100 text-slate-600 hover:bg-yellow-100 hover:text-yellow-700"
-                    }`}
-                    title={d.toLocaleDateString("en-US", { weekday: "long", month: "long", day: "numeric" })}
-                  >
-                    {d.toLocaleDateString("en-US", { weekday: "short", day: "numeric" })}
-                    {isScheduled && opt.start_time && (
-                      <span className="block text-[9px] opacity-80">{formatTime12h(opt.start_time.slice(0, 5))}</span>
-                    )}
-                  </button>
-                  {timePopupDate === dateStr && (
-                    <TimeSelectPopup
-                      startTime={to12h(opt.start_time?.slice(0, 5))}
-                      endTime={to12h(opt.end_time?.slice(0, 5))}
-                      showEndTime={true}
-                      onSave={(start24, end24) => {
-                        setTimePopupDate(null);
-                        if (onTimeChange) onTimeChange(start24, end24);
-                      }}
-                      onClear={() => {
-                        setTimePopupDate(null);
-                        if (onTimeChange) onTimeChange(null, null);
-                      }}
-                      onClose={() => setTimePopupDate(null)}
-                      onUnschedule={() => {
-                        setTimePopupDate(null);
-                        onSchedule(null);
-                        if (onTimeChange) onTimeChange(null, null);
-                      }}
-                    />
-                  )}
-                </div>
-              );
-            })}
-          </div>
-        </div>
-      )}
-
-      {/* Action buttons */}
-      <div className="flex gap-2 mb-4">
-        <button onClick={onToggleSelected}
-          className={`px-3 py-1.5 rounded-lg text-sm font-medium transition-colors ${
-            opt.is_selected ? "bg-yellow-100 text-yellow-700" : "bg-slate-100 text-slate-600 hover:bg-yellow-50"
-          }`}>
-          {opt.is_selected ? "✓ Selected" : "Mark as pick"}
-        </button>
-        {opt.source_url && (
-          <a href={opt.source_url} target="_blank" rel="noopener noreferrer"
-            className="px-3 py-1.5 rounded-lg text-sm font-medium bg-slate-100 text-slate-600 hover:bg-blue-50 hover:text-blue-700 transition-colors">
-            View original →
-          </a>
-        )}
-      </div>
-
-      {/* Screenshot */}
-      {opt.screenshot_url && (
-        <div className="mb-4">
-          <div className="text-xs text-slate-400 uppercase tracking-wide mb-2">Screenshot</div>
-          <img src={opt.screenshot_url} alt="Activity screenshot" className="rounded-lg border border-slate-200 max-h-64 object-contain" />
-        </div>
-      )}
+      {/* Add to itinerary — mini week calendar */}
+      <MiniWeekCalendar
+        tripStart={tripStart}
+        tripEnd={tripEnd}
+        scheduledDate={opt.scheduled_date}
+        startTime={opt.start_time}
+        endTime={opt.end_time}
+        accentColor="yellow"
+        onSchedule={onSchedule}
+        onTimeChange={onTimeChange}
+      />
 
       {/* Notes */}
-      {opt.notes && (
-        <div>
-          <div className="text-xs text-slate-400 uppercase tracking-wide mb-1">Notes</div>
-          <p className="text-sm text-slate-600">{opt.notes}</p>
-        </div>
-      )}
+      <EditableNotes notes={opt.notes} onSave={onNotesChange} />
+
+      {/* Source thumbnails */}
+      <SourceThumbnails
+        screenshotUrl={opt.screenshot_url}
+        sourceUrl={opt.source_url}
+        manualData={[
+          { label: "Category", value: opt.category ? getCategoryInfo(opt.category).label : "" },
+          { label: "Duration", value: opt.duration_minutes ? formatDuration(opt.duration_minutes) : "" },
+          { label: "Price", value: opt.price ? formatPrice(opt.price, opt.currency) : "" },
+          { label: "Location", value: opt.location_name || "" },
+        ]}
+        accentColor="yellow"
+      />
     </div>
   );
 }
