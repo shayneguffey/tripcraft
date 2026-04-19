@@ -1,6 +1,7 @@
 "use client";
 
 import { useState, useRef, useEffect } from "react";
+import { LABEL_MB1 } from "@/lib/detailPaneStyles";
 
 // ─────────────────────────────────────────────────────────────
 // EditableNotes — collapsible notes textarea for option details
@@ -65,7 +66,7 @@ export default function EditableNotes({ notes, onSave }) {
   // Expanded state — editable textarea
   return (
     <div className="mb-4">
-      <div className="text-xs text-slate-400 uppercase tracking-wide mb-1">Notes</div>
+      <div className={LABEL_MB1}>Notes</div>
       <textarea
         ref={textareaRef}
         value={value}

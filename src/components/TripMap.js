@@ -11,21 +11,40 @@ const Popup = dynamic(() => import("react-leaflet").then(m => m.Popup), { ssr: f
 const Polyline = dynamic(() => import("react-leaflet").then(m => m.Polyline), { ssr: false });
 import CATEGORY_COLORS from "@/lib/categoryColors";
 
-// ── Pin category config — colors from centralized system ──
+// ── Pin category config — colors from centralized system, SVG icons match itinerary tabs ──
 const PIN_CONFIG = {
-  flight: { color: CATEGORY_COLORS.flight.hex, label: "Flight", emoji: "\u2708\ufe0f" },
-  accommodation: { color: CATEGORY_COLORS.accommodation.hex, label: "Stay", emoji: "\ud83c\udfe8" },
-  activity: { color: CATEGORY_COLORS.activity.hex, label: "Activity", emoji: "\u2b50" },
-  dining: { color: CATEGORY_COLORS.dining.hex, label: "Dining", emoji: "\ud83c\udf7d\ufe0f" },
-  transport: { color: CATEGORY_COLORS.transport.hex, label: "Transport", emoji: "\ud83d\ude8c" },
+  flight: {
+    color: CATEGORY_COLORS.flight.hex, label: "Flights", emoji: "✈️",
+    icon: <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor" className="w-3.5 h-3.5"><path d="M3.105 2.288a.75.75 0 0 0-.826.95l1.414 4.926A1.5 1.5 0 0 0 5.135 9.25h6.115a.75.75 0 0 1 0 1.5H5.135a1.5 1.5 0 0 0-1.442 1.086l-1.414 4.926a.75.75 0 0 0 .826.95 28.897 28.897 0 0 0 15.293-7.154.75.75 0 0 0 0-1.115A28.897 28.897 0 0 0 3.105 2.289Z" /></svg>,
+  },
+  accommodation: {
+    color: CATEGORY_COLORS.accommodation.hex, label: "Stays", emoji: "🏨",
+    icon: <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor" className="w-3.5 h-3.5"><path d="M.75 15.5a.75.75 0 0 0 1.5 0V13h16v2.5a.75.75 0 0 0 1.5 0v-6a.75.75 0 0 0-1.5 0V11H16V4.5A2.5 2.5 0 0 0 13.5 2h-7A2.5 2.5 0 0 0 4 4.5V11H2.25V9.5a.75.75 0 0 0-1.5 0v6ZM5.5 4.5a1 1 0 0 1 1-1h7a1 1 0 0 1 1 1V11h-9V4.5Z" /></svg>,
+  },
+  activity: {
+    color: CATEGORY_COLORS.activity.hex, label: "Activities", emoji: "⭐",
+    icon: <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor" className="w-3.5 h-3.5"><path fillRule="evenodd" d="M8.157 2.176a1.5 1.5 0 0 0-1.147 0l-4.084 1.69A1.5 1.5 0 0 0 2 5.25v10.877a1.5 1.5 0 0 0 2.074 1.386l3.51-1.452 4.26 1.762a1.5 1.5 0 0 0 1.147 0l4.084-1.69A1.5 1.5 0 0 0 18 14.75V3.873a1.5 1.5 0 0 0-2.074-1.386l-3.51 1.452-4.26-1.762ZM7.58 5a.75.75 0 0 1 .75.75v6.5a.75.75 0 0 1-1.5 0v-6.5A.75.75 0 0 1 7.58 5Zm5.59 2a.75.75 0 0 1 .75.75v6.5a.75.75 0 0 1-1.5 0v-6.5a.75.75 0 0 1 .75-.75Z" clipRule="evenodd" /></svg>,
+  },
+  dining: {
+    color: CATEGORY_COLORS.dining.hex, label: "Dining", emoji: "🍽️",
+    icon: <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor" className="w-3.5 h-3.5"><path strokeLinecap="round" strokeLinejoin="round" d="M12 8.25v-1.5m0 1.5c-1.355 0-2.697.056-4.024.166C6.845 8.51 6 9.473 6 10.608v2.513m6-4.871c1.355 0 2.697.056 4.024.166C17.155 8.51 18 9.473 18 10.608v2.513M15 8.25v-1.5m-6 1.5v-1.5m12 9.75-1.5.75a3.354 3.354 0 0 1-3 0 3.354 3.354 0 0 0-3 0 3.354 3.354 0 0 1-3 0 3.354 3.354 0 0 0-3 0 3.354 3.354 0 0 1-3 0L3 16.5m15-3.379a48.474 48.474 0 0 0-6-.371c-2.032 0-4.034.126-6 .371m12 0c.39.049.777.102 1.163.16 1.07.16 1.837 1.094 1.837 2.175v5.169c0 .621-.504 1.125-1.125 1.125H4.125A1.125 1.125 0 0 1 3 20.625v-5.17c0-1.08.768-2.014 1.837-2.174A47.78 47.78 0 0 1 6 13.12M12.265 3.11a.375.375 0 1 1-.53 0L12 2.845l.265.265Z" /></svg>,
+  },
+  transport: {
+    color: CATEGORY_COLORS.transport.hex, label: "Transport", emoji: "🚌",
+    icon: <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor" className="w-3.5 h-3.5"><path strokeLinecap="round" strokeLinejoin="round" d="M7.5 21 3 16.5m0 0L7.5 12M3 16.5h13.5m0-13.5L21 7.5m0 0L16.5 12M21 7.5H7.5" /></svg>,
+  },
 };
 
-// ── Day colors for route view (cycle through these) ──
-const DAY_COLORS = [
-  "#ef4444", "#f97316", "#eab308", "#22c55e", "#06b6d4",
-  "#3b82f6", "#8b5cf6", "#ec4899", "#f43f5e", "#14b8a6",
-  "#a855f7", "#6366f1", "#0ea5e9", "#84cc16", "#f59e0b",
-];
+// ── Route view accent color — terracotta (matches style guide primary) ──
+const ROUTE_ACCENT = "#da7b4a";
+const ROUTE_ACCENT_DARK = "#b5552a";
+
+// ── Map tile styles ──
+const TILE_STYLES = {
+  voyager: { label: "Voyager", url: "https://{s}.basemaps.cartocdn.com/rastertiles/voyager/{z}/{x}/{y}{r}.png", attr: '&copy; <a href="https://www.openstreetmap.org/copyright">OSM</a> &copy; <a href="https://carto.com/">CARTO</a>' },
+  positron: { label: "Positron", url: "https://{s}.basemaps.cartocdn.com/light_all/{z}/{x}/{y}{r}.png", attr: '&copy; <a href="https://www.openstreetmap.org/copyright">OSM</a> &copy; <a href="https://carto.com/">CARTO</a>' },
+  tonerLite: { label: "Toner Lite", url: "https://tiles.stadiamaps.com/tiles/stamen_toner_lite/{z}/{x}/{y}{r}.png", attr: '&copy; <a href="https://stamen.com">Stamen</a> &copy; <a href="https://www.openstreetmap.org/copyright">OSM</a>' },
+};
 
 // ── Geocoding cache ──
 const geocodeCache = {};
@@ -90,23 +109,26 @@ function createNumberedIcon(color, number) {
 }
 
 // ── Collect locations with date assignments for BOTH views ──
-function collectLocations(flightOptions, accommodationOptions, activityOptions, diningOptions, transportOptions) {
+function collectLocations(flightOptions, accommodationOptions, activityOptions, diningOptions, transportOptions, itinerarySelections) {
   const locations = [];
+  const selections = itinerarySelections || [];
+  const isSelected = (type, id) => selections.some(s => s.option_type === type && s.option_id === id);
 
   // Flights (supports multiple selected flight options)
-  const selectedFlights = (flightOptions || []).filter(f => f.is_selected);
+  const selectedFlights = (flightOptions || []).filter(f => isSelected("flight", f.id));
   for (const selectedFlight of selectedFlights) {
     if (!selectedFlight?.flight_legs) continue;
     const legs = selectedFlight.flight_legs;
     const outbound = legs.filter(l => l.direction === "outbound");
     const returnLegs = legs.filter(l => l.direction === "return");
 
+    // Determine the home/origin airport so we can exclude it from pins
+    const homeAirport = outbound.length > 0 ? outbound[0].departure_airport : null;
+
     if (outbound.length > 0) {
       const first = outbound[0];
       const last = outbound[outbound.length - 1];
-      if (first.departure_airport && !locations.some(l => l.query === first.departure_airport && l.date === first.departure_date)) {
-        locations.push({ type: "flight", query: first.departure_airport, name: `Depart: ${first.departure_airport}`, detail: first.airline_name || "", date: first.departure_date || null });
-      }
+      // Skip origin (home) airport — only show destination arrival
       if (last.arrival_airport && !locations.some(l => l.query === last.arrival_airport && l.date === (last.departure_date || first.departure_date))) {
         locations.push({ type: "flight", query: last.arrival_airport, name: `Arrive: ${last.arrival_airport}`, detail: last.airline_name || "", date: last.departure_date || first.departure_date || null });
       }
@@ -114,35 +136,34 @@ function collectLocations(flightOptions, accommodationOptions, activityOptions, 
     if (returnLegs.length > 0) {
       const first = returnLegs[0];
       const last = returnLegs[returnLegs.length - 1];
-      if (first.departure_airport && !locations.some(l => l.query === first.departure_airport && l.date === first.departure_date)) {
+      // Show return departure (destination) but skip return arrival (home)
+      if (first.departure_airport && first.departure_airport !== homeAirport && !locations.some(l => l.query === first.departure_airport && l.date === first.departure_date)) {
         locations.push({ type: "flight", query: first.departure_airport, name: `Return depart: ${first.departure_airport}`, detail: first.airline_name || "", date: first.departure_date || null });
       }
-      if (last.arrival_airport && !locations.some(l => l.query === last.arrival_airport && l.date === last.departure_date)) {
-        locations.push({ type: "flight", query: last.arrival_airport, name: `Return arrive: ${last.arrival_airport}`, detail: "", date: last.departure_date || null });
-      }
+      // Skip home arrival airport
     }
   }
 
   // Accommodation — assign to check_in_date
-  (accommodationOptions || []).filter(a => a.is_selected).forEach(a => {
+  (accommodationOptions || []).filter(a => isSelected("accommodation", a.id)).forEach(a => {
     const query = a.address || a.location_name || a.name;
-    if (query) locations.push({ type: "accommodation", query, name: a.name || "Accommodation", detail: a.location_name || "", date: a.check_in_date || null, endDate: a.check_out_date || null });
+    if (query) locations.push({ type: "accommodation", query, name: a.name || "Stay", detail: a.location_name || "", date: a.check_in_date || null, endDate: a.check_out_date || null });
   });
 
   // Activities — scheduled_date
-  (activityOptions || []).filter(a => a.is_selected).forEach(a => {
+  (activityOptions || []).filter(a => isSelected("activity", a.id)).forEach(a => {
     const query = a.address || a.location_name || a.name;
     if (query) locations.push({ type: "activity", query, name: a.name || "Activity", detail: a.location_name || "", date: a.scheduled_date || null });
   });
 
   // Dining — scheduled_date
-  (diningOptions || []).filter(d => d.is_selected).forEach(d => {
+  (diningOptions || []).filter(d => isSelected("dining", d.id)).forEach(d => {
     const query = d.address || d.location_name || d.name;
     if (query) locations.push({ type: "dining", query, name: d.name || "Restaurant", detail: d.location_name || "", date: d.scheduled_date || null });
   });
 
   // Transport — departure_date
-  (transportOptions || []).filter(t => t.is_selected).forEach(t => {
+  (transportOptions || []).filter(t => isSelected("transportation", t.id)).forEach(t => {
     if (t.pickup_location) {
       locations.push({ type: "transport", query: t.pickup_location, name: `Pickup: ${t.name || "Transport"}`, detail: t.pickup_location, date: t.departure_date || null });
     }
@@ -182,16 +203,15 @@ function getDayOfWeek(dateStr) {
   return d.toLocaleDateString("en-US", { weekday: "short" });
 }
 
-export default function TripMap({ tripDestination, tripStart, tripEnd, flightOptions, accommodationOptions, activityOptions, diningOptions, transportOptions }) {
+export default function TripMap({ tripDestination, tripStart, tripEnd, flightOptions, accommodationOptions, activityOptions, diningOptions, transportOptions, itinerarySelections }) {
   const [pins, setPins] = useState([]);
   const [loading, setLoading] = useState(true);
-  const [collapsed, setCollapsed] = useState(false);
   const [viewMode, setViewMode] = useState("pins"); // "pins" | "route"
   const [filter, setFilter] = useState("all");
   const [selectedDay, setSelectedDay] = useState("all");
   const [mapReady, setMapReady] = useState(false);
+  const [tileStyle, setTileStyle] = useState("voyager");
   const geocodingRef = useRef(false);
-  const dayStripRef = useRef(null);
 
   // Leaflet CSS
   useEffect(() => {
@@ -208,10 +228,10 @@ export default function TripMap({ tripDestination, tripStart, tripEnd, flightOpt
   // Trip dates
   const tripDates = useMemo(() => getTripDates(tripStart, tripEnd), [tripStart, tripEnd]);
 
-  // Collect all locations
+  // Collect all locations — filtered by itinerary selections
   const locations = useMemo(() =>
-    collectLocations(flightOptions, accommodationOptions, activityOptions, diningOptions, transportOptions),
-    [flightOptions, accommodationOptions, activityOptions, diningOptions, transportOptions]
+    collectLocations(flightOptions, accommodationOptions, activityOptions, diningOptions, transportOptions, itinerarySelections),
+    [flightOptions, accommodationOptions, activityOptions, diningOptions, transportOptions, itinerarySelections]
   );
 
   // Geocode
@@ -243,7 +263,7 @@ export default function TripMap({ tripDestination, tripStart, tripEnd, flightOpt
     return () => { cancelled = true; geocodingRef.current = false; };
   }, [locations]);
 
-  useEffect(() => { geocodingRef.current = false; }, [flightOptions, accommodationOptions, activityOptions, diningOptions, transportOptions]);
+  useEffect(() => { geocodingRef.current = false; }, [flightOptions, accommodationOptions, activityOptions, diningOptions, transportOptions, itinerarySelections]);
 
   // ── PINS VIEW: filter by category ──
   const pinViewPins = filter === "all" ? pins : pins.filter(p => p.type === filter);
@@ -272,35 +292,31 @@ export default function TripMap({ tripDestination, tripStart, tripEnd, flightOpt
     return groups;
   }, [pins]);
 
-  // Route view: which pins to show
+  // Route view: which pins to show — all use standard terracotta accent
   const routeViewData = useMemo(() => {
     if (selectedDay === "all") {
-      // Show all days with color-coded routes
       const allDayPins = [];
       const routes = [];
       const sortedDates = Object.keys(dayGroups).sort();
 
       sortedDates.forEach((date, dayIdx) => {
-        const color = DAY_COLORS[dayIdx % DAY_COLORS.length];
         const dayPins = dayGroups[date];
         dayPins.forEach((pin, pinIdx) => {
-          allDayPins.push({ ...pin, dayColor: color, dayIndex: dayIdx + 1, stepIndex: pinIdx + 1 });
+          allDayPins.push({ ...pin, dayColor: ROUTE_ACCENT, dayIndex: dayIdx + 1, stepIndex: pinIdx + 1 });
         });
-        // Connect pins within this day
         if (dayPins.length >= 2) {
           const coords = dayPins.map(p => [p.lat, p.lng]);
-          routes.push({ positions: coords, color, dayIndex: dayIdx + 1 });
+          routes.push({ positions: coords, color: ROUTE_ACCENT, dayIndex: dayIdx + 1 });
         }
       });
 
-      // Also connect last pin of each day to first pin of next day (travel between days)
+      // Connect last pin of each day to first pin of next day
       for (let i = 0; i < sortedDates.length - 1; i++) {
         const todayPins = dayGroups[sortedDates[i]];
         const tomorrowPins = dayGroups[sortedDates[i + 1]];
         if (todayPins.length > 0 && tomorrowPins.length > 0) {
           const lastToday = todayPins[todayPins.length - 1];
           const firstTomorrow = tomorrowPins[0];
-          // Only draw inter-day line if locations are different
           if (Math.abs(lastToday.lat - firstTomorrow.lat) > 0.001 || Math.abs(lastToday.lng - firstTomorrow.lng) > 0.001) {
             routes.push({
               positions: [[lastToday.lat, lastToday.lng], [firstTomorrow.lat, firstTomorrow.lng]],
@@ -313,15 +329,13 @@ export default function TripMap({ tripDestination, tripStart, tripEnd, flightOpt
 
       return { pins: allDayPins, routes };
     } else {
-      // Single day
       const dayIdx = tripDates.indexOf(selectedDay);
-      const color = DAY_COLORS[dayIdx % DAY_COLORS.length];
       const dayPins = (dayGroups[selectedDay] || []).map((pin, i) => ({
-        ...pin, dayColor: color, dayIndex: dayIdx + 1, stepIndex: i + 1,
+        ...pin, dayColor: ROUTE_ACCENT, dayIndex: dayIdx + 1, stepIndex: i + 1,
       }));
       const routes = [];
       if (dayPins.length >= 2) {
-        routes.push({ positions: dayPins.map(p => [p.lat, p.lng]), color });
+        routes.push({ positions: dayPins.map(p => [p.lat, p.lng]), color: ROUTE_ACCENT });
       }
       return { pins: dayPins, routes };
     }
@@ -331,7 +345,18 @@ export default function TripMap({ tripDestination, tripStart, tripEnd, flightOpt
   const activePins = viewMode === "pins" ? pinViewPins : routeViewData.pins;
   const bounds = activePins.length > 0 ? activePins.map(p => [p.lat, p.lng]) : null;
 
-  const defaultCenter = [13.7563, 100.5018];
+  // Stable serialized key so useEffect can detect real changes (include viewMode + filter to re-center on toggle)
+  const boundsKey = `${viewMode}:${filter}:${selectedDay}:` + (bounds ? bounds.map(b => `${b[0].toFixed(5)},${b[1].toFixed(5)}`).join("|") : "");
+
+  // Default center: use pin centroid if available, otherwise world center
+  const defaultCenter = useMemo(() => {
+    if (pins.length > 0) {
+      const avgLat = pins.reduce((s, p) => s + p.lat, 0) / pins.length;
+      const avgLng = pins.reduce((s, p) => s + p.lng, 0) / pins.length;
+      return [avgLat, avgLng];
+    }
+    return [20, 0]; // neutral world center
+  }, [pins]);
 
   // Flight lines for pin view
   const flightPins = pins.filter(p => p.type === "flight");
@@ -352,146 +377,89 @@ export default function TripMap({ tripDestination, tripStart, tripEnd, flightOpt
   const hasPicked = locations.length > 0;
 
   return (
-    <div className="mb-6">
-      {/* Header */}
-      <div className="flex items-center justify-between mb-3">
-        <h2 className="text-lg font-bold text-slate-800 flex items-center gap-2">
-          <svg className="w-5 h-5 text-teal-500" fill="none" stroke="currentColor" viewBox="0 0 24 24" strokeWidth={2}>
-            <path strokeLinecap="round" strokeLinejoin="round" d="M9 20l-5.447-2.724A1 1 0 013 16.382V5.618a1 1 0 011.447-.894L9 7m0 13l6-3m-6 3V7m6 10l4.553 2.276A1 1 0 0021 18.382V7.618a1 1 0 00-.553-.894L15 4m0 13V4m0 0L9 7" />
-          </svg>
-          Trip Map
-          {hasData && <span className="text-xs font-medium text-slate-400 ml-1">({pins.length} locations)</span>}
-        </h2>
-        <div className="flex items-center gap-2">
-          {/* View mode toggle */}
-          {hasData && (
-            <div className="flex bg-slate-100 rounded-lg p-0.5">
-              <button
-                onClick={() => setViewMode("pins")}
-                className={`px-2.5 py-1 text-xs font-medium rounded-md transition-colors ${
-                  viewMode === "pins" ? "bg-white text-slate-800 shadow-sm" : "text-slate-500 hover:text-slate-700"
-                }`}
-              >
-                Pins
-              </button>
-              <button
-                onClick={() => setViewMode("route")}
-                className={`px-2.5 py-1 text-xs font-medium rounded-md transition-colors ${
-                  viewMode === "route" ? "bg-white text-slate-800 shadow-sm" : "text-slate-500 hover:text-slate-700"
-                }`}
-              >
-                Route
-              </button>
-            </div>
-          )}
-          <button
-            onClick={() => setCollapsed(!collapsed)}
-            className="flex items-center gap-1.5 px-3 py-1.5 text-xs font-medium rounded-lg bg-slate-100 text-slate-600 hover:bg-slate-200 transition-colors"
-          >
-            {collapsed ? "Show" : "Hide"}
-            <svg className={`w-3.5 h-3.5 transition-transform ${collapsed ? "" : "rotate-180"}`} fill="none" stroke="currentColor" viewBox="0 0 24 24" strokeWidth={2}>
-              <path strokeLinecap="round" strokeLinejoin="round" d="M19 9l-7 7-7-7" />
-            </svg>
-          </button>
-        </div>
-      </div>
-
-      {!collapsed && (
+    <div>
         <div className="bg-white rounded-xl border border-teal-100 shadow-sm overflow-hidden">
-          {/* PINS VIEW: category filter bar */}
-          {viewMode === "pins" && hasData && (
-            <div className="px-4 py-2.5 border-b border-slate-100 flex gap-1.5 overflow-x-auto">
-              <button
-                onClick={() => setFilter("all")}
-                className={`px-2.5 py-1 text-xs font-medium rounded-md transition-colors whitespace-nowrap ${
-                  filter === "all" ? "bg-teal-100 text-teal-700" : "text-slate-500 hover:bg-slate-100"
-                }`}
-              >
-                All ({pins.length})
-              </button>
-              {Object.entries(PIN_CONFIG).map(([key, cfg]) => {
-                const count = typeCounts[key];
-                if (!count) return null;
-                return (
-                  <button
-                    key={key}
-                    onClick={() => setFilter(key)}
-                    className={`px-2.5 py-1 text-xs font-medium rounded-md transition-colors whitespace-nowrap ${
-                      filter === key ? "bg-teal-100 text-teal-700" : "text-slate-500 hover:bg-slate-100"
-                    }`}
-                  >
-                    {cfg.emoji} {cfg.label} ({count})
-                  </button>
-                );
-              })}
-            </div>
-          )}
-
-          {/* ROUTE VIEW: day selector strip */}
-          {viewMode === "route" && hasData && tripDates.length > 0 && (
-            <div className="border-b border-slate-100">
-              <div ref={dayStripRef} className="flex gap-1 px-4 py-2.5 overflow-x-auto">
+          {/* Filter bar + view mode toggle — always visible when data exists */}
+          {hasData && (
+            <div className="px-4 py-2.5 border-b border-slate-100 flex items-center gap-1.5 overflow-x-auto">
+              {/* View mode toggle */}
+              <div className="flex bg-slate-100 rounded-lg p-0.5 mr-2 flex-shrink-0">
                 <button
-                  onClick={() => setSelectedDay("all")}
-                  className={`flex-shrink-0 px-3 py-2 rounded-lg text-xs font-medium transition-colors ${
-                    selectedDay === "all"
-                      ? "bg-teal-600 text-white shadow-sm"
-                      : "bg-slate-100 text-slate-600 hover:bg-slate-200"
+                  onClick={() => setViewMode("pins")}
+                  className={`px-2.5 py-1 text-xs font-medium rounded-md transition-colors ${
+                    viewMode === "pins" ? "bg-white text-slate-800 shadow-sm" : "text-slate-500 hover:text-slate-700"
                   }`}
                 >
-                  All Days
+                  Pins
                 </button>
-                {tripDates.map((date, i) => {
-                  const hasPins = daysWithPins.includes(date);
-                  const color = DAY_COLORS[i % DAY_COLORS.length];
-                  const isSelected = selectedDay === date;
-                  return (
-                    <button
-                      key={date}
-                      onClick={() => setSelectedDay(date)}
-                      className={`flex-shrink-0 flex flex-col items-center px-3 py-1.5 rounded-lg text-xs transition-colors ${
-                        isSelected
-                          ? "text-white shadow-sm"
-                          : hasPins
-                            ? "bg-slate-100 text-slate-700 hover:bg-slate-200"
-                            : "bg-slate-50 text-slate-300"
-                      }`}
-                      style={isSelected ? { backgroundColor: color } : {}}
-                    >
-                      <span className="font-bold">Day {i + 1}</span>
-                      <span className={`text-[10px] ${isSelected ? "text-white/80" : "text-slate-400"}`}>
-                        {getDayOfWeek(date)} {formatShortDate(date)}
-                      </span>
-                      {hasPins && !isSelected && (
-                        <div className="w-1.5 h-1.5 rounded-full mt-0.5" style={{ backgroundColor: color }} />
-                      )}
-                    </button>
-                  );
-                })}
+                <button
+                  onClick={() => setViewMode("route")}
+                  className={`px-2.5 py-1 text-xs font-medium rounded-md transition-colors ${
+                    viewMode === "route" ? "bg-white text-slate-800 shadow-sm" : "text-slate-500 hover:text-slate-700"
+                  }`}
+                >
+                  Route
+                </button>
               </div>
-              {/* Route legend for selected day */}
-              {selectedDay !== "all" && routeViewData.pins.length > 0 && (
-                <div className="px-4 pb-2.5 flex flex-wrap gap-2">
-                  {routeViewData.pins.map((pin, i) => (
-                    <div key={i} className="flex items-center gap-1.5 text-xs text-slate-600">
-                      <span className="w-5 h-5 rounded-full flex items-center justify-center text-white text-[10px] font-bold" style={{ backgroundColor: pin.dayColor }}>
-                        {pin.stepIndex}
-                      </span>
-                      <span>{PIN_CONFIG[pin.type]?.emoji} {pin.name}</span>
-                      {i < routeViewData.pins.length - 1 && (
-                        <svg className="w-3 h-3 text-slate-300" fill="none" stroke="currentColor" viewBox="0 0 24 24" strokeWidth={2}>
-                          <path strokeLinecap="round" strokeLinejoin="round" d="M9 5l7 7-7 7" />
-                        </svg>
-                      )}
-                    </div>
-                  ))}
-                </div>
+
+              {/* PINS VIEW: category filters */}
+              {viewMode === "pins" && (
+                <>
+                  <button
+                    onClick={() => setFilter("all")}
+                    className={`px-2.5 py-1 text-xs font-medium rounded-md transition-colors whitespace-nowrap ${
+                      filter === "all" ? "bg-stone-200 text-stone-800" : "text-stone-500 hover:bg-stone-100"
+                    }`}
+                  >
+                    All ({pins.length})
+                  </button>
+                  {Object.entries(PIN_CONFIG).map(([key, cfg]) => {
+                    const count = typeCounts[key];
+                    if (!count) return null;
+                    const isActive = filter === key;
+                    return (
+                      <button
+                        key={key}
+                        onClick={() => setFilter(key)}
+                        className={`flex items-center gap-1.5 px-2.5 py-1 text-xs font-medium rounded-md transition-colors whitespace-nowrap ${
+                          isActive ? "text-stone-800" : "text-stone-500 hover:bg-stone-100"
+                        }`}
+                        style={isActive ? { backgroundColor: `${cfg.color}20`, color: cfg.color } : {}}
+                      >
+                        <span style={{ color: isActive ? cfg.color : undefined }}>{cfg.icon}</span>
+                        {cfg.label} ({count})
+                      </button>
+                    );
+                  })}
+                </>
               )}
+
+              {/* Tile style selector — right-justified */}
+              <select
+                value={tileStyle}
+                onChange={(e) => setTileStyle(e.target.value)}
+                className="ml-auto flex-shrink-0 px-2 py-1 text-xs font-medium text-slate-600 bg-slate-50 border border-slate-200 rounded-md cursor-pointer hover:bg-slate-100 transition-colors outline-none"
+              >
+                {Object.entries(TILE_STYLES).map(([key, style]) => (
+                  <option key={key} value={key}>{style.label}</option>
+                ))}
+              </select>
             </div>
+          )}
+
+          {/* ROUTE VIEW: mini-calendar day selector */}
+          {viewMode === "route" && hasData && tripDates.length > 0 && (
+            <RouteDayCalendar
+              tripDates={tripDates}
+              daysWithPins={daysWithPins}
+              selectedDay={selectedDay}
+              onSelectDay={setSelectedDay}
+              routeViewData={routeViewData}
+            />
           )}
 
           {/* Map */}
-          <div className="relative" style={{ height: 420 }}>
+          <div className="relative" style={{ height: 500 }}>
             {loading && (
               <div className="absolute inset-0 bg-slate-50 flex items-center justify-center z-10">
                 <div className="flex items-center gap-2 text-sm text-teal-600">
@@ -519,16 +487,133 @@ export default function TripMap({ tripDestination, tripStart, tripEnd, flightOpt
 
             {mapReady && (
               <MapInner
-                key={viewMode} // force remount on view change for clean state
                 viewMode={viewMode}
                 pins={viewMode === "pins" ? pinViewPins : routeViewData.pins}
                 routes={viewMode === "route" ? routeViewData.routes : []}
                 bounds={bounds}
+                boundsKey={boundsKey}
                 defaultCenter={defaultCenter}
                 flightLines={viewMode === "pins" && (filter === "all" || filter === "flight") ? flightLines : []}
+                tileStyle={tileStyle}
               />
             )}
           </div>
+        </div>
+    </div>
+  );
+}
+
+// ── Route day mini-calendar ──
+const WEEKDAY_LABELS = ["S", "M", "T", "W", "T", "F", "S"];
+
+function RouteDayCalendar({ tripDates, daysWithPins, selectedDay, onSelectDay, routeViewData }) {
+  if (tripDates.length === 0) return null;
+
+  // Build grid from first trip date's week Sunday to last trip date's week Saturday
+  const firstDate = new Date(tripDates[0] + "T00:00:00");
+  const lastDate = new Date(tripDates[tripDates.length - 1] + "T00:00:00");
+
+  const gridStart = new Date(firstDate);
+  gridStart.setDate(gridStart.getDate() - gridStart.getDay());
+
+  const gridEnd = new Date(lastDate);
+  gridEnd.setDate(gridEnd.getDate() + (6 - gridEnd.getDay()));
+
+  const tripDateSet = new Set(tripDates);
+
+  const gridDates = [];
+  for (let d = new Date(gridStart); d <= gridEnd; d.setDate(d.getDate() + 1)) {
+    gridDates.push(new Date(d));
+  }
+
+  const weeks = [];
+  for (let i = 0; i < gridDates.length; i += 7) {
+    weeks.push(gridDates.slice(i, i + 7));
+  }
+
+  return (
+    <div className="border-b border-slate-100 px-4 py-2.5">
+      <div className="flex items-start gap-4">
+        {/* All Days button */}
+        <button
+          onClick={() => onSelectDay("all")}
+          className={`flex-shrink-0 px-3 py-1.5 rounded-lg text-xs font-semibold transition-colors mt-4 ${
+            selectedDay === "all"
+              ? "text-white shadow-sm"
+              : "bg-slate-100 text-slate-600 hover:bg-slate-200"
+          }`}
+          style={selectedDay === "all" ? { backgroundColor: ROUTE_ACCENT } : {}}
+        >
+          All Days
+        </button>
+
+        {/* Mini calendar grid */}
+        <div className="flex-1 max-w-[264px]">
+          {/* Weekday header bar */}
+          <div className="grid grid-cols-7 rounded-full border px-1.5 py-1 mb-1.5 bg-orange-50 border-orange-200">
+            {WEEKDAY_LABELS.map((d, i) => (
+              <div key={i} className="text-center text-[10px] font-bold uppercase leading-tight text-orange-600">
+                {d}
+              </div>
+            ))}
+          </div>
+
+          {/* Week rows */}
+          {weeks.map((week, wi) => (
+            <div key={wi} className="grid grid-cols-7 gap-1.5 mb-1.5">
+              {week.map((d) => {
+                const dateStr = d.toISOString().split("T")[0];
+                const isTripDate = tripDateSet.has(dateStr);
+                const isSelected = selectedDay === dateStr;
+                const hasPins = daysWithPins.includes(dateStr);
+                const dayNum = d.getDate();
+
+                if (!isTripDate) {
+                  return <div key={dateStr} className="w-[31px] h-[31px]" />;
+                }
+
+                return (
+                  <button
+                    key={dateStr}
+                    onClick={() => onSelectDay(dateStr)}
+                    className={`w-[31px] h-[31px] rounded-md border shadow-sm flex flex-col items-center justify-center transition-all duration-150 cursor-pointer ${
+                      isSelected
+                        ? "text-white shadow-md ring-1 ring-orange-700/20"
+                        : hasPins
+                          ? "bg-white border-stone-200 text-stone-700 hover:bg-orange-50 hover:border-orange-300"
+                          : "bg-white border-stone-100 text-stone-300"
+                    }`}
+                    style={isSelected ? { backgroundColor: ROUTE_ACCENT } : {}}
+                    title={d.toLocaleDateString("en-US", { weekday: "long", month: "long", day: "numeric" })}
+                  >
+                    <span className="text-[11px] font-semibold leading-none">{dayNum}</span>
+                    {hasPins && !isSelected && (
+                      <div className="w-1 h-1 rounded-full mt-0.5" style={{ backgroundColor: ROUTE_ACCENT }} />
+                    )}
+                  </button>
+                );
+              })}
+            </div>
+          ))}
+        </div>
+      </div>
+
+      {/* Route legend for selected day */}
+      {selectedDay !== "all" && routeViewData.pins.length > 0 && (
+        <div className="mt-2 flex flex-wrap gap-2">
+          {routeViewData.pins.map((pin, i) => (
+            <div key={i} className="flex items-center gap-1.5 text-xs text-slate-600">
+              <span className="w-5 h-5 rounded-full flex items-center justify-center text-white text-[10px] font-bold" style={{ backgroundColor: ROUTE_ACCENT }}>
+                {pin.stepIndex}
+              </span>
+              <span>{PIN_CONFIG[pin.type]?.emoji} {pin.name}</span>
+              {i < routeViewData.pins.length - 1 && (
+                <svg className="w-3 h-3 text-slate-300" fill="none" stroke="currentColor" viewBox="0 0 24 24" strokeWidth={2}>
+                  <path strokeLinecap="round" strokeLinejoin="round" d="M9 5l7 7-7 7" />
+                </svg>
+              )}
+            </div>
+          ))}
         </div>
       )}
     </div>
@@ -536,9 +621,10 @@ export default function TripMap({ tripDestination, tripStart, tripEnd, flightOpt
 }
 
 // ── Inner map component ──
-function MapInner({ viewMode, pins, routes, bounds, defaultCenter, flightLines }) {
+function MapInner({ viewMode, pins, routes, bounds, boundsKey, defaultCenter, flightLines, tileStyle }) {
   const mapRef = useRef(null);
 
+  // Fit bounds whenever the active pins change (stable key prevents false positives)
   useEffect(() => {
     if (mapRef.current && bounds && bounds.length > 0) {
       try {
@@ -547,7 +633,7 @@ function MapInner({ viewMode, pins, routes, bounds, defaultCenter, flightLines }
         mapRef.current.fitBounds(leafletBounds, { padding: [50, 50], maxZoom: 14 });
       } catch (_) {}
     }
-  }, [bounds]);
+  }, [boundsKey]);
 
   const categoryIcons = useMemo(() => {
     const result = {};
@@ -566,8 +652,9 @@ function MapInner({ viewMode, pins, routes, bounds, defaultCenter, flightLines }
       scrollWheelZoom={true}
     >
       <TileLayer
-        attribution='&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a>'
-        url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
+        key={tileStyle}
+        attribution={TILE_STYLES[tileStyle].attr}
+        url={TILE_STYLES[tileStyle].url}
       />
 
       {/* PINS VIEW: flight route lines */}

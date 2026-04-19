@@ -2,14 +2,11 @@
 
 import { useState } from "react";
 import TimeSelectPopup, { to12h, formatTime12h } from "@/components/TimeSelectPopup";
+import { LABEL } from "@/lib/detailPaneStyles";
 
 // ─────────────────────────────────────────────────────────────
-// MiniWeekCalendar — 7-day week grid for scheduling options
+// MiniWeekCalendar — Compact bento-style day grid
 // ─────────────────────────────────────────────────────────────
-// Displays itinerary dates in a Sun–Sat calendar grid.
-// Clicking a trip date schedules the option to that day and
-// opens a time picker. Non-trip dates are shown but disabled.
-//
 // Props:
 //   tripStart     — "YYYY-MM-DD" itinerary start
 //   tripEnd       — "YYYY-MM-DD" itinerary end
@@ -21,34 +18,39 @@ import TimeSelectPopup, { to12h, formatTime12h } from "@/components/TimeSelectPo
 //   onTimeChange  — (start24, end24) => void
 // ─────────────────────────────────────────────────────────────
 
-const DAY_LABELS = ["Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat"];
+const DAY_LABELS = ["S", "M", "T", "W", "T", "F", "S"];
 
 // Accent color maps
 const ACCENT = {
   orange: {
-    scheduled: "bg-orange-600 text-white shadow-sm",
-    hover: "hover:bg-orange-100 hover:text-orange-700",
-    header: "text-orange-600",
+    scheduled: "bg-orange-600 text-white shadow ring-1 ring-orange-700/20",
+    hover: "hover:bg-orange-50 hover:border-orange-300",
+    cell: "bg-white border-stone-200",
+    bar: "bg-orange-50 border-orange-200 text-orange-600",
   },
   yellow: {
-    scheduled: "bg-yellow-600 text-white shadow-sm",
-    hover: "hover:bg-yellow-100 hover:text-yellow-700",
-    header: "text-yellow-600",
+    scheduled: "bg-yellow-500 text-white shadow ring-1 ring-yellow-600/20",
+    hover: "hover:bg-yellow-50 hover:border-yellow-300",
+    cell: "bg-white border-stone-200",
+    bar: "bg-yellow-50 border-yellow-200 text-yellow-600",
   },
   emerald: {
-    scheduled: "bg-emerald-600 text-white shadow-sm",
-    hover: "hover:bg-emerald-100 hover:text-emerald-700",
-    header: "text-emerald-600",
+    scheduled: "bg-emerald-600 text-white shadow ring-1 ring-emerald-700/20",
+    hover: "hover:bg-emerald-50 hover:border-emerald-300",
+    cell: "bg-white border-stone-200",
+    bar: "bg-emerald-50 border-emerald-200 text-emerald-600",
   },
   violet: {
-    scheduled: "bg-violet-600 text-white shadow-sm",
-    hover: "hover:bg-violet-100 hover:text-violet-700",
-    header: "text-violet-600",
+    scheduled: "bg-violet-600 text-white shadow ring-1 ring-violet-700/20",
+    hover: "hover:bg-violet-50 hover:border-violet-300",
+    cell: "bg-white border-stone-200",
+    bar: "bg-violet-50 border-violet-200 text-violet-600",
   },
   sky: {
-    scheduled: "bg-sky-600 text-white shadow-sm",
-    hover: "hover:bg-sky-100 hover:text-sky-700",
-    header: "text-sky-600",
+    scheduled: "bg-sky-600 text-white shadow ring-1 ring-sky-700/20",
+    hover: "hover:bg-sky-50 hover:border-sky-300",
+    cell: "bg-white border-stone-200",
+    bar: "bg-sky-50 border-sky-200 text-sky-600",
   },
 };
 
@@ -68,7 +70,7 @@ export default function MiniWeekCalendar({
 
   const accent = ACCENT[accentColor] || ACCENT.orange;
 
-  // Build the set of trip dates (YYYY-MM-DD strings)
+  // Build the set of trip dates
   const tripDateSet = new Set();
   const tripDatesArr = [];
   {
@@ -83,16 +85,15 @@ export default function MiniWeekCalendar({
 
   if (tripDatesArr.length === 0) return null;
 
-  // Build calendar grid: start on the Sunday of the first trip week,
-  // end on the Saturday of the last trip week
+  // Build calendar grid
   const firstDate = tripDatesArr[0];
   const lastDate = tripDatesArr[tripDatesArr.length - 1];
 
   const gridStart = new Date(firstDate);
-  gridStart.setDate(gridStart.getDate() - gridStart.getDay()); // back to Sunday
+  gridStart.setDate(gridStart.getDate() - gridStart.getDay());
 
   const gridEnd = new Date(lastDate);
-  gridEnd.setDate(gridEnd.getDate() + (6 - gridEnd.getDay())); // forward to Saturday
+  gridEnd.setDate(gridEnd.getDate() + (6 - gridEnd.getDay()));
 
   const gridDates = [];
   for (let d = new Date(gridStart); d <= gridEnd; d.setDate(d.getDate() + 1)) {
@@ -106,72 +107,59 @@ export default function MiniWeekCalendar({
   }
 
   function handleDayClick(dateStr) {
-    const isScheduled = scheduledDate === dateStr;
-    if (isScheduled) {
-      // Already scheduled — open time popup
+    if (scheduledDate === dateStr) {
       setTimePopupDate(dateStr);
     } else {
-      // Schedule to this day, open popup
       onSchedule(dateStr);
       setTimePopupDate(dateStr);
     }
   }
 
   return (
-    <div className="mb-4 relative">
-      <div className="text-xs text-slate-400 uppercase tracking-wide mb-2">Add to itinerary</div>
-      <div className="border border-slate-200 rounded-lg bg-white">
-        {/* Day-of-week header */}
-        <div className="grid grid-cols-7 border-b border-slate-200">
-          {DAY_LABELS.map((d, i) => (
-            <div key={d} className={`text-center text-[10px] font-semibold text-slate-400 uppercase tracking-wide py-1.5 ${i < 6 ? "border-r border-slate-200" : ""}`}>
-              {d}
-            </div>
-          ))}
-        </div>
+    <div className="mb-4 relative max-w-[264px]">
+      <div className={`${LABEL} mb-1.5`}>Add to itinerary</div>
 
-        {/* Week rows */}
-        {weeks.map((week, wi) => (
-          <div key={wi} className="grid grid-cols-7 border-b border-slate-200 last:border-b-0">
-            {week.map((d, di) => {
-              const dateStr = d.toISOString().split("T")[0];
-              const isTripDate = tripDateSet.has(dateStr);
-              const isScheduled = scheduledDate === dateStr;
-              const dayNum = d.getDate();
-              const borderR = di < 6 ? "border-r border-slate-200" : "";
-
-              if (!isTripDate) {
-                return (
-                  <div key={dateStr} className={`text-center py-1.5 text-[11px] text-slate-200 select-none ${borderR}`}>
-                    {dayNum}
-                  </div>
-                );
-              }
-
-              return (
-                <div key={dateStr} className={`text-center ${borderR}`}>
-                  <button
-                    onClick={() => handleDayClick(dateStr)}
-                    className={`w-full py-1.5 text-[11px] font-medium transition-all rounded-none ${
-                      isScheduled
-                        ? accent.scheduled
-                        : `text-slate-700 ${accent.hover}`
-                    }`}
-                    title={d.toLocaleDateString("en-US", { weekday: "long", month: "long", day: "numeric" })}
-                  >
-                    {dayNum}
-                    {isScheduled && startTime && (
-                      <div className="text-[8px] opacity-80 leading-tight">{formatTime12h(startTime.slice(0, 5))}</div>
-                    )}
-                  </button>
-                </div>
-              );
-            })}
+      {/* Weekday labels — single pill-shaped bar */}
+      <div className={`grid grid-cols-7 rounded-full border px-1.5 py-1 mb-1.5 ${accent.bar}`}>
+        {DAY_LABELS.map((d, i) => (
+          <div key={i} className="text-center text-[10px] font-bold uppercase leading-tight">
+            {d}
           </div>
         ))}
       </div>
 
-      {/* Time popup — rendered outside the calendar grid so it's not clipped */}
+      {/* Bento grid */}
+      {weeks.map((week, wi) => (
+        <div key={wi} className="grid grid-cols-7 gap-1.5 mb-1.5">
+          {week.map((d) => {
+            const dateStr = d.toISOString().split("T")[0];
+            const isTripDate = tripDateSet.has(dateStr);
+            const isScheduled = scheduledDate === dateStr;
+            const dayNum = d.getDate();
+
+            if (!isTripDate) {
+              return <div key={dateStr} className="w-[31px] h-[31px]" />;
+            }
+
+            return (
+              <button
+                key={dateStr}
+                onClick={() => handleDayClick(dateStr)}
+                className={`w-[31px] h-[31px] rounded-md border shadow-sm flex items-center justify-center transition-all duration-150 cursor-pointer ${
+                  isScheduled
+                    ? accent.scheduled
+                    : `${accent.cell} text-stone-600 ${accent.hover}`
+                }`}
+                title={d.toLocaleDateString("en-US", { weekday: "long", month: "long", day: "numeric" })}
+              >
+                <span className="text-[11px] font-semibold leading-none">{dayNum}</span>
+              </button>
+            );
+          })}
+        </div>
+      ))}
+
+      {/* Time popup */}
       {timePopupDate && (
         <div className="relative z-50" style={{ height: 0 }}>
           <TimeSelectPopup
@@ -196,14 +184,14 @@ export default function MiniWeekCalendar({
         </div>
       )}
 
-      {/* Remove from itinerary — below calendar */}
+      {/* Remove from itinerary */}
       {scheduledDate && (
         <button
           onClick={() => {
             onSchedule(null);
             if (onTimeChange) onTimeChange(null, null);
           }}
-          className="mt-2 px-3 py-1.5 rounded-lg text-xs font-medium bg-red-50 text-red-600 hover:bg-red-100 transition-colors"
+          className="mt-0.5 px-2 py-1 rounded-md text-xs font-medium bg-red-50 text-red-600 hover:bg-red-100 transition-colors"
         >
           Remove from itinerary
         </button>

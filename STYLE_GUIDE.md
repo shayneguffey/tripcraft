@@ -22,7 +22,7 @@ TripCraft's visual identity draws from **vintage WPA and Art Deco travel posters
 ### Primary Accent
 | Token | Value | Use |
 |-------|-------|-----|
-| Terracotta | `#da7b4a` | Primary buttons, CTA, active accents, loading spinners |
+| Terracotta | `#da7b4a` | Primary buttons, CTA, active accents, loading spinners, route view day selection, map route lines |
 | Terracotta Dark | `#b5552a` | Hover state of primary buttons, icon hover accents |
 
 ### Status Colors
@@ -346,6 +346,26 @@ Subtle glow ring around the globe: color `0xd4c5a8` (warm tan), opacity `0.12`.
 ### Camera
 - Zoom range: `1.5` (close) to `6` (far), default `3`
 - Auto-rotation: `globe.rotation.y += 0.0002` per frame (pauses during interaction)
+
+---
+
+## Detail Pane Labels
+
+All uppercase field labels in option detail panels (e.g. "Address", "Duration", "Notes", "Add to itinerary") use a shared style token defined in **`src/lib/detailPaneStyles.js`**. Import `LABEL`, `LABEL_MB1`, or `LABEL_MB2` from this file — never hardcode label styles in individual components.
+
+| Token | Classes | Use |
+|-------|---------|-----|
+| `LABEL` | `text-xs text-slate-400 uppercase tracking-wide` | Inline field labels (span inside a stat row) |
+| `LABEL_MB1` | `LABEL` + `mb-1` | Section heading with small bottom margin |
+| `LABEL_MB2` | `LABEL` + `mb-2` | Section heading with larger bottom margin |
+
+To change every label across all modules, edit the token values in `detailPaneStyles.js`.
+
+---
+
+## Route View Accent
+
+The map route view uses **Terracotta (`#da7b4a`)** as the universal accent color for selected day highlights, route lines, numbered step pins, and the "All Days" button. Do not use per-day color cycling — all days share the same accent to maintain visual consistency with the rest of the app.
 
 ---
 

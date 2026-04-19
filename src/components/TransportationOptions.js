@@ -6,6 +6,7 @@ import InlineConfirm from "@/components/InlineConfirm";
 import TimeSelectPopup, { to12h, formatTime12h } from "@/components/TimeSelectPopup";
 import SourceThumbnails from "@/components/SourceThumbnails";
 import EditableNotes from "@/components/EditableNotes";
+import { LABEL, LABEL_MB1, LABEL_MB2 } from "@/lib/detailPaneStyles";
 
 // ── Category metadata ──
 const CATEGORIES = {
@@ -284,19 +285,19 @@ function OptionDetail({ opt, tripStart, tripEnd, onToggleSelected, onTimeChange,
       {/* Stats row */}
       <div className="flex gap-4 mb-4 text-sm text-slate-600 flex-wrap">
         {opt.vehicle_type && (
-          <div><span className="text-xs text-slate-400 uppercase tracking-wide">Vehicle/Class</span><div className="font-medium">{opt.vehicle_type}{opt.class_type ? ` (${opt.class_type})` : ""}</div></div>
+          <div><span className={LABEL}>Vehicle/Class</span><div className="font-medium">{opt.vehicle_type}{opt.class_type ? ` (${opt.class_type})` : ""}</div></div>
         )}
         {opt.class_type && !opt.vehicle_type && (
-          <div><span className="text-xs text-slate-400 uppercase tracking-wide">Class</span><div className="font-medium">{opt.class_type}</div></div>
+          <div><span className={LABEL}>Class</span><div className="font-medium">{opt.class_type}</div></div>
         )}
         {opt.duration_minutes && opt.category !== "car_rental" && (
-          <div><span className="text-xs text-slate-400 uppercase tracking-wide">Duration</span><div className="font-medium">{formatDuration(opt.duration_minutes)}</div></div>
+          <div><span className={LABEL}>Duration</span><div className="font-medium">{formatDuration(opt.duration_minutes)}</div></div>
         )}
         {opt.passengers && (
-          <div><span className="text-xs text-slate-400 uppercase tracking-wide">Passengers</span><div className="font-medium">{opt.passengers}</div></div>
+          <div><span className={LABEL}>Passengers</span><div className="font-medium">{opt.passengers}</div></div>
         )}
         {opt.service_name && (
-          <div><span className="text-xs text-slate-400 uppercase tracking-wide">Service</span><div className="font-medium">{opt.service_name}</div></div>
+          <div><span className={LABEL}>Service</span><div className="font-medium">{opt.service_name}</div></div>
         )}
       </div>
 
@@ -316,7 +317,7 @@ function OptionDetail({ opt, tripStart, tripEnd, onToggleSelected, onTimeChange,
             <div className="flex gap-6 mb-3">
               {(opt.pickup_location || opt.departure_date) && (
                 <div>
-                  <div className="text-xs text-slate-400 uppercase tracking-wide mb-1">Pick Up</div>
+                  <div className={LABEL_MB1}>Pick Up</div>
                   {opt.pickup_location && <div className="text-sm font-medium text-slate-700">{opt.pickup_location}</div>}
                   {opt.departure_date && (
                     <div className="text-sm text-slate-600">
@@ -328,7 +329,7 @@ function OptionDetail({ opt, tripStart, tripEnd, onToggleSelected, onTimeChange,
               )}
               {(opt.dropoff_location || opt.arrival_date) && (
                 <div>
-                  <div className="text-xs text-slate-400 uppercase tracking-wide mb-1">Drop Off</div>
+                  <div className={LABEL_MB1}>Drop Off</div>
                   {opt.dropoff_location && <div className="text-sm font-medium text-slate-700">{opt.dropoff_location}</div>}
                   {opt.arrival_date && (
                     <div className="text-sm text-slate-600">
@@ -342,7 +343,7 @@ function OptionDetail({ opt, tripStart, tripEnd, onToggleSelected, onTimeChange,
           )}
 
           {/* Rental extras */}
-          <div className="text-xs text-slate-400 uppercase tracking-wide mb-2">Rental Details</div>
+          <div className={LABEL_MB2}>Rental Details</div>
           <div className="flex flex-wrap gap-2">
             {opt.insurance_included && (
               <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-emerald-100 text-emerald-800">

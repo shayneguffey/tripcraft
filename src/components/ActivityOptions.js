@@ -8,6 +8,7 @@ import { formatTime12h } from "@/components/TimeSelectPopup";
 import SourceThumbnails from "@/components/SourceThumbnails";
 import MiniWeekCalendar from "@/components/MiniWeekCalendar";
 import EditableNotes from "@/components/EditableNotes";
+import { LABEL } from "@/lib/detailPaneStyles";
 
 // ── Category metadata ──
 const CATEGORIES = {
@@ -258,13 +259,13 @@ function OptionDetail({ opt, tripStart, tripEnd, onToggleSelected, onSchedule, o
       {/* Stats row */}
       <div className="flex gap-4 mb-4 text-sm text-slate-600">
         {opt.duration_minutes && (
-          <div><span className="text-xs text-slate-400 uppercase tracking-wide">Duration</span><div className="font-medium">{formatDuration(opt.duration_minutes)}</div></div>
+          <div><span className={LABEL}>Duration</span><div className="font-medium">{formatDuration(opt.duration_minutes)}</div></div>
         )}
         {opt.start_time && (
-          <div><span className="text-xs text-slate-400 uppercase tracking-wide">Start</span><div className="font-medium">{formatTime12h(opt.start_time.slice(0, 5))}</div></div>
+          <div><span className={LABEL}>Start</span><div className="font-medium">{formatTime12h(opt.start_time.slice(0, 5))}</div></div>
         )}
         {opt.location_name && (
-          <div><span className="text-xs text-slate-400 uppercase tracking-wide">Location</span><div className="font-medium">{opt.location_name}</div></div>
+          <div><span className={LABEL}>Location</span><div className="font-medium">{opt.location_name}</div></div>
         )}
       </div>
 

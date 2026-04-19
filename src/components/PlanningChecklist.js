@@ -7,6 +7,7 @@ export default function PlanningChecklist({ tripId }) {
   const [items, setItems] = useState([]);
   const [newItemText, setNewItemText] = useState("");
   const [loading, setLoading] = useState(true);
+  const [addError, setAddError] = useState(null);
   const inputRef = useRef(null);
 
   const loadItems = useCallback(async () => {
@@ -24,23 +25,38 @@ export default function PlanningChecklist({ tripId }) {
   async function addItem(e) {
     e.preventDefault();
     if (!newItemText.trim()) return;
+    setAddError(null);
 
-    const { data: { user } } = await supabase.auth.getUser();
-    const nextOrder = items.length > 0 ? Math.max(...items.map((i) => i.sort_order || 0)) + 1 : 0;
+    try {
+      const { data: { user } } = await supabase.auth.getUser();
+      if (!user) {
+        setAddError("Not signed in");
+        return;
+      }
 
-    const { error } = await supabase.from("planning_checklist").insert({
-      trip_id: tripId,
-      user_id: user.id,
-      text: newItemText.trim(),
-      is_checked: false,
-      sort_order: nextOrder,
-    });
+      const nextOrder = items.length > 0 ? Math.max(...items.map((i) => i.sort_order || 0)) + 1 : 0;
 
-    if (!error) {
+      const { error } = await supabase.from("planning_checklist").insert({
+        trip_id: tripId,
+        user_id: user.id,
+        text: newItemText.trim(),
+        is_checked: false,
+        sort_order: nextOrder,
+      });
+
+      if (error) {
+        console.error("Failed to add checklist item:", error);
+        setAddError(error.message);
+        return;
+      }
+
       setNewItemText("");
       loadItems();
       // Keep focus on input for rapid entry
       setTimeout(() => inputRef.current?.focus(), 50);
+    } catch (err) {
+      console.error("Unexpected error adding checklist item:", err);
+      setAddError(err.message || "Something went wrong");
     }
   }
 
@@ -62,19 +78,6 @@ export default function PlanningChecklist({ tripId }) {
 
   return (
     <div className="mb-6">
-      {/* Header */}
-      <div className="flex items-center justify-between mb-3">
-        <h2 className="text-lg font-bold text-slate-800 flex items-center gap-2">
-          <svg className="w-5 h-5 text-amber-500" fill="none" stroke="currentColor" viewBox="0 0 24 24" strokeWidth={2}>
-            <path strokeLinecap="round" strokeLinejoin="round" d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2m-6 9l2 2 4-4" />
-          </svg>
-          Planning Checklist
-        </h2>
-        {totalCount > 0 && (
-          <span className="text-xs text-slate-400">{checkedCount}/{totalCount} done</span>
-        )}
-      </div>
-
       <div className="bg-white rounded-xl border border-amber-100 shadow-sm overflow-hidden">
         {/* Progress bar */}
         {totalCount > 0 && (
@@ -129,6 +132,13 @@ export default function PlanningChecklist({ tripId }) {
           ))}
         </div>
 
+        {/* Error message */}
+        {addError && (
+          <div className="px-4 py-2 text-xs text-red-600 bg-red-50 border-t border-red-100">
+            Error: {addError}
+          </div>
+        )}
+
         {/* Add new item */}
         <form onSubmit={addItem} className="flex items-center gap-2 px-4 py-3 border-t border-slate-100">
           <svg className="w-4 h-4 text-slate-300 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24" strokeWidth={2}>
@@ -140,7 +150,7 @@ export default function PlanningChecklist({ tripId }) {
             value={newItemText}
             onChange={(e) => setNewItemText(e.target.value)}
             placeholder="Add a task... (e.g. Book airport transfer, Get travel insurance)"
-            className="flex-1 text-sm bg-transparent outline-none placeholder:text-slate-300 text-slate-700"
+            className="flex-1 text-sm bg-white text-slate-700 placeholder:text-slate-300 px-3 py-2 border border-stone-300 rounded-lg outline-none focus:ring-2 focus:ring-[#da7b4a]/50 focus:border-transparent transition-all"
           />
           {newItemText.trim() && (
             <button

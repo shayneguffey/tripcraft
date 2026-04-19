@@ -6,6 +6,7 @@ import InlineConfirm from "@/components/InlineConfirm";
 import SourceThumbnails from "@/components/SourceThumbnails";
 import MiniWeekCalendar from "@/components/MiniWeekCalendar";
 import EditableNotes from "@/components/EditableNotes";
+import { LABEL, LABEL_MB1 } from "@/lib/detailPaneStyles";
 
 // ── Cuisine type metadata ──
 const CUISINES = {
@@ -271,10 +272,10 @@ function OptionDetail({ opt, tripStart, tripEnd, onToggleSelected, onSchedule, o
       {/* Stats row */}
       <div className="flex gap-4 mb-4 text-sm text-slate-600 flex-wrap">
         {opt.address && (
-          <div><span className="text-xs text-slate-400 uppercase tracking-wide">Address</span><div className="font-medium">{opt.address}</div></div>
+          <div><span className={LABEL}>Address</span><div className="font-medium">{opt.address}</div></div>
         )}
         {opt.hours && (
-          <div><span className="text-xs text-slate-400 uppercase tracking-wide">Hours</span><div className="font-medium">{opt.hours}</div></div>
+          <div><span className={LABEL}>Hours</span><div className="font-medium">{opt.hours}</div></div>
         )}
       </div>
 
@@ -288,7 +289,7 @@ function OptionDetail({ opt, tripStart, tripEnd, onToggleSelected, onSchedule, o
       {/* Known for */}
       {opt.known_for && (
         <div className="mb-4">
-          <div className="text-xs text-slate-400 uppercase tracking-wide mb-1">Known for</div>
+          <div className={LABEL_MB1}>Known for</div>
           <p className="text-sm text-slate-700">{opt.known_for}</p>
         </div>
       )}
@@ -296,7 +297,7 @@ function OptionDetail({ opt, tripStart, tripEnd, onToggleSelected, onSchedule, o
       {/* Dietary options */}
       {opt.dietary_options && (
         <div className="mb-4">
-          <div className="text-xs text-slate-400 uppercase tracking-wide mb-1">Dietary options</div>
+          <div className={LABEL_MB1}>Dietary options</div>
           <div className="flex flex-wrap gap-1">
             {opt.dietary_options.split(",").map((option, i) => (
               <span key={i} className="px-2 py-1 rounded text-xs bg-amber-50 text-amber-700 font-medium">

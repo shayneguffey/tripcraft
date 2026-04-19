@@ -5,6 +5,7 @@ import { supabase } from "@/lib/supabase";
 import InlineConfirm from "@/components/InlineConfirm";
 import SourceThumbnails from "@/components/SourceThumbnails";
 import EditableNotes from "@/components/EditableNotes";
+import { LABEL, LABEL_MB1, LABEL_MB2 } from "@/lib/detailPaneStyles";
 
 // ── Category metadata ──
 const CATEGORIES = {
@@ -142,7 +143,7 @@ export default function AccommodationOptions({ tripId, tripStart, tripEnd, onAcc
                 onToggleSelected={() => handleToggleSelected(selected.id)}
                 onNotesChange={(notes) => handleNotesChange(selected.id, notes)} />
             ) : (
-              <p className="text-slate-400 text-sm italic">Select an accommodation to view details</p>
+              <p className="text-slate-400 text-sm italic">Select a stay to view details</p>
             )}
           </div>
         </div>
@@ -154,10 +155,10 @@ export default function AccommodationOptions({ tripId, tripStart, tripEnd, onAcc
           <svg className="w-10 h-10 text-sky-300 mx-auto mb-3" fill="none" stroke="currentColor" viewBox="0 0 24 24" strokeWidth={1.5}>
             <path strokeLinecap="round" strokeLinejoin="round" d="M19 21H5a2 2 0 01-2-2V5a2 2 0 012-2h14a2 2 0 012 2v14a2 2 0 01-2 2z" />
           </svg>
-          <p className="text-slate-500 text-sm mb-1">No accommodation options yet</p>
-          <p className="text-slate-400 text-xs mb-4">Add hotels, Airbnbs, and other accommodations to compare</p>
+          <p className="text-slate-500 text-sm mb-1">No stay options yet</p>
+          <p className="text-slate-400 text-xs mb-4">Add hotels, Airbnbs, and other stays to compare</p>
           <button onClick={() => setShowModal(true)} className="px-4 py-2 bg-sky-600 text-white text-sm font-semibold rounded-lg hover:bg-sky-700">
-            + Add Accommodation Option
+            + Add Stay Option
           </button>
         </div>
       )}
@@ -200,7 +201,7 @@ function OptionTab({ opt, index, isSelected, onClick, onDelete, confirmDelete, o
           </svg>
         </button>
       )}
-      <InlineConfirm open={confirmDelete} message="Delete this accommodation?" onConfirm={onConfirmDelete} onCancel={onCancelDelete} />
+      <InlineConfirm open={confirmDelete} message="Delete this stay?" onConfirm={onConfirmDelete} onCancel={onCancelDelete} />
       <div className="font-semibold text-sm text-slate-800 line-clamp-2">{opt.name || "Untitled"}</div>
       {(opt.address || opt.location_name) && <div className="text-xs text-slate-500 truncate">{opt.address || opt.location_name}</div>}
       {(opt.check_in_date || opt.check_out_date) && (
@@ -261,14 +262,14 @@ function OptionDetail({ opt, tripStart, tripEnd, onToggleSelected, onNotesChange
       {/* Stats row */}
       <div className="flex gap-4 mb-4 text-sm text-slate-600 flex-wrap">
         {opt.address && (
-          <div><span className="text-xs text-slate-400 uppercase tracking-wide">Address</span><div className="font-medium">{opt.address}</div></div>
+          <div><span className={LABEL}>Address</span><div className="font-medium">{opt.address}</div></div>
         )}
         {opt.room_type && (
-          <div><span className="text-xs text-slate-400 uppercase tracking-wide">Room Type</span><div className="font-medium">{opt.room_type}</div></div>
+          <div><span className={LABEL}>Room Type</span><div className="font-medium">{opt.room_type}</div></div>
         )}
         {(opt.bedrooms || opt.bathrooms) && (
           <div>
-            <span className="text-xs text-slate-400 uppercase tracking-wide">Beds & Bath</span>
+            <span className={LABEL}>Beds & Bath</span>
             <div className="font-medium">
               {opt.bedrooms && <span>{opt.bedrooms} bed{opt.bedrooms > 1 ? 's' : ''}</span>}
               {opt.bedrooms && opt.bathrooms && <span> · </span>}
@@ -277,7 +278,7 @@ function OptionDetail({ opt, tripStart, tripEnd, onToggleSelected, onNotesChange
           </div>
         )}
         {opt.max_guests && (
-          <div><span className="text-xs text-slate-400 uppercase tracking-wide">Guests</span><div className="font-medium">{opt.max_guests} max</div></div>
+          <div><span className={LABEL}>Guests</span><div className="font-medium">{opt.max_guests} max</div></div>
         )}
       </div>
 
@@ -291,7 +292,7 @@ function OptionDetail({ opt, tripStart, tripEnd, onToggleSelected, onNotesChange
       {/* Amenities */}
       {opt.amenities && (
         <div className="mb-4">
-          <div className="text-xs text-slate-400 uppercase tracking-wide mb-2">Amenities</div>
+          <div className={LABEL_MB2}>Amenities</div>
           <div className="flex flex-wrap gap-1">
             {opt.amenities.split(",").map((amenity, i) => (
               <span key={i} className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-sky-100 text-sky-800">
@@ -305,7 +306,7 @@ function OptionDetail({ opt, tripStart, tripEnd, onToggleSelected, onNotesChange
       {/* Cancellation policy */}
       {opt.cancellation_policy && (
         <div className="mb-4">
-          <div className="text-xs text-slate-400 uppercase tracking-wide mb-1">Cancellation Policy</div>
+          <div className={LABEL_MB1}>Cancellation Policy</div>
           <p className="text-sm text-slate-600">{opt.cancellation_policy}</p>
         </div>
       )}
@@ -313,7 +314,7 @@ function OptionDetail({ opt, tripStart, tripEnd, onToggleSelected, onNotesChange
       {/* Check-in/out dates */}
       {(opt.check_in_date || opt.check_out_date) && (
         <div className="mb-4">
-          <div className="text-xs text-slate-400 uppercase tracking-wide mb-2">Dates</div>
+          <div className={LABEL_MB2}>Dates</div>
           <div className="flex gap-4 text-sm">
             {opt.check_in_date && (
               <div>
@@ -455,7 +456,7 @@ function AddAccommodationModal({ tripId, tripStart, tripEnd, onClose, onSave }) 
   }
 
   async function handleSave() {
-    if (!name.trim()) { alert("Please enter an accommodation name"); return; }
+    if (!name.trim()) { alert("Please enter a name for this stay"); return; }
     setSaving(true);
     try {
       const { data: { user } } = await supabase.auth.getUser();
@@ -506,13 +507,13 @@ function AddAccommodationModal({ tripId, tripStart, tripEnd, onClose, onSave }) 
         onClick={(e) => e.stopPropagation()} onPaste={handlePaste}>
         <div className="p-6">
           <div className="flex items-center justify-between mb-5">
-            <h3 className="text-lg font-bold text-slate-800">Add Accommodation Option</h3>
+            <h3 className="text-lg font-bold text-slate-800">Add Stay Option</h3>
             <button onClick={onClose} className="text-slate-400 hover:text-slate-600 text-xl">×</button>
           </div>
 
           {/* Name */}
           <div className="mb-4">
-            <label className="block text-sm font-medium text-slate-700 mb-1">Accommodation Name *</label>
+            <label className="block text-sm font-medium text-slate-700 mb-1">Stay Name *</label>
             <input type="text" value={name} onChange={(e) => setName(e.target.value)}
               placeholder='e.g. "Angsana Laguna Phuket Resort"'
               className="w-full px-3 py-2 border border-slate-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-sky-500 text-sm" />
@@ -521,7 +522,7 @@ function AddAccommodationModal({ tripId, tripStart, tripEnd, onClose, onSave }) 
           {/* Paste URL */}
           <div className="mb-4">
             <label className="block text-sm font-medium text-slate-700 mb-1">Paste URL</label>
-            <p className="text-xs text-slate-400 mb-1">Paste a Booking.com, Airbnb, or any accommodation URL</p>
+            <p className="text-xs text-slate-400 mb-1">Paste a Booking.com, Airbnb, or any lodging URL</p>
             <textarea value={pasteInput} onChange={(e) => handlePasteChange(e.target.value)} rows={2}
               placeholder="https://www.booking.com/hotel/..."
               className="w-full px-3 py-2 border border-slate-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-sky-500 text-sm font-mono" />
@@ -631,7 +632,7 @@ function AddAccommodationModal({ tripId, tripStart, tripEnd, onClose, onSave }) 
           <div className="mb-4">
             <label className="block text-sm font-medium text-slate-700 mb-1">Notes</label>
             <textarea value={notes} onChange={(e) => setNotes(e.target.value)} rows={2}
-              placeholder="Any notes about this accommodation..."
+              placeholder="Any notes about this stay..."
               className="w-full px-3 py-2 border border-slate-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-sky-500 text-sm" />
           </div>
 

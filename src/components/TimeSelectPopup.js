@@ -1,7 +1,7 @@
 "use client";
-import { useState, useEffect, useRef } from "react";
+import { useState, useEffect, useRef, useCallback } from "react";
 
-// ─── Helpers ───────────────────────────────────────────────
+// ─── Helpers (unchanged API) ──────────────────────────────
 export function to12h(timeStr) {
   if (!timeStr) return { h: "", m: "00", period: "AM" };
   const [hh, mm] = timeStr.split(":");
@@ -30,61 +30,233 @@ export function formatTime12h(time24) {
   return `${h}:${mm} ${period}`;
 }
 
-// ─── TimeGrid: single time section with pill buttons ───────
-function TimeGrid({ label, value, onChange }) {
-  const hours = [1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12];
-  const minutes = ["00", "15", "30", "45"];
+// ─── Clock Face Constants ─────────────────────────────────
+const CLOCK_SIZE = 200;
+const CLOCK_R = CLOCK_SIZE / 2;
+const NUM_R = 72; // radius for number positions
+const HAND_LEN = 68;
+const DOT_R = 16; // selection dot radius
 
-  function preview() {
-    if (!value || !value.h) return "—";
-    return `${value.h}:${value.m || "00"} ${value.period || "AM"}`;
+const HOURS = [12, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11];
+const MINUTES = [0, 5, 10, 15, 20, 25, 30, 35, 40, 45, 50, 55];
+
+function angleForHour(h) {
+  return ((h % 12) / 12) * 360 - 90;
+}
+function angleForMinute(m) {
+  return (m / 60) * 360 - 90;
+}
+function toRad(deg) {
+  return (deg * Math.PI) / 180;
+}
+
+// ─── ClockFace Component ──────────────────────────────────
+function ClockFace({ mode, value, onChange }) {
+  const svgRef = useRef(null);
+  const dragging = useRef(false);
+
+  const items = mode === "hour" ? HOURS : MINUTES;
+  const angleFn = mode === "hour" ? angleForHour : angleForMinute;
+
+  // Current selection angle
+  const selAngle =
+    mode === "hour"
+      ? angleForHour(parseInt(value) || 12)
+      : angleForMinute(parseInt(value) || 0);
+
+  const handX = CLOCK_R + Math.cos(toRad(selAngle)) * HAND_LEN;
+  const handY = CLOCK_R + Math.sin(toRad(selAngle)) * HAND_LEN;
+
+  const getValueFromEvent = useCallback(
+    (e) => {
+      if (!svgRef.current) return null;
+      const rect = svgRef.current.getBoundingClientRect();
+      const x = (e.clientX || e.touches?.[0]?.clientX) - rect.left - CLOCK_R;
+      const y = (e.clientY || e.touches?.[0]?.clientY) - rect.top - CLOCK_R;
+      let angle = Math.atan2(y, x) * (180 / Math.PI) + 90;
+      if (angle < 0) angle += 360;
+
+      if (mode === "hour") {
+        let h = Math.round(angle / 30);
+        if (h === 0) h = 12;
+        return h;
+      } else {
+        let m = Math.round(angle / 6);
+        if (m === 60) m = 0;
+        // Snap to nearest 5
+        m = Math.round(m / 5) * 5;
+        if (m === 60) m = 0;
+        return m;
+      }
+    },
+    [mode]
+  );
+
+  const handlePointerDown = useCallback(
+    (e) => {
+      e.preventDefault();
+      dragging.current = true;
+      const val = getValueFromEvent(e);
+      if (val !== null) onChange(val);
+    },
+    [getValueFromEvent, onChange]
+  );
+
+  const handlePointerMove = useCallback(
+    (e) => {
+      if (!dragging.current) return;
+      e.preventDefault();
+      const val = getValueFromEvent(e);
+      if (val !== null) onChange(val);
+    },
+    [getValueFromEvent, onChange]
+  );
+
+  const handlePointerUp = useCallback(() => {
+    dragging.current = false;
+  }, []);
+
+  useEffect(() => {
+    document.addEventListener("mouseup", handlePointerUp);
+    document.addEventListener("touchend", handlePointerUp);
+    return () => {
+      document.removeEventListener("mouseup", handlePointerUp);
+      document.removeEventListener("touchend", handlePointerUp);
+    };
+  }, [handlePointerUp]);
+
+  return (
+    <svg
+      ref={svgRef}
+      width={CLOCK_SIZE}
+      height={CLOCK_SIZE}
+      className="select-none cursor-pointer"
+      style={{ touchAction: "none" }}
+      onMouseDown={handlePointerDown}
+      onMouseMove={handlePointerMove}
+      onTouchStart={handlePointerDown}
+      onTouchMove={handlePointerMove}
+    >
+      {/* Background circle */}
+      <circle cx={CLOCK_R} cy={CLOCK_R} r={CLOCK_R - 2} fill="#f5f0ea" stroke="none" />
+
+      {/* Hand line */}
+      <line
+        x1={CLOCK_R}
+        y1={CLOCK_R}
+        x2={handX}
+        y2={handY}
+        stroke="#da7b4a"
+        strokeWidth={2}
+        strokeLinecap="round"
+      />
+
+      {/* Center dot */}
+      <circle cx={CLOCK_R} cy={CLOCK_R} r={4} fill="#da7b4a" />
+
+      {/* Selection dot */}
+      <circle cx={handX} cy={handY} r={DOT_R} fill="#da7b4a" opacity={0.9} />
+
+      {/* Numbers */}
+      {items.map((item) => {
+        const angle = angleFn(item);
+        const x = CLOCK_R + Math.cos(toRad(angle)) * NUM_R;
+        const y = CLOCK_R + Math.sin(toRad(angle)) * NUM_R;
+
+        const isSelected =
+          mode === "hour"
+            ? parseInt(value) === item || (item === 12 && (!value || value === "0" || value === "12"))
+            : parseInt(value) === item;
+
+        return (
+          <text
+            key={item}
+            x={x}
+            y={y}
+            textAnchor="middle"
+            dominantBaseline="central"
+            fontSize={13}
+            fontWeight={isSelected ? 700 : 500}
+            fill={isSelected ? "#fff" : "#57534e"}
+            className="pointer-events-none"
+          >
+            {mode === "minute" ? String(item).padStart(2, "0") : item}
+          </text>
+        );
+      })}
+    </svg>
+  );
+}
+
+// ─── Single Clock Section (Start or End time) ─────────────
+function ClockSection({ label, value, onChange, autoAdvance }) {
+  const [clockMode, setClockMode] = useState("hour"); // "hour" | "minute"
+
+  const h = value.h || "";
+  const m = value.m || "00";
+  const period = value.period || "AM";
+
+  function handleHourChange(hr) {
+    onChange({ ...value, h: String(hr), m: m, period });
+    // Auto-advance to minute after picking hour
+    if (autoAdvance) {
+      setTimeout(() => setClockMode("minute"), 250);
+    }
   }
+
+  function handleMinuteChange(min) {
+    onChange({ ...value, h: h || "12", m: String(min).padStart(2, "0"), period });
+  }
+
+  function togglePeriod(p) {
+    onChange({ ...value, h: h || "12", m: m, period: p });
+  }
+
+  // Reset to hour mode when label changes (switching between start/end)
+  useEffect(() => {
+    setClockMode("hour");
+  }, [label]);
 
   return (
     <div>
-      <div className="flex items-center justify-between mb-1.5">
-        <span className="text-[10px] font-semibold text-stone-400 uppercase tracking-wider">{label}</span>
-        <span className="text-sm font-bold text-stone-700">{preview()}</span>
+      {/* Label */}
+      <div className="text-[10px] font-semibold text-stone-400 uppercase tracking-wider mb-2">
+        {label}
       </div>
-      {/* Hour pills — 2 rows of 6 */}
-      <div className="grid grid-cols-6 gap-[3px] mb-1.5">
-        {hours.map((h) => (
-          <button
-            key={h}
-            type="button"
-            onClick={() => onChange({ ...value, h: String(h), m: value.m || "00", period: value.period || "AM" })}
-            className={`py-[5px] rounded-md text-xs font-medium transition-all ${
-              value.h === String(h)
-                ? "bg-[#da7b4a] text-white shadow-sm"
-                : "bg-stone-100 text-stone-600 hover:bg-stone-200"
-            }`}
-          >
-            {h}
-          </button>
-        ))}
-      </div>
-      {/* Minute pills + AM/PM toggle — single row */}
-      <div className="flex items-center gap-[3px]">
-        {minutes.map((m) => (
-          <button
-            key={m}
-            type="button"
-            onClick={() => onChange({ ...value, m, h: value.h || "12", period: value.period || "AM" })}
-            className={`px-[7px] py-[5px] rounded-md text-xs font-medium transition-all ${
-              value.m === m && value.h
-                ? "bg-[#da7b4a] text-white shadow-sm"
-                : "bg-stone-100 text-stone-600 hover:bg-stone-200"
-            }`}
-          >
-            :{m}
-          </button>
-        ))}
-        <div className="flex rounded-md overflow-hidden border border-stone-200 ml-auto">
+
+      {/* Digital display */}
+      <div className="flex items-center justify-center gap-1 mb-3">
+        <button
+          type="button"
+          onClick={() => setClockMode("hour")}
+          className={`text-2xl font-bold px-2 py-0.5 rounded-lg transition-colors ${
+            clockMode === "hour"
+              ? "bg-[#da7b4a]/15 text-[#da7b4a]"
+              : "text-stone-700 hover:bg-stone-100"
+          }`}
+        >
+          {h || "--"}
+        </button>
+        <span className="text-2xl font-bold text-stone-400">:</span>
+        <button
+          type="button"
+          onClick={() => setClockMode("minute")}
+          className={`text-2xl font-bold px-2 py-0.5 rounded-lg transition-colors ${
+            clockMode === "minute"
+              ? "bg-[#da7b4a]/15 text-[#da7b4a]"
+              : "text-stone-700 hover:bg-stone-100"
+          }`}
+        >
+          {m}
+        </button>
+
+        {/* AM/PM */}
+        <div className="flex flex-col ml-2 rounded-lg overflow-hidden border border-stone-200">
           <button
             type="button"
-            onClick={() => onChange({ ...value, period: "AM", h: value.h || "12", m: value.m || "00" })}
-            className={`px-[7px] py-[5px] text-[10px] font-bold transition-colors ${
-              value.period === "AM" && value.h
+            onClick={() => togglePeriod("AM")}
+            className={`px-2 py-[2px] text-[10px] font-bold transition-colors ${
+              period === "AM" && h
                 ? "bg-[#da7b4a] text-white"
                 : "bg-white text-stone-400 hover:text-stone-600"
             }`}
@@ -93,9 +265,9 @@ function TimeGrid({ label, value, onChange }) {
           </button>
           <button
             type="button"
-            onClick={() => onChange({ ...value, period: "PM", h: value.h || "12", m: value.m || "00" })}
-            className={`px-[7px] py-[5px] text-[10px] font-bold transition-colors ${
-              value.period === "PM" && value.h
+            onClick={() => togglePeriod("PM")}
+            className={`px-2 py-[2px] text-[10px] font-bold transition-colors border-t border-stone-200 ${
+              period === "PM" && h
                 ? "bg-[#da7b4a] text-white"
                 : "bg-white text-stone-400 hover:text-stone-600"
             }`}
@@ -104,19 +276,21 @@ function TimeGrid({ label, value, onChange }) {
           </button>
         </div>
       </div>
+
+      {/* Clock face */}
+      <div className="flex justify-center">
+        <ClockFace
+          mode={clockMode}
+          value={clockMode === "hour" ? h : m}
+          onChange={clockMode === "hour" ? handleHourChange : handleMinuteChange}
+        />
+      </div>
     </div>
   );
 }
 
 // ─── TimeSelectPopup: the unified time picker ──────────────
-// Props:
-//   startTime, endTime         — {h, m, period} objects
-//   onSave(start24h, end24h)   — called on Save or click-outside
-//   onClear()                  — called when Clear pressed
-//   onClose()                  — called to close without saving (Escape)
-//   onUnschedule()             — optional: unschedule from calendar day
-//   startLabel, endLabel       — "Start"/"End", "Departure"/"Arrival"
-//   showEndTime                — default true; false for single-time mode
+// Props API is identical to the previous version
 export default function TimeSelectPopup({
   startTime: initStart,
   endTime: initEnd,
@@ -130,6 +304,7 @@ export default function TimeSelectPopup({
 }) {
   const [startTime, setStartTime] = useState(initStart || { h: "", m: "00", period: "AM" });
   const [endTime, setEndTime] = useState(initEnd || { h: "", m: "00", period: "AM" });
+  const [activeSection, setActiveSection] = useState("start"); // "start" | "end"
   const ref = useRef(null);
 
   // Click outside → save and close
@@ -154,21 +329,60 @@ export default function TimeSelectPopup({
   return (
     <div
       ref={ref}
-      className="absolute left-0 top-full mt-1 z-50 bg-white rounded-xl shadow-xl border border-stone-200 p-3 space-y-2.5"
-      style={{ minWidth: 260, maxWidth: 280 }}
+      className="absolute left-0 top-full mt-1 z-50 bg-white rounded-xl shadow-xl border border-stone-200 overflow-hidden"
+      style={{ width: 252 }}
       onClick={(e) => e.stopPropagation()}
     >
-      <TimeGrid label={startLabel} value={startTime} onChange={setStartTime} />
-
+      {/* Section tabs (when showing both start and end) */}
       {showEndTime && (
-        <>
-          <div className="border-t border-stone-100" />
-          <TimeGrid label={endLabel} value={endTime} onChange={setEndTime} />
-        </>
+        <div className="flex border-b border-stone-100">
+          <button
+            type="button"
+            onClick={() => setActiveSection("start")}
+            className={`flex-1 py-2 text-xs font-semibold tracking-wide uppercase transition-colors ${
+              activeSection === "start"
+                ? "text-[#da7b4a] border-b-2 border-[#da7b4a]"
+                : "text-stone-400 hover:text-stone-600"
+            }`}
+          >
+            {startLabel}
+          </button>
+          <button
+            type="button"
+            onClick={() => setActiveSection("end")}
+            className={`flex-1 py-2 text-xs font-semibold tracking-wide uppercase transition-colors ${
+              activeSection === "end"
+                ? "text-[#da7b4a] border-b-2 border-[#da7b4a]"
+                : "text-stone-400 hover:text-stone-600"
+            }`}
+          >
+            {endLabel}
+          </button>
+        </div>
       )}
 
+      {/* Clock section */}
+      <div className="px-4 pt-3 pb-2">
+        {(!showEndTime || activeSection === "start") && (
+          <ClockSection
+            label={showEndTime ? "" : startLabel}
+            value={startTime}
+            onChange={setStartTime}
+            autoAdvance={true}
+          />
+        )}
+        {showEndTime && activeSection === "end" && (
+          <ClockSection
+            label=""
+            value={endTime}
+            onChange={setEndTime}
+            autoAdvance={true}
+          />
+        )}
+      </div>
+
       {/* Actions */}
-      <div className="flex items-center justify-between pt-1.5 border-t border-stone-100">
+      <div className="flex items-center justify-between px-4 py-2.5 border-t border-stone-100">
         <div className="flex gap-1">
           <button
             type="button"

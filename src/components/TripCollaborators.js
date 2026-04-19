@@ -104,19 +104,8 @@ export default function TripCollaborators({ tripId, tripTitle, userId, userEmail
 
   return (
     <div className="bg-white rounded-xl border border-violet-200 overflow-hidden">
-      {/* Header */}
-      <div className="px-5 py-4 bg-gradient-to-r from-violet-50 to-purple-50 border-b border-violet-100 flex items-center justify-between">
-        <div className="flex items-center gap-2">
-          <span className="text-lg">👥</span>
-          <h2 className="font-semibold text-violet-900">
-            Collaborators
-            {collaborators.filter((c) => c.status === "accepted").length > 0 && (
-              <span className="ml-2 text-sm font-normal text-violet-500">
-                ({collaborators.filter((c) => c.status === "accepted").length + 1} members)
-              </span>
-            )}
-          </h2>
-        </div>
+      {/* Action bar */}
+      <div className="px-5 py-2.5 flex justify-end border-b border-violet-100">
         <button
           onClick={() => setShowInvite(!showInvite)}
           className="text-sm bg-violet-600 text-white px-3 py-1.5 rounded-lg hover:bg-violet-700 transition-colors"

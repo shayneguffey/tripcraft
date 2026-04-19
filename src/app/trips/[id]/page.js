@@ -85,7 +85,7 @@ export default function TripDetailPage() {
   const [transportOptions, setTransportOptions] = useState([]);
   const [currentUser, setCurrentUser] = useState(null);
   const [activeItineraryTab, setActiveItineraryTab] = useState("flights");
-  const [expandedAccordions, setExpandedAccordions] = useState({});
+  const [activeLowerTab, setActiveLowerTab] = useState("map");
   const [eventPopup, setEventPopup] = useState(null); // { type, data, dateKey, rect }
   const [hoveredDay, setHoveredDay] = useState(null);
   const [editingDayHeader, setEditingDayHeader] = useState(null);
@@ -742,6 +742,8 @@ export default function TripDetailPage() {
                     borderRight: isActive ? "1px solid #b5552a" : "1px solid rgba(180,165,140,0.3)",
                     borderBottom: isActive ? "2px solid transparent" : "2px solid rgba(180,165,140,0.3)",
                     marginBottom: -2,
+                    minWidth: "140px",
+                    maxWidth: "220px",
                   }}
                   onClick={() => switchItinerary(itin.id)}
                 >
@@ -761,12 +763,15 @@ export default function TripDetailPage() {
                     />
                   ) : (
                     <span
-                      onDoubleClick={(e) => {
-                        e.stopPropagation();
-                        setEditingItineraryTitle(itin.id);
-                        setItineraryTitleValue(itin.title);
+                      onClick={(e) => {
+                        if (isActive) {
+                          e.stopPropagation();
+                          setEditingItineraryTitle(itin.id);
+                          setItineraryTitleValue(itin.title);
+                        }
                       }}
-                      title="Double-click to rename"
+                      className={`uppercase line-clamp-2 ${isActive ? "cursor-text" : ""}`}
+                      title={isActive ? "Click to rename" : ""}
                     >
                       {itin.title}
                     </span>
@@ -810,30 +815,8 @@ export default function TripDetailPage() {
             {/* Itinerary Info Row */}
             <div className="px-6 py-3 border-b border-stone-200/60 bg-white normal-case">
               <div className="flex items-start gap-6">
-                {/* Left: Itinerary Name + Dates + Travelers */}
+                {/* Left: Dates + Travelers */}
                 <div className="flex-shrink-0 w-64">
-                  {/* Itinerary Name — inline editable, fixed container */}
-                  <div className="min-h-[32px]">
-                    {editingCalendarTitle ? (
-                      <input
-                        type="text"
-                        value={calendarTitleValue}
-                        onChange={(e) => setCalendarTitleValue(e.target.value)}
-                        onBlur={() => saveCalendarItineraryTitle()}
-                        onKeyDown={(e) => { if (e.key === "Enter") saveCalendarItineraryTitle(); if (e.key === "Escape") setEditingCalendarTitle(false); }}
-                        autoFocus
-                        className="text-lg font-bold text-stone-800 bg-white border border-stone-300 rounded-lg px-2 py-0.5 focus:outline-none focus:ring-2 focus:ring-inset focus:ring-[#da7b4a]/50 w-64 min-h-[32px]"
-                      />
-                    ) : (
-                      <div
-                        onClick={() => { setEditingCalendarTitle(true); setCalendarTitleValue(activeItinerary?.title || "Itinerary 1"); }}
-                        className="text-lg font-bold text-stone-800 uppercase cursor-text hover:text-[#da7b4a] transition-colors min-h-[32px] px-2 py-0.5 border border-transparent"
-                        title="Click to edit itinerary name"
-                      >
-                        {activeItinerary?.title || "Itinerary 1"}
-                      </div>
-                    )}
-                  </div>
                   {/* Date range — clickable to open date picker */}
                   <div className="relative mt-0.5 min-h-[16px]">
                     <div
@@ -890,7 +873,7 @@ export default function TripDetailPage() {
                 </div>
 
                 {/* Right: Description — inline editable, aligned with date range */}
-                <div className="flex-1 min-w-0 mt-[34px]">
+                <div className="flex-1 min-w-0">
                   {editingItineraryDesc ? (
                     <textarea
                       value={itineraryDescValue}
@@ -898,9 +881,9 @@ export default function TripDetailPage() {
                       onBlur={() => saveItineraryDescription()}
                       onKeyDown={(e) => { if (e.key === "Escape") setEditingItineraryDesc(false); }}
                       autoFocus
-                      rows={3}
+                      rows={1}
                       placeholder="Add a description for this itinerary..."
-                      className="w-full text-sm text-stone-600 bg-white border border-stone-300 rounded-lg px-2 py-1 focus:outline-none focus:ring-2 focus:ring-inset focus:ring-[#da7b4a]/50 resize-y min-h-[32px]"
+                      className="w-full text-sm text-stone-600 bg-white border border-stone-300 rounded-lg px-2 py-1 focus:outline-none focus:ring-2 focus:ring-inset focus:ring-[#da7b4a]/50 resize-none min-h-[32px] max-h-[32px] overflow-y-auto"
                     />
                   ) : (
                     <div
@@ -1141,7 +1124,7 @@ export default function TripDetailPage() {
           <div className="flex flex-wrap gap-1 mb-0">
             {[
               { key: "flights", label: "Flights", color: "#059669", icon: <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor" className="w-4 h-4"><path d="M3.105 2.288a.75.75 0 0 0-.826.95l1.414 4.926A1.5 1.5 0 0 0 5.135 9.25h6.115a.75.75 0 0 1 0 1.5H5.135a1.5 1.5 0 0 0-1.442 1.086l-1.414 4.926a.75.75 0 0 0 .826.95 28.897 28.897 0 0 0 15.293-7.154.75.75 0 0 0 0-1.115A28.897 28.897 0 0 0 3.105 2.289Z" /></svg> },
-              { key: "accommodations", label: "Accommodations", color: "#0284c7", icon: <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor" className="w-4 h-4"><path d="M.75 15.5a.75.75 0 0 0 1.5 0V13h16v2.5a.75.75 0 0 0 1.5 0v-6a.75.75 0 0 0-1.5 0V11H16V4.5A2.5 2.5 0 0 0 13.5 2h-7A2.5 2.5 0 0 0 4 4.5V11H2.25V9.5a.75.75 0 0 0-1.5 0v6ZM5.5 4.5a1 1 0 0 1 1-1h7a1 1 0 0 1 1 1V11h-9V4.5Z" /></svg> },
+              { key: "accommodations", label: "Stays", color: "#0284c7", icon: <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor" className="w-4 h-4"><path d="M.75 15.5a.75.75 0 0 0 1.5 0V13h16v2.5a.75.75 0 0 0 1.5 0v-6a.75.75 0 0 0-1.5 0V11H16V4.5A2.5 2.5 0 0 0 13.5 2h-7A2.5 2.5 0 0 0 4 4.5V11H2.25V9.5a.75.75 0 0 0-1.5 0v6ZM5.5 4.5a1 1 0 0 1 1-1h7a1 1 0 0 1 1 1V11h-9V4.5Z" /></svg> },
               { key: "activities", label: "Activities", color: "#ca8a04", icon: <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor" className="w-4 h-4"><path fillRule="evenodd" d="M8.157 2.176a1.5 1.5 0 0 0-1.147 0l-4.084 1.69A1.5 1.5 0 0 0 2 5.25v10.877a1.5 1.5 0 0 0 2.074 1.386l3.51-1.452 4.26 1.762a1.5 1.5 0 0 0 1.147 0l4.084-1.69A1.5 1.5 0 0 0 18 14.75V3.873a1.5 1.5 0 0 0-2.074-1.386l-3.51 1.452-4.26-1.762ZM7.58 5a.75.75 0 0 1 .75.75v6.5a.75.75 0 0 1-1.5 0v-6.5A.75.75 0 0 1 7.58 5Zm5.59 2a.75.75 0 0 1 .75.75v6.5a.75.75 0 0 1-1.5 0v-6.5a.75.75 0 0 1 .75-.75Z" clipRule="evenodd" /></svg> },
               { key: "dining", label: "Dining", color: "#ea580c", icon: <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor" className="w-4 h-4"><path strokeLinecap="round" strokeLinejoin="round" d="M12 8.25v-1.5m0 1.5c-1.355 0-2.697.056-4.024.166C6.845 8.51 6 9.473 6 10.608v2.513m6-4.871c1.355 0 2.697.056 4.024.166C17.155 8.51 18 9.473 18 10.608v2.513M15 8.25v-1.5m-6 1.5v-1.5m12 9.75-1.5.75a3.354 3.354 0 0 1-3 0 3.354 3.354 0 0 0-3 0 3.354 3.354 0 0 1-3 0 3.354 3.354 0 0 0-3 0 3.354 3.354 0 0 1-3 0L3 16.5m15-3.379a48.474 48.474 0 0 0-6-.371c-2.032 0-4.034.126-6 .371m12 0c.39.049.777.102 1.163.16 1.07.16 1.837 1.094 1.837 2.175v5.169c0 .621-.504 1.125-1.125 1.125H4.125A1.125 1.125 0 0 1 3 20.625v-5.17c0-1.08.768-2.014 1.837-2.174A47.78 47.78 0 0 1 6 13.12M12.265 3.11a.375.375 0 1 1-.53 0L12 2.845l.265.265Z" /></svg> },
               { key: "transportation", label: "Transportation", color: "#7c3aed", icon: <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor" className="w-4 h-4"><path strokeLinecap="round" strokeLinejoin="round" d="M7.5 21 3 16.5m0 0L7.5 12M3 16.5h13.5m0-13.5L21 7.5m0 0L16.5 12M21 7.5H7.5" /></svg> },
@@ -1288,92 +1271,122 @@ export default function TripDetailPage() {
           </div>
         </div>
 
-        {/* ═══ LOWER MODULES — Collapsible Accordions ═══ */}
-        <div className="mt-10 space-y-3">
-          {[
-            {
-              key: "map",
-              label: "Map",
-              icon: <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor" className="w-5 h-5"><path fillRule="evenodd" d="m9.69 18.933.003.001C9.89 19.02 10 19 10 19s.11.02.308-.066l.002-.001.006-.003.018-.008a5.741 5.741 0 0 0 .281-.145c.186-.1.429-.24.713-.42.567-.362 1.308-.892 2.052-1.586C14.786 15.396 16.5 13.134 16.5 10a6.5 6.5 0 1 0-13 0c0 3.134 1.714 5.396 3.12 6.771.744.694 1.485 1.224 2.052 1.586a13.73 13.73 0 0 0 .994.565l.018.008.006.003ZM10 11.5a1.5 1.5 0 1 0 0-3 1.5 1.5 0 0 0 0 3Z" clipRule="evenodd" /></svg>,
-              content: (
-                <TripMap
-                  tripDestination={trip?.destination}
-                  tripStart={trip?.start_date}
-                  tripEnd={trip?.end_date}
-                  flightOptions={flightOptions}
-                  accommodationOptions={accommodationOptions}
-                  activityOptions={activityOptions}
-                  diningOptions={diningOptions}
-                  transportOptions={transportOptions}
-                />
-              ),
-            },
-            {
-              key: "checklist",
-              label: "Planning Checklist",
-              icon: <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor" className="w-5 h-5"><path fillRule="evenodd" d="M6 4.75A.75.75 0 0 1 6.75 4h10.5a.75.75 0 0 1 0 1.5H6.75A.75.75 0 0 1 6 4.75ZM6 10a.75.75 0 0 1 .75-.75h10.5a.75.75 0 0 1 0 1.5H6.75A.75.75 0 0 1 6 10Zm0 5.25a.75.75 0 0 1 .75-.75h10.5a.75.75 0 0 1 0 1.5H6.75a.75.75 0 0 1-.75-.75ZM1.99 4.99a.75.75 0 0 1 1.06 0l.97.97.97-.97a.75.75 0 1 1 1.06 1.06l-1.5 1.5a.75.75 0 0 1-1.06 0l-1.5-1.5a.75.75 0 0 1 0-1.06Zm0 5.25a.75.75 0 0 1 1.06 0l.97.97.97-.97a.75.75 0 1 1 1.06 1.06l-1.5 1.5a.75.75 0 0 1-1.06 0l-1.5-1.5a.75.75 0 0 1 0-1.06Zm0 5.25a.75.75 0 0 1 1.06 0l.97.97.97-.97a.75.75 0 1 1 1.06 1.06l-1.5 1.5a.75.75 0 0 1-1.06 0l-1.5-1.5a.75.75 0 0 1 0-1.06Z" clipRule="evenodd" /></svg>,
-              content: <PlanningChecklist tripId={params.id} />,
-            },
-            {
-              key: "packing",
-              label: "Packing List",
-              icon: <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor" className="w-5 h-5"><path d="M6 4.5A1.5 1.5 0 0 1 7.5 3h5A1.5 1.5 0 0 1 14 4.5V5h1.5A1.5 1.5 0 0 1 17 6.5v10A1.5 1.5 0 0 1 15.5 18h-11A1.5 1.5 0 0 1 3 16.5v-10A1.5 1.5 0 0 1 4.5 5H6v-.5ZM7.5 4.5V5h5v-.5h-5Z" /></svg>,
-              content: (
-                <PackingList
-                  tripId={params.id}
-                  tripDestination={trip?.destination}
-                  tripStartDate={trip?.start_date}
-                  tripEndDate={trip?.end_date}
-                  activityOptions={activityOptions}
-                  accommodationOptions={accommodationOptions}
-                />
-              ),
-            },
-            {
-              key: "documents",
-              label: "Travel Documents",
-              icon: <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor" className="w-5 h-5"><path fillRule="evenodd" d="M4.5 2A1.5 1.5 0 0 0 3 3.5v13A1.5 1.5 0 0 0 4.5 18h11a1.5 1.5 0 0 0 1.5-1.5V7.621a1.5 1.5 0 0 0-.44-1.06l-4.12-4.122A1.5 1.5 0 0 0 11.378 2H4.5Zm2.25 8.5a.75.75 0 0 0 0 1.5h6.5a.75.75 0 0 0 0-1.5h-6.5Zm0 3a.75.75 0 0 0 0 1.5h6.5a.75.75 0 0 0 0-1.5h-6.5Z" clipRule="evenodd" /></svg>,
-              content: <TravelDocuments tripId={params.id} />,
-            },
-            {
-              key: "collaborators",
-              label: "Collaborators",
-              icon: <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor" className="w-5 h-5"><path d="M7 8a3 3 0 1 0 0-6 3 3 0 0 0 0 6Zm7.5 1a2.5 2.5 0 1 0 0-5 2.5 2.5 0 0 0 0 5ZM1.615 16.428a1.224 1.224 0 0 1-.569-1.175 6.002 6.002 0 0 1 11.908 0c.058.467-.172.92-.57 1.174A9.953 9.953 0 0 1 7 18a9.953 9.953 0 0 1-5.385-1.572ZM14.5 16h-.106c.07-.297.088-.611.048-.933a7.47 7.47 0 0 0-1.588-3.755 4.502 4.502 0 0 1 5.874 2.636.818.818 0 0 1-.36.98A7.465 7.465 0 0 1 14.5 16Z" /></svg>,
-              content: (
-                <TripCollaborators
-                  tripId={params.id}
-                  tripTitle={trip?.title}
-                  userId={currentUser?.id}
-                  userEmail={currentUser?.email}
-                  tripOwnerId={trip?.user_id}
-                />
-              ),
-            },
-          ].map((section) => {
-            const isOpen = !!expandedAccordions[section.key];
-            return (
-              <div key={section.key} className="rounded-xl overflow-hidden" style={{ background: "rgba(255,255,255,0.4)", border: "1px solid rgba(180,165,140,0.3)" }}>
-                <button
-                  onClick={() => setExpandedAccordions((prev) => ({ ...prev, [section.key]: !prev[section.key] }))}
-                  className="w-full flex items-center gap-3 px-5 py-3.5 text-left hover:brightness-105 transition-all"
-                >
-                  <span className="text-stone-500">{section.icon}</span>
-                  <span className="text-sm font-semibold text-stone-700 flex-1">{section.label}</span>
-                  <svg
-                    xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor"
-                    className={`w-4 h-4 text-stone-400 transition-transform duration-300 ${isOpen ? "rotate-180" : ""}`}
-                  >
-                    <path fillRule="evenodd" d="M5.22 8.22a.75.75 0 0 1 1.06 0L10 11.94l3.72-3.72a.75.75 0 1 1 1.06 1.06l-4.25 4.25a.75.75 0 0 1-1.06 0L5.22 9.28a.75.75 0 0 1 0-1.06Z" clipRule="evenodd" />
-                  </svg>
-                </button>
-                {isOpen && (
-                  <div className="border-t" style={{ borderColor: "rgba(180,165,140,0.2)" }}>
-                    {section.content}
-                  </div>
-                )}
-              </div>
-            );
-          })}
+        {/* ═══ LOWER MODULES — Tabbed Layout ═══ */}
+        <div className="mt-10">
+          <div className="flex flex-wrap gap-1 mb-0">
+            {[
+              {
+                key: "map",
+                label: "Map",
+                color: "#0d9488",
+                icon: <svg className="w-4 h-4" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor"><path fillRule="evenodd" d="m9.69 18.933.003.001C9.89 19.02 10 19 10 19s.11.02.308-.066l.002-.001.006-.003.018-.008a5.741 5.741 0 0 0 .281-.145c.186-.1.429-.24.713-.42.567-.362 1.308-.892 2.052-1.586C14.786 15.396 16.5 13.134 16.5 10a6.5 6.5 0 1 0-13 0c0 3.134 1.714 5.396 3.12 6.771.744.694 1.485 1.224 2.052 1.586a13.73 13.73 0 0 0 .994.565l.018.008.006.003ZM10 11.5a1.5 1.5 0 1 0 0-3 1.5 1.5 0 0 0 0 3Z" clipRule="evenodd" /></svg>,
+              },
+              {
+                key: "checklist",
+                label: "Checklist",
+                color: "#f59e0b",
+                icon: <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24" strokeWidth={2}><path strokeLinecap="round" strokeLinejoin="round" d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2m-6 9l2 2 4-4" /></svg>,
+              },
+              {
+                key: "packing",
+                label: "Packing",
+                color: "#6366f1",
+                icon: <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24" strokeWidth={2}><path strokeLinecap="round" strokeLinejoin="round" d="M20 7l-8-4-8 4m16 0l-8 4m8-4v10l-8 4m0-10L4 7m8 4v10M4 7v10l8 4" /></svg>,
+              },
+              {
+                key: "documents",
+                label: "Resources",
+                color: "#f43f5e",
+                icon: <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24" strokeWidth={2}><path strokeLinecap="round" strokeLinejoin="round" d="M19 20H5a2 2 0 01-2-2V6a2 2 0 012-2h10a2 2 0 012 2v1m2 13a2 2 0 01-2-2V7m2 13a2 2 0 002-2V9a2 2 0 00-2-2h-2m-4-3H9M7 16h6M7 8h6v4H7V8z" /></svg>,
+              },
+              {
+                key: "collaborators",
+                label: "Collaborators",
+                color: "#8b5cf6",
+                icon: <svg className="w-4 h-4" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor"><path d="M7 8a3 3 0 1 0 0-6 3 3 0 0 0 0 6Zm7.5 1a2.5 2.5 0 1 0 0-5 2.5 2.5 0 0 0 0 5ZM1.615 16.428a1.224 1.224 0 0 1-.569-1.175 6.002 6.002 0 0 1 11.908 0c.058.467-.172.92-.57 1.174A9.953 9.953 0 0 1 7 18a9.953 9.953 0 0 1-5.385-1.572ZM14.5 16h-.106c.07-.297.088-.611.048-.933a7.47 7.47 0 0 0-1.588-3.755 4.502 4.502 0 0 1 5.874 2.636.818.818 0 0 1-.36.98A7.465 7.465 0 0 1 14.5 16Z" /></svg>,
+              },
+            ].map((tab) => (
+              <button
+                key={tab.key}
+                onClick={() => setActiveLowerTab(tab.key)}
+                className={`flex items-center gap-2 px-5 py-2.5 rounded-t-lg text-sm font-semibold transition-all ${
+                  activeLowerTab === tab.key
+                    ? "text-stone-800"
+                    : "text-stone-500 hover:text-stone-700"
+                }`}
+                style={{
+                  background: activeLowerTab === tab.key
+                    ? "rgba(255,255,255,0.6)"
+                    : "rgba(195,178,155,0.35)",
+                  borderTop: activeLowerTab === tab.key
+                    ? `2px solid ${tab.color}`
+                    : "2px solid transparent",
+                  borderLeft: activeLowerTab === tab.key
+                    ? "1px solid rgba(180,165,140,0.3)"
+                    : "1px solid rgba(180,165,140,0.15)",
+                  borderRight: activeLowerTab === tab.key
+                    ? "1px solid rgba(180,165,140,0.3)"
+                    : "1px solid rgba(180,165,140,0.15)",
+                  borderBottom: activeLowerTab === tab.key
+                    ? "1px solid rgba(255,255,255,0.6)"
+                    : "1px solid rgba(180,165,140,0.3)",
+                }}
+              >
+                {tab.icon}
+                {tab.label}
+              </button>
+            ))}
+          </div>
+
+          {/* Tab content — fixed height with scroll */}
+          <div
+            className="rounded-b-xl rounded-tr-xl px-4 py-2 overflow-y-auto"
+            style={{
+              background: "rgba(255,255,255,0.6)",
+              border: "1px solid rgba(180,165,140,0.3)",
+              borderTop: activeLowerTab === "map" ? "none" : "1px solid rgba(180,165,140,0.3)",
+              height: "600px",
+            }}
+          >
+            <div style={{ display: activeLowerTab === "map" ? "block" : "none" }}>
+              <TripMap
+                tripDestination={trip?.destination}
+                tripStart={trip?.start_date}
+                tripEnd={trip?.end_date}
+                flightOptions={flightOptions}
+                accommodationOptions={accommodationOptions}
+                activityOptions={activityOptions}
+                diningOptions={diningOptions}
+                transportOptions={transportOptions}
+                itinerarySelections={itinerarySelections}
+              />
+            </div>
+            <div style={{ display: activeLowerTab === "checklist" ? "block" : "none" }}>
+              <PlanningChecklist tripId={params.id} />
+            </div>
+            <div style={{ display: activeLowerTab === "packing" ? "block" : "none" }}>
+              <PackingList
+                tripId={params.id}
+                tripDestination={trip?.destination}
+                tripStartDate={trip?.start_date}
+                tripEndDate={trip?.end_date}
+                activityOptions={activityOptions}
+                accommodationOptions={accommodationOptions}
+              />
+            </div>
+            <div style={{ display: activeLowerTab === "documents" ? "block" : "none" }}>
+              <TravelDocuments tripId={params.id} />
+            </div>
+            <div style={{ display: activeLowerTab === "collaborators" ? "block" : "none" }}>
+              <TripCollaborators
+                tripId={params.id}
+                tripTitle={trip?.title}
+                userId={currentUser?.id}
+                userEmail={currentUser?.email}
+                tripOwnerId={trip?.user_id}
+              />
+            </div>
+          </div>
         </div>
 
         {/* Day Detail Popout */}
@@ -1381,6 +1394,7 @@ export default function TripDetailPage() {
           <DayPopout
             dateKey={selectedDay}
             tripId={params.id}
+            tripStart={effectiveStart}
             dayData={days[selectedDay]}
             activities={days[selectedDay] ? (activities[days[selectedDay].id] || []) : []}
             inRange={effectiveStart && effectiveEnd && selectedDay >= effectiveStart && selectedDay <= effectiveEnd}
@@ -1415,7 +1429,7 @@ function EventPopup({ type, data, dateKey, rect, onClose }) {
   const colors = {
     flight: { bg: CATEGORY_COLORS.flight.bg, border: CATEGORY_COLORS.flight.border, text: CATEGORY_COLORS.flight.text, label: "Flight" },
     activity: { bg: CATEGORY_COLORS.activity.bg, border: CATEGORY_COLORS.activity.border, text: CATEGORY_COLORS.activity.text, label: "Activity" },
-    accommodation: { bg: CATEGORY_COLORS.accommodation.bg, border: CATEGORY_COLORS.accommodation.border, text: CATEGORY_COLORS.accommodation.text, label: "Accommodation" },
+    accommodation: { bg: CATEGORY_COLORS.accommodation.bg, border: CATEGORY_COLORS.accommodation.border, text: CATEGORY_COLORS.accommodation.text, label: "Stay" },
     dining: { bg: CATEGORY_COLORS.dining.bg, border: CATEGORY_COLORS.dining.border, text: CATEGORY_COLORS.dining.text, label: "Dining" },
     transportation: { bg: CATEGORY_COLORS.transportation.bg, border: CATEGORY_COLORS.transportation.border, text: CATEGORY_COLORS.transportation.text, label: "Transportation" },
   };
@@ -1476,7 +1490,7 @@ function getCategoryInfo(value) {
   return CATEGORIES.find((c) => c.value === value) || { value: "other", label: "Other", icon: "📌" };
 }
 
-function DayPopout({ dateKey, tripId, dayData, activities, inRange, onClose, onUpdate, calendarEvents, activeItineraryId }) {
+function DayPopout({ dateKey, tripId, tripStart, dayData, activities, inRange, onClose, onUpdate, calendarEvents, activeItineraryId }) {
   const [title, setTitle] = useState(dayData?.title || "");
   const [editingTitle, setEditingTitle] = useState(false);
   const [notes, setNotes] = useState(dayData?.notes || "");
@@ -1489,6 +1503,14 @@ function DayPopout({ dateKey, tripId, dayData, activities, inRange, onClose, onU
   const dateFormatted = new Date(dateKey + "T00:00:00").toLocaleDateString("en-US", {
     month: "long", day: "numeric", year: "numeric",
   });
+
+  // Compute day count relative to trip start
+  let dayNumber = null;
+  if (tripStart && inRange) {
+    const start = new Date(tripStart + "T00:00:00");
+    const current = new Date(dateKey + "T00:00:00");
+    dayNumber = Math.round((current - start) / (1000 * 60 * 60 * 24)) + 1;
+  }
 
   async function handleSaveTitle() {
     setEditingTitle(false);
@@ -1647,27 +1669,33 @@ function DayPopout({ dateKey, tripId, dayData, activities, inRange, onClose, onU
   return (
     <div className="fixed inset-0 bg-black/30 flex items-center justify-center z-50 p-4" onClick={onClose}>
       <div
-        className="bg-white rounded-2xl shadow-xl border border-stone-200 w-full max-w-xl max-h-[85vh] overflow-y-auto"
+        className="bg-white rounded-2xl shadow-xl border border-stone-200 w-full max-w-md max-h-[85vh] overflow-y-auto relative"
         onClick={(e) => e.stopPropagation()}
         style={{ animation: "cardFadeIn 0.2s ease-out" }}
       >
         {/* Header — warm parchment */}
-        <div className="px-6 py-4 border-b border-stone-200/60 rounded-t-2xl sticky top-0 z-10" style={{ background: "rgba(222,210,190,0.5)" }}>
-          <div className="flex items-start justify-between">
+        <div className="px-5 pt-5 pb-3 border-b border-stone-200/60 rounded-t-2xl sticky top-0 z-10" style={{ background: "rgba(222,210,190,0.5)" }}>
+          {/* Close button — absolute top right */}
+          <button onClick={onClose} className="absolute top-2 right-3 text-stone-400 hover:text-stone-600 transition-colors p-1">
+            <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24" strokeWidth={2}><path strokeLinecap="round" strokeLinejoin="round" d="M6 18L18 6M6 6l12 12" /></svg>
+          </button>
+
+          {/* Day count + date info — horizontal layout */}
+          <div className="flex items-center gap-2.5">
+            {dayNumber && (
+              <div className="text-2xl font-bold text-[#da7b4a] whitespace-nowrap leading-none">Day {dayNumber}</div>
+            )}
             <div>
-              <div className="text-xs font-medium text-stone-400 uppercase tracking-wide">{dayOfWeek}</div>
-              <div className="text-lg font-bold text-stone-800">{dateFormatted}</div>
+              <div className="text-[11px] font-semibold text-stone-500 uppercase tracking-wide leading-tight">{dayOfWeek}</div>
+              <div className="text-[11px] text-stone-400 leading-tight">{dateFormatted}</div>
               {!inRange && (
                 <span className="text-[10px] text-amber-600 font-medium">Outside trip dates</span>
               )}
             </div>
-            <button onClick={onClose} className="text-stone-400 hover:text-stone-600 transition-colors p-1">
-              <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24" strokeWidth={2}><path strokeLinecap="round" strokeLinejoin="round" d="M6 18L18 6M6 6l12 12" /></svg>
-            </button>
           </div>
 
           {/* Inline editable Day Title */}
-          <div className="mt-2 mb-1 flex items-center min-h-[32px]">
+          <div className="mt-1.5 flex items-center min-h-[32px]">
             {editingTitle ? (
               <input
                 type="text"
@@ -1677,13 +1705,13 @@ function DayPopout({ dateKey, tripId, dayData, activities, inRange, onClose, onU
                 onKeyDown={(e) => { if (e.key === "Enter") handleSaveTitle(); if (e.key === "Escape") setEditingTitle(false); }}
                 autoFocus
                 placeholder="Add a title for this day..."
-                className="w-full text-sm font-semibold text-stone-800 bg-white border border-stone-300 rounded-lg px-2 py-1 focus:outline-none focus:ring-2 focus:ring-inset focus:ring-[#da7b4a]/50 focus:border-transparent"
+                className="w-full text-2xl font-bold text-stone-800 bg-white border border-stone-300 rounded-lg px-2 py-0.5 focus:outline-none focus:ring-2 focus:ring-inset focus:ring-[#da7b4a]/50 focus:border-transparent"
               />
             ) : (
               <div
                 onClick={() => setEditingTitle(true)}
-                className={`w-full text-sm font-semibold cursor-text px-2 py-1 rounded-lg transition-colors border border-transparent ${
-                  title ? "text-stone-700 hover:text-[#da7b4a]" : "text-stone-400 hover:text-[#da7b4a] italic"
+                className={`w-full text-2xl font-bold cursor-text py-0.5 rounded-lg transition-colors border border-transparent ${
+                  title ? "text-stone-700 hover:text-[#da7b4a]" : "text-stone-400 hover:text-[#da7b4a] italic text-base"
                 }`}
                 title="Click to edit day title"
               >
@@ -1811,7 +1839,7 @@ function DayPopout({ dateKey, tripId, dayData, activities, inRange, onClose, onU
             ) : (
               <div
                 onClick={() => setEditingNotes(true)}
-                className={`text-sm px-3 py-2 rounded-lg cursor-text transition-colors min-h-[40px] border border-transparent ${
+                className={`text-sm px-3 py-2 rounded-lg cursor-text transition-colors min-h-[40px] border border-stone-300 ${
                   notes ? "text-stone-600 hover:text-[#da7b4a]" : "text-stone-400 hover:text-[#da7b4a] italic"
                 }`}
                 title="Click to edit notes"
