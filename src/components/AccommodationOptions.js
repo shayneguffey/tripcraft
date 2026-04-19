@@ -228,136 +228,150 @@ function OptionDetail({ opt, tripStart, tripEnd, onToggleSelected, onNotesChange
   }
 
   return (
-    <div>
-      {/* Header */}
-      <div className="flex items-start justify-between mb-4">
-        <div>
-          <h3 className="text-xl font-bold text-slate-800">{opt.name}</h3>
-          {opt.provider && <span className="text-xs text-slate-400">via {opt.provider}</span>}
-        </div>
-        {(opt.price_per_night || opt.total_price) && (
-          <div className="text-right flex-shrink-0 ml-4">
-            {opt.price_per_night ? (
-              <>
-                <div className="text-2xl font-bold text-slate-800">
-                  {formatPrice(opt.price_per_night, opt.currency)}
-                </div>
-                <div className="text-xs text-slate-400">per night</div>
-              </>
-            ) : (
-              <>
-                <div className="text-2xl font-bold text-slate-800">
-                  {formatPrice(opt.total_price, opt.currency)}
-                </div>
-                <div className="text-xs text-slate-400">total</div>
-              </>
-            )}
-            {opt.price_per_night && opt.total_price && (
-              <div className="text-xs text-slate-400 mt-0.5">{formatPrice(opt.total_price, opt.currency)} total</div>
-            )}
-          </div>
-        )}
+    <div className="flex gap-4">
+      {/* Itinerary button — fixed left column */}
+      <div className="flex flex-col items-center flex-shrink-0 w-9 pt-0.5">
+        <button
+          type="button"
+          onClick={onToggleSelected}
+          className={`w-9 h-9 rounded-lg flex items-center justify-center transition-colors ${
+            opt.is_selected ? "bg-sky-500 text-white hover:bg-sky-600" : "bg-slate-100 text-slate-400 hover:bg-sky-50 hover:text-sky-600"
+          }`}
+          title={opt.is_selected ? "Remove from itinerary" : "Add to itinerary"}
+        >
+          {opt.is_selected ? (
+            <svg className="w-4.5 h-4.5" fill="none" stroke="currentColor" viewBox="0 0 24 24" strokeWidth={2.5}><path strokeLinecap="round" strokeLinejoin="round" d="M4.5 12.75l6 6 9-13.5" /></svg>
+          ) : (
+            <svg className="w-4.5 h-4.5" fill="none" stroke="currentColor" viewBox="0 0 24 24" strokeWidth={2}><path strokeLinecap="round" strokeLinejoin="round" d="M12 4.5v15m7.5-7.5h-15" /></svg>
+          )}
+        </button>
+        <span className={`text-[9px] font-semibold uppercase tracking-wide mt-0.5 ${opt.is_selected ? "text-sky-600" : "text-slate-400"}`}>
+          {opt.is_selected ? "Added" : "Add"}
+        </span>
       </div>
 
-      {/* Stats row */}
-      <div className="flex gap-4 mb-4 text-sm text-slate-600 flex-wrap">
-        {opt.address && (
-          <div><span className={LABEL}>Address</span><div className="font-medium">{opt.address}</div></div>
-        )}
-        {opt.room_type && (
-          <div><span className={LABEL}>Room Type</span><div className="font-medium">{opt.room_type}</div></div>
-        )}
-        {(opt.bedrooms || opt.bathrooms) && (
+      {/* Detail content — aligned with title */}
+      <div className="flex-1 min-w-0">
+        {/* Header */}
+        <div className="flex items-start justify-between mb-4">
           <div>
-            <span className={LABEL}>Beds & Bath</span>
-            <div className="font-medium">
-              {opt.bedrooms && <span>{opt.bedrooms} bed{opt.bedrooms > 1 ? 's' : ''}</span>}
-              {opt.bedrooms && opt.bathrooms && <span> · </span>}
-              {opt.bathrooms && <span>{opt.bathrooms} bath{opt.bathrooms > 1 ? 's' : ''}</span>}
+            <h3 className="text-xl font-bold text-slate-800">{opt.name}</h3>
+            {opt.provider && <span className="text-xs text-slate-400">via {opt.provider}</span>}
+          </div>
+          {(opt.price_per_night || opt.total_price) && (
+            <div className="text-right flex-shrink-0 ml-4">
+              {opt.price_per_night ? (
+                <>
+                  <div className="text-2xl font-bold text-slate-800">
+                    {formatPrice(opt.price_per_night, opt.currency)}
+                  </div>
+                  <div className="text-xs text-slate-400">per night</div>
+                </>
+              ) : (
+                <>
+                  <div className="text-2xl font-bold text-slate-800">
+                    {formatPrice(opt.total_price, opt.currency)}
+                  </div>
+                  <div className="text-xs text-slate-400">total</div>
+                </>
+              )}
+              {opt.price_per_night && opt.total_price && (
+                <div className="text-xs text-slate-400 mt-0.5">{formatPrice(opt.total_price, opt.currency)} total</div>
+              )}
+            </div>
+          )}
+        </div>
+
+        {/* Stats row */}
+        <div className="flex gap-4 mb-4 text-sm text-slate-600 flex-wrap">
+          {opt.address && (
+            <div><span className={LABEL}>Address</span><div className="font-medium">{opt.address}</div></div>
+          )}
+          {opt.room_type && (
+            <div><span className={LABEL}>Room Type</span><div className="font-medium">{opt.room_type}</div></div>
+          )}
+          {(opt.bedrooms || opt.bathrooms) && (
+            <div>
+              <span className={LABEL}>Beds & Bath</span>
+              <div className="font-medium">
+                {opt.bedrooms && <span>{opt.bedrooms} bed{opt.bedrooms > 1 ? 's' : ''}</span>}
+                {opt.bedrooms && opt.bathrooms && <span> · </span>}
+                {opt.bathrooms && <span>{opt.bathrooms} bath{opt.bathrooms > 1 ? 's' : ''}</span>}
+              </div>
+            </div>
+          )}
+          {opt.max_guests && (
+            <div><span className={LABEL}>Guests</span><div className="font-medium">{opt.max_guests} max</div></div>
+          )}
+        </div>
+
+        {/* Description */}
+        {opt.description && (
+          <div className="mb-4">
+            <p className="text-sm text-slate-600 leading-relaxed">{opt.description}</p>
+          </div>
+        )}
+
+        {/* Amenities */}
+        {opt.amenities && (
+          <div className="mb-4">
+            <div className={LABEL_MB2}>Amenities</div>
+            <div className="flex flex-wrap gap-1">
+              {opt.amenities.split(",").map((amenity, i) => (
+                <span key={i} className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-sky-100 text-sky-800">
+                  {amenity.trim()}
+                </span>
+              ))}
             </div>
           </div>
         )}
-        {opt.max_guests && (
-          <div><span className={LABEL}>Guests</span><div className="font-medium">{opt.max_guests} max</div></div>
+
+        {/* Cancellation policy */}
+        {opt.cancellation_policy && (
+          <div className="mb-4">
+            <div className={LABEL_MB1}>Cancellation Policy</div>
+            <p className="text-sm text-slate-600">{opt.cancellation_policy}</p>
+          </div>
         )}
-      </div>
 
-      {/* Description */}
-      {opt.description && (
-        <div className="mb-4">
-          <p className="text-sm text-slate-600 leading-relaxed">{opt.description}</p>
-        </div>
-      )}
-
-      {/* Amenities */}
-      {opt.amenities && (
-        <div className="mb-4">
-          <div className={LABEL_MB2}>Amenities</div>
-          <div className="flex flex-wrap gap-1">
-            {opt.amenities.split(",").map((amenity, i) => (
-              <span key={i} className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-sky-100 text-sky-800">
-                {amenity.trim()}
-              </span>
-            ))}
+        {/* Check-in/out dates */}
+        {(opt.check_in_date || opt.check_out_date) && (
+          <div className="mb-4">
+            <div className={LABEL_MB2}>Dates</div>
+            <div className="flex gap-4 text-sm">
+              {opt.check_in_date && (
+                <div>
+                  <span className="text-xs text-slate-500">Check-in</span>
+                  <div className="font-medium text-slate-800">{formatDateNice(opt.check_in_date)}</div>
+                </div>
+              )}
+              {opt.check_out_date && (
+                <div>
+                  <span className="text-xs text-slate-500">Check-out</span>
+                  <div className="font-medium text-slate-800">{formatDateNice(opt.check_out_date)}</div>
+                </div>
+              )}
+            </div>
           </div>
-        </div>
-      )}
+        )}
 
-      {/* Cancellation policy */}
-      {opt.cancellation_policy && (
-        <div className="mb-4">
-          <div className={LABEL_MB1}>Cancellation Policy</div>
-          <p className="text-sm text-slate-600">{opt.cancellation_policy}</p>
-        </div>
-      )}
+        {/* Notes */}
+        <EditableNotes notes={opt.notes} onSave={onNotesChange} />
 
-      {/* Check-in/out dates */}
-      {(opt.check_in_date || opt.check_out_date) && (
-        <div className="mb-4">
-          <div className={LABEL_MB2}>Dates</div>
-          <div className="flex gap-4 text-sm">
-            {opt.check_in_date && (
-              <div>
-                <span className="text-xs text-slate-500">Check-in</span>
-                <div className="font-medium text-slate-800">{formatDateNice(opt.check_in_date)}</div>
-              </div>
-            )}
-            {opt.check_out_date && (
-              <div>
-                <span className="text-xs text-slate-500">Check-out</span>
-                <div className="font-medium text-slate-800">{formatDateNice(opt.check_out_date)}</div>
-              </div>
-            )}
-          </div>
-        </div>
-      )}
-
-      {/* Action buttons */}
-      <div className="flex gap-2 mb-4">
-        <button onClick={onToggleSelected}
-          className={`px-3 py-1.5 rounded-lg text-sm font-medium transition-colors ${
-            opt.is_selected ? "bg-sky-100 text-sky-700" : "bg-slate-100 text-slate-600 hover:bg-sky-50"
-          }`}>
-          {opt.is_selected ? "✓ Added to Itinerary" : "Add to Itinerary"}
-        </button>
+        {/* Source thumbnails */}
+        <SourceThumbnails
+          screenshotUrl={opt.screenshot_url}
+          sourceUrl={opt.source_url}
+          manualData={[
+            { label: "Price/Night", value: opt.price_per_night ? formatPrice(opt.price_per_night, opt.currency) : "" },
+            { label: "Total Price", value: opt.total_price ? formatPrice(opt.total_price, opt.currency) : "" },
+            { label: "Room Type", value: opt.room_type || "" },
+            { label: "Check-in", value: opt.check_in_date ? formatDateNice(opt.check_in_date) : "" },
+            { label: "Check-out", value: opt.check_out_date ? formatDateNice(opt.check_out_date) : "" },
+          ]}
+          accentColor="sky"
+        />
       </div>
-
-      {/* Notes */}
-      <EditableNotes notes={opt.notes} onSave={onNotesChange} />
-
-      {/* Source thumbnails */}
-      <SourceThumbnails
-        screenshotUrl={opt.screenshot_url}
-        sourceUrl={opt.source_url}
-        manualData={[
-          { label: "Price/Night", value: opt.price_per_night ? formatPrice(opt.price_per_night, opt.currency) : "" },
-          { label: "Total Price", value: opt.total_price ? formatPrice(opt.total_price, opt.currency) : "" },
-          { label: "Room Type", value: opt.room_type || "" },
-          { label: "Check-in", value: opt.check_in_date ? formatDateNice(opt.check_in_date) : "" },
-          { label: "Check-out", value: opt.check_out_date ? formatDateNice(opt.check_out_date) : "" },
-        ]}
-        accentColor="sky"
-      />
     </div>
   );
 }

@@ -117,8 +117,6 @@ export default function MiniWeekCalendar({
 
   return (
     <div className="mb-4 relative max-w-[264px]">
-      <div className={`${LABEL} mb-1.5`}>Add to itinerary</div>
-
       {/* Weekday labels — single pill-shaped bar */}
       <div className={`grid grid-cols-7 rounded-full border px-1.5 py-1 mb-1.5 ${accent.bar}`}>
         {DAY_LABELS.map((d, i) => (
@@ -175,26 +173,8 @@ export default function MiniWeekCalendar({
               if (onTimeChange) onTimeChange(null, null);
             }}
             onClose={() => setTimePopupDate(null)}
-            onUnschedule={() => {
-              setTimePopupDate(null);
-              onSchedule(null);
-              if (onTimeChange) onTimeChange(null, null);
-            }}
           />
         </div>
-      )}
-
-      {/* Remove from itinerary */}
-      {scheduledDate && (
-        <button
-          onClick={() => {
-            onSchedule(null);
-            if (onTimeChange) onTimeChange(null, null);
-          }}
-          className="mt-0.5 px-2 py-1 rounded-md text-xs font-medium bg-red-50 text-red-600 hover:bg-red-100 transition-colors"
-        >
-          Remove from itinerary
-        </button>
       )}
     </div>
   );

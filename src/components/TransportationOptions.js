@@ -255,126 +255,138 @@ function OptionDetail({ opt, tripStart, tripEnd, onToggleSelected, onTimeChange,
   }, [opt.id]);
 
   return (
-    <div>
-      {/* Header */}
-      <div className="flex items-start justify-between mb-2">
-        <div>
-          <h3 className="text-xl font-bold text-slate-800">{opt.name}</h3>
-          {opt.provider && <span className="text-xs text-slate-400">via {opt.provider}</span>}
-        </div>
-        {opt.price != null && opt.price > 0 && (
-          <div className="text-right flex-shrink-0 ml-4">
-            <div className="text-2xl font-bold text-slate-800">
-              {formatPrice(opt.price, opt.currency)}
-            </div>
-            <div className="text-xs text-slate-400">{opt.price_per || "total"}</div>
-          </div>
-        )}
-      </div>
-
-      {/* Add to Itinerary — just below title */}
-      <div className="mb-4">
-        <button onClick={onToggleSelected}
-          className={`px-3 py-1.5 rounded-lg text-sm font-medium transition-colors ${
-            opt.is_selected ? "bg-violet-100 text-violet-700" : "bg-slate-100 text-slate-600 hover:bg-violet-50"
-          }`}>
-          {opt.is_selected ? "✓ Added to Itinerary" : "Add to Itinerary"}
+    <div className="flex gap-4">
+      {/* Itinerary button — fixed left column */}
+      <div className="flex flex-col items-center flex-shrink-0 w-9 pt-0.5">
+        <button
+          type="button"
+          onClick={onToggleSelected}
+          className={`w-9 h-9 rounded-lg flex items-center justify-center transition-colors ${
+            opt.is_selected ? "bg-violet-500 text-white hover:bg-violet-600" : "bg-slate-100 text-slate-400 hover:bg-violet-50 hover:text-violet-600"
+          }`}
+          title={opt.is_selected ? "Remove from itinerary" : "Add to itinerary"}
+        >
+          {opt.is_selected ? (
+            <svg className="w-4.5 h-4.5" fill="none" stroke="currentColor" viewBox="0 0 24 24" strokeWidth={2.5}><path strokeLinecap="round" strokeLinejoin="round" d="M4.5 12.75l6 6 9-13.5" /></svg>
+          ) : (
+            <svg className="w-4.5 h-4.5" fill="none" stroke="currentColor" viewBox="0 0 24 24" strokeWidth={2}><path strokeLinecap="round" strokeLinejoin="round" d="M12 4.5v15m7.5-7.5h-15" /></svg>
+          )}
         </button>
+        <span className={`text-[9px] font-semibold uppercase tracking-wide mt-0.5 ${opt.is_selected ? "text-violet-600" : "text-slate-400"}`}>
+          {opt.is_selected ? "Added" : "Add"}
+        </span>
       </div>
 
-      {/* Stats row */}
-      <div className="flex gap-4 mb-4 text-sm text-slate-600 flex-wrap">
-        {opt.vehicle_type && (
-          <div><span className={LABEL}>Vehicle/Class</span><div className="font-medium">{opt.vehicle_type}{opt.class_type ? ` (${opt.class_type})` : ""}</div></div>
-        )}
-        {opt.class_type && !opt.vehicle_type && (
-          <div><span className={LABEL}>Class</span><div className="font-medium">{opt.class_type}</div></div>
-        )}
-        {opt.duration_minutes && opt.category !== "car_rental" && (
-          <div><span className={LABEL}>Duration</span><div className="font-medium">{formatDuration(opt.duration_minutes)}</div></div>
-        )}
-        {opt.passengers && (
-          <div><span className={LABEL}>Passengers</span><div className="font-medium">{opt.passengers}</div></div>
-        )}
-        {opt.service_name && (
-          <div><span className={LABEL}>Service</span><div className="font-medium">{opt.service_name}</div></div>
-        )}
-      </div>
-
-      {/* Description */}
-      {opt.description && (
-        <div className="mb-4">
-          <p className="text-sm text-slate-600 leading-relaxed">{opt.description}</p>
-        </div>
-      )}
-
-
-      {/* Car rental specific */}
-      {opt.category === "car_rental" && (
-        <div className="mb-4">
-          {/* Pickup & Dropoff */}
-          {(opt.pickup_location || opt.departure_date || opt.dropoff_location || opt.arrival_date) && (
-            <div className="flex gap-6 mb-3">
-              {(opt.pickup_location || opt.departure_date) && (
-                <div>
-                  <div className={LABEL_MB1}>Pick Up</div>
-                  {opt.pickup_location && <div className="text-sm font-medium text-slate-700">{opt.pickup_location}</div>}
-                  {opt.departure_date && (
-                    <div className="text-sm text-slate-600">
-                      {formatDateNice(opt.departure_date)}
-                      {opt.departure_time && <span className="ml-1 text-slate-500">at {formatTime(opt.departure_time)}</span>}
-                    </div>
-                  )}
-                </div>
-              )}
-              {(opt.dropoff_location || opt.arrival_date) && (
-                <div>
-                  <div className={LABEL_MB1}>Drop Off</div>
-                  {opt.dropoff_location && <div className="text-sm font-medium text-slate-700">{opt.dropoff_location}</div>}
-                  {opt.arrival_date && (
-                    <div className="text-sm text-slate-600">
-                      {formatDateNice(opt.arrival_date)}
-                      {opt.arrival_time && <span className="ml-1 text-slate-500">at {formatTime(opt.arrival_time)}</span>}
-                    </div>
-                  )}
-                </div>
-              )}
+      {/* Detail content — aligned with title */}
+      <div className="flex-1 min-w-0">
+        {/* Header */}
+        <div className="flex items-start justify-between mb-4">
+          <div>
+            <h3 className="text-xl font-bold text-slate-800">{opt.name}</h3>
+            {opt.provider && <span className="text-xs text-slate-400">via {opt.provider}</span>}
+          </div>
+          {opt.price != null && opt.price > 0 && (
+            <div className="text-right flex-shrink-0 ml-4">
+              <div className="text-2xl font-bold text-slate-800">
+                {formatPrice(opt.price, opt.currency)}
+              </div>
+              <div className="text-xs text-slate-400">{opt.price_per || "total"}</div>
             </div>
           )}
-
-          {/* Rental extras */}
-          <div className={LABEL_MB2}>Rental Details</div>
-          <div className="flex flex-wrap gap-2">
-            {opt.insurance_included && (
-              <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-emerald-100 text-emerald-800">
-                ✓ Insurance included
-              </span>
-            )}
-            {opt.mileage_policy && (
-              <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-slate-100 text-slate-800">
-                {opt.mileage_policy}
-              </span>
-            )}
-          </div>
         </div>
-      )}
 
+        {/* Stats row */}
+        <div className="flex gap-4 mb-4 text-sm text-slate-600 flex-wrap">
+          {opt.vehicle_type && (
+            <div><span className={LABEL}>Vehicle/Class</span><div className="font-medium">{opt.vehicle_type}{opt.class_type ? ` (${opt.class_type})` : ""}</div></div>
+          )}
+          {opt.class_type && !opt.vehicle_type && (
+            <div><span className={LABEL}>Class</span><div className="font-medium">{opt.class_type}</div></div>
+          )}
+          {opt.duration_minutes && opt.category !== "car_rental" && (
+            <div><span className={LABEL}>Duration</span><div className="font-medium">{formatDuration(opt.duration_minutes)}</div></div>
+          )}
+          {opt.passengers && (
+            <div><span className={LABEL}>Passengers</span><div className="font-medium">{opt.passengers}</div></div>
+          )}
+          {opt.service_name && (
+            <div><span className={LABEL}>Service</span><div className="font-medium">{opt.service_name}</div></div>
+          )}
+        </div>
 
-      {/* Notes */}
-      <EditableNotes notes={opt.notes} onSave={onNotesChange} />
+        {/* Description */}
+        {opt.description && (
+          <div className="mb-4">
+            <p className="text-sm text-slate-600 leading-relaxed">{opt.description}</p>
+          </div>
+        )}
 
-      {/* Source thumbnails */}
-      <SourceThumbnails
-        screenshotUrl={opt.screenshot_url}
-        sourceUrl={opt.source_url}
-        manualData={[
-          { label: "Category", value: opt.category ? getCategoryInfo(opt.category).label : "" },
-          { label: "Vehicle", value: opt.vehicle_type || "" },
-          { label: "Price", value: opt.price ? formatPrice(opt.price, opt.currency) : "" },
-          { label: "Route", value: opt.pickup_location && opt.dropoff_location ? `${opt.pickup_location} → ${opt.dropoff_location}` : "" },
-        ]}
-        accentColor="violet"
-      />
+        {/* Car rental specific */}
+        {opt.category === "car_rental" && (
+          <div className="mb-4">
+            {/* Pickup & Dropoff */}
+            {(opt.pickup_location || opt.departure_date || opt.dropoff_location || opt.arrival_date) && (
+              <div className="flex gap-6 mb-3">
+                {(opt.pickup_location || opt.departure_date) && (
+                  <div>
+                    <div className={LABEL_MB1}>Pick Up</div>
+                    {opt.pickup_location && <div className="text-sm font-medium text-slate-700">{opt.pickup_location}</div>}
+                    {opt.departure_date && (
+                      <div className="text-sm text-slate-600">
+                        {formatDateNice(opt.departure_date)}
+                        {opt.departure_time && <span className="ml-1 text-slate-500">at {formatTime(opt.departure_time)}</span>}
+                      </div>
+                    )}
+                  </div>
+                )}
+                {(opt.dropoff_location || opt.arrival_date) && (
+                  <div>
+                    <div className={LABEL_MB1}>Drop Off</div>
+                    {opt.dropoff_location && <div className="text-sm font-medium text-slate-700">{opt.dropoff_location}</div>}
+                    {opt.arrival_date && (
+                      <div className="text-sm text-slate-600">
+                        {formatDateNice(opt.arrival_date)}
+                        {opt.arrival_time && <span className="ml-1 text-slate-500">at {formatTime(opt.arrival_time)}</span>}
+                      </div>
+                    )}
+                  </div>
+                )}
+              </div>
+            )}
+
+            {/* Rental extras */}
+            <div className={LABEL_MB2}>Rental Details</div>
+            <div className="flex flex-wrap gap-2">
+              {opt.insurance_included && (
+                <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-emerald-100 text-emerald-800">
+                  ✓ Insurance included
+                </span>
+              )}
+              {opt.mileage_policy && (
+                <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-slate-100 text-slate-800">
+                  {opt.mileage_policy}
+                </span>
+              )}
+            </div>
+          </div>
+        )}
+
+        {/* Notes */}
+        <EditableNotes notes={opt.notes} onSave={onNotesChange} />
+
+        {/* Source thumbnails */}
+        <SourceThumbnails
+          screenshotUrl={opt.screenshot_url}
+          sourceUrl={opt.source_url}
+          manualData={[
+            { label: "Category", value: opt.category ? getCategoryInfo(opt.category).label : "" },
+            { label: "Vehicle", value: opt.vehicle_type || "" },
+            { label: "Price", value: opt.price ? formatPrice(opt.price, opt.currency) : "" },
+            { label: "Route", value: opt.pickup_location && opt.dropoff_location ? `${opt.pickup_location} → ${opt.dropoff_location}` : "" },
+          ]}
+          accentColor="violet"
+        />
+      </div>
     </div>
   );
 }

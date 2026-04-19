@@ -3020,3 +3020,1662 @@ Import traces:
  GET /trips/01624469-a516-4633-a69d-e83743d1d44b 200 in 125ms (next.js: 91ms, application-code: 34ms)
 Γ£ô Compiled in 97ms
  GET /trips/01624469-a516-4633-a69d-e83743d1d44b 200 in 476ms (next.js: 115ms, application-code: 361ms)
+Γ£ô Compiled in 548ms
+ GET /trips/01624469-a516-4633-a69d-e83743d1d44b 200 in 1365ms (next.js: 856ms, application-code: 509ms)
+Γ£ô Compiled in 160ms
+ GET /trips/01624469-a516-4633-a69d-e83743d1d44b 200 in 463ms (next.js: 401ms, application-code: 61ms)
+Γ£ô Compiled in 117ms
+ GET /trips/01624469-a516-4633-a69d-e83743d1d44b 200 in 144ms (next.js: 107ms, application-code: 36ms)
+Γ£ô Compiled in 83ms
+ GET /trips/01624469-a516-4633-a69d-e83743d1d44b 200 in 140ms (next.js: 89ms, application-code: 52ms)
+Γ£ô Compiled in 131ms
+ GET /trips/01624469-a516-4633-a69d-e83743d1d44b 200 in 141ms (next.js: 92ms, application-code: 49ms)
+Γ£ô Compiled in 447ms
+ GET /trips/01624469-a516-4633-a69d-e83743d1d44b 200 in 1841ms (next.js: 756ms, application-code: 1084ms)
+Γ£ô Compiled in 239ms
+ GET /trips/01624469-a516-4633-a69d-e83743d1d44b 200 in 390ms (next.js: 215ms, application-code: 175ms)
+Γ£ô Compiled in 76ms
+ GET /trips/01624469-a516-4633-a69d-e83743d1d44b 200 in 125ms (next.js: 90ms, application-code: 36ms)
+Γ£ô Compiled in 131ms
+ GET /trips/01624469-a516-4633-a69d-e83743d1d44b 200 in 164ms (next.js: 87ms, application-code: 77ms)
+Γ£ô Compiled in 81ms
+ GET /trips/01624469-a516-4633-a69d-e83743d1d44b 200 in 147ms (next.js: 103ms, application-code: 44ms)
+Γ£ô Compiled in 526ms
+ GET /trips/01624469-a516-4633-a69d-e83743d1d44b 200 in 217ms (next.js: 40ms, application-code: 177ms)
+ GET /trips/01624469-a516-4633-a69d-e83743d1d44b 200 in 2.2s (next.js: 713ms, application-code: 1448ms)
+ GET /trips/01624469-a516-4633-a69d-e83743d1d44b 200 in 1167ms (next.js: 6ms, application-code: 1161ms)
+Γ£ô Compiled in 327ms
+ GET /trips/01624469-a516-4633-a69d-e83743d1d44b 200 in 497ms (next.js: 308ms, application-code: 189ms)
+Γ£ô Compiled in 114ms
+ GET /trips/01624469-a516-4633-a69d-e83743d1d44b 200 in 137ms (next.js: 99ms, application-code: 38ms)
+Γ£ô Compiled in 181ms
+ GET /trips/01624469-a516-4633-a69d-e83743d1d44b 200 in 177ms (next.js: 136ms, application-code: 41ms)
+Γ£ô Compiled in 126ms
+ GET /trips/01624469-a516-4633-a69d-e83743d1d44b 200 in 174ms (next.js: 129ms, application-code: 45ms)
+Γ£ô Compiled in 97ms
+ GET /trips/01624469-a516-4633-a69d-e83743d1d44b 200 in 124ms (next.js: 88ms, application-code: 36ms)
+Γ£ô Compiled in 95ms
+ GET /trips/01624469-a516-4633-a69d-e83743d1d44b 200 in 124ms (next.js: 89ms, application-code: 36ms)
+Γ£ô Compiled in 64ms
+ GET /trips/01624469-a516-4633-a69d-e83743d1d44b 200 in 155ms (next.js: 94ms, application-code: 61ms)
+Γ£ô Compiled in 607ms
+ GET /trips/01624469-a516-4633-a69d-e83743d1d44b 200 in 1977ms (next.js: 1276ms, application-code: 701ms)
+Γ£ô Compiled in 866ms
+ GET /trips/01624469-a516-4633-a69d-e83743d1d44b 200 in 656ms (next.js: 453ms, application-code: 203ms)
+Γ£ô Compiled in 103ms
+ GET /trips/01624469-a516-4633-a69d-e83743d1d44b 200 in 163ms (next.js: 101ms, application-code: 61ms)
+Γ£ô Compiled in 270ms
+ GET /trips/01624469-a516-4633-a69d-e83743d1d44b 200 in 195ms (next.js: 93ms, application-code: 102ms)
+Γ£ô Compiled in 76ms
+ GET /trips/01624469-a516-4633-a69d-e83743d1d44b 200 in 138ms (next.js: 100ms, application-code: 38ms)
+Γ£ô Compiled in 78ms
+ GET /trips/01624469-a516-4633-a69d-e83743d1d44b 200 in 141ms (next.js: 104ms, application-code: 37ms)
+[browser] Uncaught ReferenceError: cuisine is not defined
+    at OptionDetail (src/components/DiningOptions.js:275:96)
+    at DiningOptions (src/components/DiningOptions.js:132:116)
+    at TripDetailPage (src/app/trips/[id]/page.js:1262:80)
+  273 | ...
+  274 | ...-1 flex-wrap">
+> 275 | ...er px-2 py-0.5 rounded text-xs font-bold ${cuisine.color}`}>
+      |                                               ^
+  276 | ...
+  277 | ...
+  278 | ...
+ΓÜá Fast Refresh had to perform a full reload due to a runtime error.
+Γ£ô Compiled in 64ms
+ GET /trips/01624469-a516-4633-a69d-e83743d1d44b 200 in 528ms (next.js: 94ms, application-code: 434ms)
+Γ£ô Compiled in 259ms
+ GET /trips/01624469-a516-4633-a69d-e83743d1d44b 200 in 188ms (next.js: 98ms, application-code: 90ms)
+ GET /trips/01624469-a516-4633-a69d-e83743d1d44b 200 in 163ms (next.js: 3ms, application-code: 160ms)
+ GET /trips/01624469-a516-4633-a69d-e83743d1d44b 200 in 156ms (next.js: 7ms, application-code: 150ms)
+ GET /trips/01624469-a516-4633-a69d-e83743d1d44b 200 in 157ms (next.js: 29ms, application-code: 128ms)
+ GET /trips/01624469-a516-4633-a69d-e83743d1d44b 200 in 159ms (next.js: 51ms, application-code: 109ms)
+ GET /trips/01624469-a516-4633-a69d-e83743d1d44b 200 in 161ms (next.js: 69ms, application-code: 92ms)
+ GET /trips/01624469-a516-4633-a69d-e83743d1d44b 200 in 52ms (next.js: 8ms, application-code: 43ms)
+Γ£ô Compiled in 62ms
+ GET /trips/01624469-a516-4633-a69d-e83743d1d44b 200 in 122ms (next.js: 89ms, application-code: 33ms)
+Γ£ô Compiled in 155ms
+ GET /trips/01624469-a516-4633-a69d-e83743d1d44b 200 in 236ms (next.js: 147ms, application-code: 89ms)
+ GET /trips/01624469-a516-4633-a69d-e83743d1d44b 200 in 85ms (next.js: 5ms, application-code: 80ms)
+ GET /trips/01624469-a516-4633-a69d-e83743d1d44b 200 in 41ms (next.js: 3ms, application-code: 38ms)
+Γ£ô Compiled in 65ms
+ GET /trips/01624469-a516-4633-a69d-e83743d1d44b 200 in 129ms (next.js: 94ms, application-code: 34ms)
+Γ£ô Compiled in 67ms
+ GET /trips/01624469-a516-4633-a69d-e83743d1d44b 200 in 146ms (next.js: 97ms, application-code: 49ms)
+[browser] Uncaught ReferenceError: cat is not defined
+    at OptionDetail (src/components/ActivityOptions.js:261:96)
+    at ActivityOptions (src/components/ActivityOptions.js:149:15)
+    at TripDetailPage (src/app/trips/[id]/page.js:1252:15)
+  259 | ...
+  260 | ...-1">
+> 261 | ...er px-2 py-0.5 rounded text-xs font-bold ${cat.color}`}>
+      |                                               ^
+  262 | ...
+  263 | ...
+  264 | ...s text-slate-400">via {opt.provider}</span>}
+Γ£ô Compiled in 107ms
+ΓÜá Fast Refresh had to perform a full reload due to a runtime error.
+ GET /trips/01624469-a516-4633-a69d-e83743d1d44b 200 in 546ms (next.js: 167ms, application-code: 379ms)
+Γ£ô Compiled in 68ms
+ GET /trips/01624469-a516-4633-a69d-e83743d1d44b 200 in 138ms (next.js: 85ms, application-code: 53ms)
+Γ£ô Compiled in 66ms
+ GET /trips/01624469-a516-4633-a69d-e83743d1d44b 200 in 127ms (next.js: 96ms, application-code: 30ms)
+Γ£ô Compiled in 110ms
+ GET /trips/01624469-a516-4633-a69d-e83743d1d44b 200 in 137ms (next.js: 92ms, application-code: 44ms)
+Γ£ô Compiled in 78ms
+ GET /trips/01624469-a516-4633-a69d-e83743d1d44b 200 in 175ms (next.js: 94ms, application-code: 81ms)
+Γ£ô Compiled in 69ms
+ GET /trips/01624469-a516-4633-a69d-e83743d1d44b 200 in 141ms (next.js: 103ms, application-code: 38ms)
+Γ£ô Compiled in 106ms
+ GET /trips/01624469-a516-4633-a69d-e83743d1d44b 200 in 113ms (next.js: 80ms, application-code: 33ms)
+Γ£ô Compiled in 72ms
+ GET /trips/01624469-a516-4633-a69d-e83743d1d44b 200 in 618ms (next.js: 85ms, application-code: 533ms)
+ GET /trips/01624469-a516-4633-a69d-e83743d1d44b 200 in 506ms (next.js: 41ms, application-code: 465ms)
+ GET /trips/01624469-a516-4633-a69d-e83743d1d44b 200 in 161ms (next.js: 9ms, application-code: 152ms)
+ GET /trips/01624469-a516-4633-a69d-e83743d1d44b 200 in 163ms (next.js: 33ms, application-code: 130ms)
+ GET /trips/01624469-a516-4633-a69d-e83743d1d44b 200 in 186ms (next.js: 62ms, application-code: 124ms)
+ GET /trips/01624469-a516-4633-a69d-e83743d1d44b 200 in 188ms (next.js: 85ms, application-code: 103ms)
+ GET /trips/01624469-a516-4633-a69d-e83743d1d44b 200 in 72ms (next.js: 11ms, application-code: 61ms)
+ GET /trips/01624469-a516-4633-a69d-e83743d1d44b 200 in 35ms (next.js: 6ms, application-code: 29ms)
+Γ£ô Compiled in 249ms
+ GET /trips/01624469-a516-4633-a69d-e83743d1d44b 200 in 202ms (next.js: 115ms, application-code: 87ms)
+ GET /trips/01624469-a516-4633-a69d-e83743d1d44b 200 in 69ms (next.js: 4ms, application-code: 64ms)
+ GET /trips/01624469-a516-4633-a69d-e83743d1d44b 200 in 38ms (next.js: 3ms, application-code: 36ms)
+Γ£ô Compiled in 67ms
+ GET /trips/01624469-a516-4633-a69d-e83743d1d44b 200 in 201ms (next.js: 112ms, application-code: 89ms)
+Γ£ô Compiled in 73ms
+ GET /trips/01624469-a516-4633-a69d-e83743d1d44b 200 in 143ms (next.js: 96ms, application-code: 48ms)
+[browser] Uncaught ReferenceError: cat is not defined
+    at OptionDetail (src/components/AccommodationOptions.js:230:96)
+    at TripDetailPage (src/app/trips/[id]/page.js:1241:15)
+  228 | ...
+  229 | ...-1">
+> 230 | ...er px-2 py-0.5 rounded text-xs font-bold ${cat.color}`}>
+      |                                               ^
+  231 | ...
+  232 | ...
+  233 | ...s text-slate-400">via {opt.provider}</span>}
+Γ£ô Compiled in 94ms
+ΓÜá Fast Refresh had to perform a full reload due to a runtime error.
+ GET /trips/01624469-a516-4633-a69d-e83743d1d44b 200 in 401ms (next.js: 100ms, application-code: 301ms)
+Γ£ô Compiled in 92ms
+ GET /trips/01624469-a516-4633-a69d-e83743d1d44b 200 in 146ms (next.js: 102ms, application-code: 44ms)
+Γ£ô Compiled in 80ms
+ GET /trips/01624469-a516-4633-a69d-e83743d1d44b 200 in 176ms (next.js: 105ms, application-code: 71ms)
+ GET /trips/01624469-a516-4633-a69d-e83743d1d44b 200 in 64ms (next.js: 3ms, application-code: 61ms)
+ GET /trips/01624469-a516-4633-a69d-e83743d1d44b 200 in 33ms (next.js: 4ms, application-code: 29ms)
+Γ£ô Compiled in 423ms
+ GET /trips/01624469-a516-4633-a69d-e83743d1d44b 200 in 2.1s (next.js: 1493ms, application-code: 632ms)
+Γ£ô Compiled in 91ms
+ GET /trips/01624469-a516-4633-a69d-e83743d1d44b 200 in 505ms (next.js: 419ms, application-code: 86ms)
+Γ£ô Compiled in 72ms
+ GET /trips/01624469-a516-4633-a69d-e83743d1d44b 200 in 312ms (next.js: 155ms, application-code: 157ms)
+Γ£ô Compiled in 85ms
+ GET /trips/01624469-a516-4633-a69d-e83743d1d44b 200 in 260ms (next.js: 182ms, application-code: 78ms)
+Γ£ô Compiled in 105ms
+ GET /trips/01624469-a516-4633-a69d-e83743d1d44b 200 in 156ms (next.js: 106ms, application-code: 50ms)
+Γ£ô Compiled in 74ms
+ GET /trips/01624469-a516-4633-a69d-e83743d1d44b 200 in 831ms (next.js: 117ms, application-code: 714ms)
+Γ£ô Compiled in 196ms
+ GET /trips/01624469-a516-4633-a69d-e83743d1d44b 200 in 377ms (next.js: 176ms, application-code: 201ms)
+ GET /trips/01624469-a516-4633-a69d-e83743d1d44b 200 in 173ms (next.js: 4ms, application-code: 169ms)
+ GET /trips/01624469-a516-4633-a69d-e83743d1d44b 200 in 132ms (next.js: 7ms, application-code: 125ms)
+ GET /trips/01624469-a516-4633-a69d-e83743d1d44b 200 in 149ms (next.js: 50ms, application-code: 99ms)
+ GET /trips/01624469-a516-4633-a69d-e83743d1d44b 200 in 150ms (next.js: 32ms, application-code: 118ms)
+ GET /trips/01624469-a516-4633-a69d-e83743d1d44b 200 in 150ms (next.js: 71ms, application-code: 79ms)
+ GET /trips/01624469-a516-4633-a69d-e83743d1d44b 200 in 51ms (next.js: 4ms, application-code: 47ms)
+ GET /trips/01624469-a516-4633-a69d-e83743d1d44b 200 in 23ms (next.js: 3ms, application-code: 21ms)
+Γ£ô Compiled in 136ms
+ GET /trips/01624469-a516-4633-a69d-e83743d1d44b 200 in 155ms (next.js: 112ms, application-code: 42ms)
+Γ£ô Compiled in 69ms
+ GET /trips/01624469-a516-4633-a69d-e83743d1d44b 200 in 172ms (next.js: 118ms, application-code: 54ms)
+Γ£ô Compiled in 177ms
+ GET /trips/01624469-a516-4633-a69d-e83743d1d44b 200 in 298ms (next.js: 179ms, application-code: 119ms)
+Γ£ô Compiled in 71ms
+ GET /trips/01624469-a516-4633-a69d-e83743d1d44b 200 in 137ms (next.js: 95ms, application-code: 41ms)
+Γ£ô Compiled in 126ms
+Γ£ô Compiled in 548ms
+ GET /trips/01624469-a516-4633-a69d-e83743d1d44b 200 in 389ms (next.js: 177ms, application-code: 212ms)
+ GET /trips/01624469-a516-4633-a69d-e83743d1d44b 200 in 95ms (next.js: 6ms, application-code: 89ms)
+ GET /trips/01624469-a516-4633-a69d-e83743d1d44b 200 in 49ms (next.js: 2ms, application-code: 47ms)
+Γ£ô Compiled in 75ms
+ GET /trips/01624469-a516-4633-a69d-e83743d1d44b 200 in 142ms (next.js: 105ms, application-code: 37ms)
+[browser] Uncaught ReferenceError: showSourceConfirm is not defined
+    at OptionDetail (src/components/FlightOptions.js:347:16)
+    at FlightOptions (file://C:/Users/shayn/Documents/tripcraft/.next/dev/static/chunks/src_components_0mjxikb._.js:316:251)
+    at TripDetailPage (src/app/trips/[id]/page.js:1230:15)
+  345 |                 View Source
+  346 |               </button>
+> 347 |               {showSourceConfirm && (
+      |                ^
+  348 |                 <div className="absolute bottom-full left-0 mb-2 bg-white rounded-lg shad...
+  349 |                   <p className="text-xs text-slate-600 mb-2">Open this link in a new tab?...
+  350 |                   <p className="text-xs text-slate-400 truncate mb-3">{option.source_url}...
+ΓÜá Fast Refresh had to perform a full reload due to a runtime error.
+Γ£ô Compiled in 86ms
+ GET /trips/01624469-a516-4633-a69d-e83743d1d44b 200 in 875ms (next.js: 130ms, application-code: 746ms)
+Γ£ô Compiled in 213ms
+ GET /trips/01624469-a516-4633-a69d-e83743d1d44b 200 in 302ms (next.js: 142ms, application-code: 160ms)
+Γ£ô Compiled in 121ms
+ GET /trips/01624469-a516-4633-a69d-e83743d1d44b 200 in 114ms (next.js: 79ms, application-code: 35ms)
+[browser] Uncaught ReferenceError: showScreenshot is not defined
+    at OptionDetail (src/components/DiningOptions.js:401:16)
+    at TripDetailPage (src/app/trips/[id]/page.js:1263:15)
+  399 |                 View Screenshot
+  400 |               </button>
+> 401 |               {showScreenshot && (
+      |                ^
+  402 |                 <div className="mt-2">
+  403 |                   <img src={opt.screenshot_url} alt="Dining screenshot"
+  404 |                     className="rounded-lg border border-slate-200 max-h-48 object-contain...
+Γ£ô Compiled in 98ms
+ΓÜá Fast Refresh had to perform a full reload due to a runtime error.
+ GET /trips/01624469-a516-4633-a69d-e83743d1d44b 200 in 406ms (next.js: 111ms, application-code: 296ms)
+Γ£ô Compiled in 87ms
+ GET /trips/01624469-a516-4633-a69d-e83743d1d44b 200 in 322ms (next.js: 160ms, application-code: 162ms)
+Γ£ô Compiled in 73ms
+ GET /trips/01624469-a516-4633-a69d-e83743d1d44b 200 in 203ms (next.js: 110ms, application-code: 93ms)
+[browser] Uncaught ReferenceError: showSourceConfirm is not defined
+    at OptionDetail (src/components/ActivityOptions.js:378:16)
+    at TripDetailPage (src/app/trips/[id]/page.js:1252:15)
+  376 |                 View Source
+  377 |               </button>
+> 378 |               {showSourceConfirm && (
+      |                ^
+  379 |                 <div className="absolute bottom-full left-0 mb-2 bg-white rounded-lg shad...
+  380 |                   <p className="text-xs text-slate-600 mb-2">Open this link in a new tab?...
+  381 |                   <p className="text-xs text-slate-400 truncate mb-3">{opt.source_url}</p>
+ΓÜá Fast Refresh had to perform a full reload due to a runtime error.
+Γ£ô Compiled in 60ms
+ GET /trips/01624469-a516-4633-a69d-e83743d1d44b 200 in 352ms (next.js: 105ms, application-code: 247ms)
+Γ£ô Compiled in 83ms
+ GET /trips/01624469-a516-4633-a69d-e83743d1d44b 200 in 142ms (next.js: 99ms, application-code: 44ms)
+Γ£ô Compiled in 81ms
+ GET /trips/01624469-a516-4633-a69d-e83743d1d44b 200 in 123ms (next.js: 89ms, application-code: 34ms)
+[browser] Uncaught ReferenceError: showSourceConfirm is not defined
+    at OptionDetail (src/components/TransportationOptions.js:345:16)
+    at TransportationOptions (src/components/TransportationOptions.js:150:12)
+    at TripDetailPage (src/app/trips/[id]/page.js:1274:15)
+  343 |                 View Source
+  344 |               </button>
+> 345 |               {showSourceConfirm && (
+      |                ^
+  346 |                 <div className="absolute bottom-full left-0 mb-2 bg-white rounded-lg shad...
+  347 |                   <p className="text-xs text-slate-600 mb-2">Open this link in a new tab?...
+  348 |                   <p className="text-xs text-slate-400 truncate mb-3">{opt.source_url}</p>
+Γ£ô Compiled in 79ms
+ΓÜá Fast Refresh had to perform a full reload due to a runtime error.
+ GET /trips/01624469-a516-4633-a69d-e83743d1d44b 200 in 546ms (next.js: 116ms, application-code: 430ms)
+Γ£ô Compiled in 69ms
+ GET /trips/01624469-a516-4633-a69d-e83743d1d44b 200 in 147ms (next.js: 107ms, application-code: 39ms)
+Γ£ô Compiled in 80ms
+ GET /trips/01624469-a516-4633-a69d-e83743d1d44b 200 in 135ms (next.js: 99ms, application-code: 36ms)
+[browser] Uncaught ReferenceError: showScreenshot is not defined
+    at OptionDetail (src/components/AccommodationOptions.js:333:16)
+    at AccommodationOptions (src/components/AccommodationOptions.js:132:12)
+    at TripDetailPage (src/app/trips/[id]/page.js:1241:15)
+  331 |                 View Screenshot
+  332 |               </button>
+> 333 |               {showScreenshot && (
+      |                ^
+  334 |                 <div className="mt-2">
+  335 |                   <img src={opt.screenshot_url} alt="Accommodation screenshot"
+  336 |                     className="rounded-lg border border-slate-200 max-h-48 object-contain...
+Γ£ô Compiled in 65ms
+ΓÜá Fast Refresh had to perform a full reload due to a runtime error.
+ GET /trips/01624469-a516-4633-a69d-e83743d1d44b 200 in 384ms (next.js: 106ms, application-code: 277ms)
+Γ£ô Compiled in 660ms
+ GET /trips/01624469-a516-4633-a69d-e83743d1d44b 200 in 1692ms (next.js: 1246ms, application-code: 446ms)
+Γ£ô Compiled in 67ms
+ GET /trips/01624469-a516-4633-a69d-e83743d1d44b 200 in 219ms (next.js: 140ms, application-code: 79ms)
+Γ£ô Compiled in 138ms
+ GET /trips/01624469-a516-4633-a69d-e83743d1d44b 200 in 262ms (next.js: 194ms, application-code: 68ms)
+Γ£ô Compiled in 87ms
+ GET /trips/01624469-a516-4633-a69d-e83743d1d44b 200 in 166ms (next.js: 118ms, application-code: 48ms)
+ GET /trips/01624469-a516-4633-a69d-e83743d1d44b 200 in 2.4s (next.js: 467ms, application-code: 1894ms)
+Γ£ô Compiled in 514ms
+ GET /trips/01624469-a516-4633-a69d-e83743d1d44b 200 in 1861ms (next.js: 905ms, application-code: 956ms)
+Γ£ô Compiled in 446ms
+ GET /trips/01624469-a516-4633-a69d-e83743d1d44b 200 in 493ms (next.js: 345ms, application-code: 148ms)
+Γ£ô Compiled in 281ms
+Γ£ô Compiled in 390ms
+ GET /trips/01624469-a516-4633-a69d-e83743d1d44b 200 in 312ms (next.js: 156ms, application-code: 156ms)
+ GET /trips/01624469-a516-4633-a69d-e83743d1d44b 200 in 122ms (next.js: 74ms, application-code: 49ms)
+Γ£ô Compiled in 79ms
+ GET /trips/01624469-a516-4633-a69d-e83743d1d44b 200 in 194ms (next.js: 106ms, application-code: 88ms)
+[browser] Uncaught ReferenceError: tripDates is not defined
+    at OptionDetail (src/components/DiningOptions.js:292:8)
+    at DiningOptions (file://C:/Users/shayn/Documents/tripcraft/.next/dev/static/chunks/src_components_0psspvv._.js:5992:248)
+    at TripDetailPage (src/app/trips/[id]/page.js:1263:15)
+  290 |
+  291 |       {/* Add to itinerary ΓÇö day buttons open time picker */}
+> 292 |       {tripDates.length > 0 && (
+      |        ^
+  293 |         <div className="mb-4">
+  294 |           <div className="text-xs text-slate-400 uppercase tracking-wide mb-2">Add to iti...
+  295 |           <div className="flex flex-wrap gap-1">
+ΓÜá Fast Refresh had to perform a full reload due to a runtime error.
+Γ£ô Compiled in 71ms
+ GET /trips/01624469-a516-4633-a69d-e83743d1d44b 200 in 617ms (next.js: 110ms, application-code: 507ms)
+Γ£ô Compiled in 141ms
+ GET /trips/01624469-a516-4633-a69d-e83743d1d44b 200 in 259ms (next.js: 108ms, application-code: 151ms)
+ GET /trips/01624469-a516-4633-a69d-e83743d1d44b 200 in 44ms (next.js: 5ms, application-code: 40ms)
+Γ£ô Compiled in 78ms
+ GET /trips/01624469-a516-4633-a69d-e83743d1d44b 200 in 218ms (next.js: 103ms, application-code: 115ms)
+[browser] Uncaught ReferenceError: tripDates is not defined
+    at OptionDetail (src/components/ActivityOptions.js:253:8)
+    at TripDetailPage (src/app/trips/[id]/page.js:1252:15)
+  251 |
+  252 |       {/* Add to itinerary ΓÇö day buttons open time picker */}
+> 253 |       {tripDates.length > 0 && (
+      |        ^
+  254 |         <div className="mb-4">
+  255 |           <div className="text-xs text-slate-400 uppercase tracking-wide mb-2">Add to iti...
+  256 |           <div className="flex flex-wrap gap-1">
+Γ£ô Compiled in 78ms
+ΓÜá Fast Refresh had to perform a full reload due to a runtime error.
+ GET /trips/01624469-a516-4633-a69d-e83743d1d44b 200 in 428ms (next.js: 127ms, application-code: 301ms)
+Γ£ô Compiled in 112ms
+ GET /trips/01624469-a516-4633-a69d-e83743d1d44b 200 in 132ms (next.js: 94ms, application-code: 38ms)
+Γ£ô Compiled in 959ms
+ GET /trips/01624469-a516-4633-a69d-e83743d1d44b 200 in 2.0s (next.js: 1105ms, application-code: 897ms)
+Γ£ô Compiled in 72ms
+ GET /trips/01624469-a516-4633-a69d-e83743d1d44b 200 in 434ms (next.js: 127ms, application-code: 307ms)
+Γ£ô Compiled in 78ms
+ GET /trips/01624469-a516-4633-a69d-e83743d1d44b 200 in 189ms (next.js: 106ms, application-code: 83ms)
+Γ£ô Compiled in 112ms
+ GET /trips/01624469-a516-4633-a69d-e83743d1d44b 200 in 166ms (next.js: 89ms, application-code: 77ms)
+Γ£ô Compiled in 715ms
+ GET /trips/01624469-a516-4633-a69d-e83743d1d44b 200 in 762ms (next.js: 475ms, application-code: 287ms)
+[browser] Uncaught ReferenceError: getMonthLabel is not defined
+    at eval (src/components/MiniWeekCalendar.js:146:30)
+    at Array.map (<anonymous>)
+    at MiniWeekCalendar (src/components/MiniWeekCalendar.js:142:16)
+    at TripDetailPage (src/app/trips/[id]/page.js:1252:15)
+  144 |           const firstTripDateInWeek = week.find((d) => tripDateSet.has(d.toISOString().sp...
+  145 |           const monthDate = firstTripDateInWeek || week[0];
+> 146 |           const monthLabel = getMonthLabel(monthDate);
+      |                              ^
+  147 |           const showMonth = monthLabel !== lastMonthShown;
+  148 |           if (showMonth) lastMonthShown = monthLabel;
+  149 |
+ΓÜá Fast Refresh had to perform a full reload due to a runtime error.
+Γ£ô Compiled in 87ms
+ GET /trips/01624469-a516-4633-a69d-e83743d1d44b 200 in 1850ms (next.js: 330ms, application-code: 1520ms)
+Γ£ô Compiled in 106ms
+ GET /trips/01624469-a516-4633-a69d-e83743d1d44b 200 in 265ms (next.js: 150ms, application-code: 115ms)
+[browser] Uncaught ReferenceError: getMonthLabel is not defined
+    at eval (src/components/MiniWeekCalendar.js:138:30)
+    at Array.map (<anonymous>)
+    at MiniWeekCalendar (src/components/MiniWeekCalendar.js:134:16)
+    at DiningOptions (src/components/DiningOptions.js:160:46)
+    at TripDetailPage (src/app/trips/[id]/page.js:1263:15)
+  136 |           const firstTripDateInWeek = week.find((d) => tripDateSet.has(d.toISOString().sp...
+  137 |           const monthDate = firstTripDateInWeek || week[0];
+> 138 |           const monthLabel = getMonthLabel(monthDate);
+      |                              ^
+  139 |           const showMonth = monthLabel !== lastMonthShown;
+  140 |           if (showMonth) lastMonthShown = monthLabel;
+  141 |
+ΓÜá Fast Refresh had to perform a full reload due to a runtime error.
+Γ£ô Compiled in 68ms
+ GET /trips/01624469-a516-4633-a69d-e83743d1d44b 200 in 461ms (next.js: 137ms, application-code: 324ms)
+Γ£ô Compiled in 73ms
+ GET /trips/01624469-a516-4633-a69d-e83743d1d44b 200 in 172ms (next.js: 119ms, application-code: 53ms)
+Γ£ô Compiled in 346ms
+ GET /trips/01624469-a516-4633-a69d-e83743d1d44b 200 in 1047ms (next.js: 740ms, application-code: 307ms)
+Γ£ô Compiled in 65ms
+ GET /trips/01624469-a516-4633-a69d-e83743d1d44b 200 in 709ms (next.js: 161ms, application-code: 549ms)
+ GET /trips/01624469-a516-4633-a69d-e83743d1d44b 200 in 606ms (next.js: 56ms, application-code: 551ms)
+Γ£ô Compiled in 471ms
+ GET /trips/01624469-a516-4633-a69d-e83743d1d44b 200 in 551ms (next.js: 345ms, application-code: 206ms)
+Γ£ô Compiled in 188ms
+ GET /trips/01624469-a516-4633-a69d-e83743d1d44b 200 in 173ms (next.js: 108ms, application-code: 65ms)
+Γ£ô Compiled in 109ms
+ GET /trips/01624469-a516-4633-a69d-e83743d1d44b 200 in 141ms (next.js: 83ms, application-code: 58ms)
+Γ£ô Compiled in 73ms
+ GET /trips/01624469-a516-4633-a69d-e83743d1d44b 200 in 321ms (next.js: 144ms, application-code: 178ms)
+Γ£ô Compiled in 69ms
+ GET /trips/01624469-a516-4633-a69d-e83743d1d44b 200 in 113ms (next.js: 78ms, application-code: 35ms)
+Γ£ô Compiled in 68ms
+ GET /trips/01624469-a516-4633-a69d-e83743d1d44b 200 in 192ms (next.js: 110ms, application-code: 81ms)
+Γ£ô Compiled in 61ms
+ GET /trips/01624469-a516-4633-a69d-e83743d1d44b 200 in 148ms (next.js: 104ms, application-code: 43ms)
+Γ£ô Compiled in 110ms
+ GET /trips/01624469-a516-4633-a69d-e83743d1d44b 200 in 338ms (next.js: 156ms, application-code: 181ms)
+Γ£ô Compiled in 92ms
+ GET /trips/01624469-a516-4633-a69d-e83743d1d44b 200 in 203ms (next.js: 146ms, application-code: 57ms)
+Γ£ô Compiled in 71ms
+ GET /trips/01624469-a516-4633-a69d-e83743d1d44b 200 in 164ms (next.js: 114ms, application-code: 50ms)
+ GET /trips/01624469-a516-4633-a69d-e83743d1d44b 200 in 976ms (next.js: 150ms, application-code: 826ms)
+Γ£ô Compiled in 385ms
+ GET /trips/01624469-a516-4633-a69d-e83743d1d44b 200 in 1237ms (next.js: 881ms, application-code: 355ms)
+Γ£ô Compiled in 90ms
+ GET /trips/01624469-a516-4633-a69d-e83743d1d44b 200 in 281ms (next.js: 206ms, application-code: 75ms)
+ GET /trips/01624469-a516-4633-a69d-e83743d1d44b 200 in 168ms (next.js: 105ms, application-code: 63ms)
+Γ£ô Compiled in 448ms
+ GET /trips/01624469-a516-4633-a69d-e83743d1d44b 200 in 1158ms (next.js: 518ms, application-code: 641ms)
+Γ£ô Compiled in 95ms
+ GET /trips/01624469-a516-4633-a69d-e83743d1d44b 200 in 204ms (next.js: 137ms, application-code: 67ms)
+Γ£ô Compiled in 65ms
+ GET /trips/01624469-a516-4633-a69d-e83743d1d44b 200 in 154ms (next.js: 101ms, application-code: 53ms)
+Γ£ô Compiled in 70ms
+ GET /trips/01624469-a516-4633-a69d-e83743d1d44b 200 in 170ms (next.js: 124ms, application-code: 46ms)
+Γ£ô Compiled in 67ms
+ GET /trips/01624469-a516-4633-a69d-e83743d1d44b 200 in 158ms (next.js: 112ms, application-code: 46ms)
+Γ£ô Compiled in 110ms
+ GET /trips/01624469-a516-4633-a69d-e83743d1d44b 200 in 328ms (next.js: 170ms, application-code: 159ms)
+Γ£ô Compiled in 117ms
+ GET /trips/01624469-a516-4633-a69d-e83743d1d44b 200 in 232ms (next.js: 125ms, application-code: 107ms)
+Γ£ô Compiled in 606ms
+Γ£ô Compiled in 485ms
+ GET /trips/01624469-a516-4633-a69d-e83743d1d44b 200 in 1516ms (next.js: 763ms, application-code: 754ms)
+ GET /trips/01624469-a516-4633-a69d-e83743d1d44b 200 in 120ms (next.js: 23ms, application-code: 97ms)
+Γ£ô Compiled in 83ms
+ GET /trips/01624469-a516-4633-a69d-e83743d1d44b 200 in 1293ms (next.js: 168ms, application-code: 1125ms)
+Γ£ô Compiled in 213ms
+ GET /trips/01624469-a516-4633-a69d-e83743d1d44b 200 in 423ms (next.js: 258ms, application-code: 166ms)
+Γ£ô Compiled in 74ms
+ GET /trips/01624469-a516-4633-a69d-e83743d1d44b 200 in 149ms (next.js: 105ms, application-code: 44ms)
+Γ£ô Compiled in 193ms
+ GET /trips/01624469-a516-4633-a69d-e83743d1d44b 200 in 152ms (next.js: 107ms, application-code: 44ms)
+Γ£ô Compiled in 173ms
+ GET /trips/01624469-a516-4633-a69d-e83743d1d44b 200 in 182ms (next.js: 108ms, application-code: 74ms)
+ GET /trips/01624469-a516-4633-a69d-e83743d1d44b 200 in 31ms (next.js: 4ms, application-code: 27ms)
+Γ£ô Compiled in 67ms
+ GET /trips/01624469-a516-4633-a69d-e83743d1d44b 200 in 150ms (next.js: 113ms, application-code: 37ms)
+Γ£ô Compiled in 50ms
+ GET /trips/01624469-a516-4633-a69d-e83743d1d44b 200 in 163ms (next.js: 128ms, application-code: 35ms)
+Γ£ô Compiled in 53ms
+ GET /trips/01624469-a516-4633-a69d-e83743d1d44b 200 in 151ms (next.js: 115ms, application-code: 35ms)
+Γ£ô Compiled in 62ms
+[browser] Uncaught Error: Internal Next.js error: Router action dispatched before initialization.
+ GET /trips/01624469-a516-4633-a69d-e83743d1d44b 200 in 536ms (next.js: 121ms, application-code: 416ms)
+Γ£ô Compiled in 63ms
+ GET /trips/01624469-a516-4633-a69d-e83743d1d44b 200 in 126ms (next.js: 93ms, application-code: 33ms)
+Γ£ô Compiled in 63ms
+ GET /trips/01624469-a516-4633-a69d-e83743d1d44b 200 in 134ms (next.js: 99ms, application-code: 35ms)
+Γ£ô Compiled in 63ms
+ GET /trips/01624469-a516-4633-a69d-e83743d1d44b 200 in 151ms (next.js: 114ms, application-code: 37ms)
+Γ£ô Compiled in 109ms
+ GET /trips/01624469-a516-4633-a69d-e83743d1d44b 200 in 632ms (next.js: 261ms, application-code: 371ms)
+Γ£ô Compiled in 219ms
+ GET /trips/01624469-a516-4633-a69d-e83743d1d44b 200 in 468ms (next.js: 281ms, application-code: 186ms)
+Γ£ô Compiled in 82ms
+ GET /trips/01624469-a516-4633-a69d-e83743d1d44b 200 in 135ms (next.js: 99ms, application-code: 36ms)
+Γ£ô Compiled in 76ms
+ GET /trips/01624469-a516-4633-a69d-e83743d1d44b 200 in 159ms (next.js: 125ms, application-code: 34ms)
+Γ£ô Compiled in 60ms
+ GET /trips/01624469-a516-4633-a69d-e83743d1d44b 200 in 159ms (next.js: 124ms, application-code: 35ms)
+Γ£ô Compiled in 86ms
+ GET /trips/01624469-a516-4633-a69d-e83743d1d44b 200 in 176ms (next.js: 109ms, application-code: 67ms)
+Γ£ô Compiled in 67ms
+ GET /trips/01624469-a516-4633-a69d-e83743d1d44b 200 in 158ms (next.js: 124ms, application-code: 34ms)
+Γ£ô Compiled in 214ms
+ GET /trips/01624469-a516-4633-a69d-e83743d1d44b 200 in 432ms (next.js: 244ms, application-code: 188ms)
+ GET /trips/01624469-a516-4633-a69d-e83743d1d44b 200 in 59ms (next.js: 6ms, application-code: 53ms)
+Γ£ô Compiled in 80ms
+ GET /trips/01624469-a516-4633-a69d-e83743d1d44b 200 in 156ms (next.js: 119ms, application-code: 38ms)
+Γ£ô Compiled in 67ms
+ GET /trips/01624469-a516-4633-a69d-e83743d1d44b 200 in 172ms (next.js: 124ms, application-code: 49ms)
+Γ£ô Compiled in 149ms
+ GET /trips/01624469-a516-4633-a69d-e83743d1d44b 200 in 142ms (next.js: 100ms, application-code: 42ms)
+Γ£ô Compiled in 89ms
+ GET /trips/01624469-a516-4633-a69d-e83743d1d44b 200 in 234ms (next.js: 125ms, application-code: 109ms)
+Γ£ô Compiled in 1038ms
+ GET /trips/01624469-a516-4633-a69d-e83743d1d44b 200 in 1474ms (next.js: 878ms, application-code: 596ms)
+Γ£ô Compiled in 79ms
+ GET /trips/01624469-a516-4633-a69d-e83743d1d44b 200 in 331ms (next.js: 168ms, application-code: 164ms)
+Γ£ô Compiled in 83ms
+ GET /trips/01624469-a516-4633-a69d-e83743d1d44b 200 in 234ms (next.js: 168ms, application-code: 66ms)
+Γ£ô Compiled in 59ms
+ GET /trips/01624469-a516-4633-a69d-e83743d1d44b 200 in 150ms (next.js: 108ms, application-code: 41ms)
+Γ£ô Compiled in 73ms
+ GET /trips/01624469-a516-4633-a69d-e83743d1d44b 200 in 178ms (next.js: 130ms, application-code: 48ms)
+Γ£ô Compiled in 61ms
+ GET /trips/01624469-a516-4633-a69d-e83743d1d44b 200 in 123ms (next.js: 90ms, application-code: 33ms)
+Γ£ô Compiled in 71ms
+ GET /trips/01624469-a516-4633-a69d-e83743d1d44b 200 in 166ms (next.js: 119ms, application-code: 47ms)
+Γ£ô Compiled in 58ms
+ GET /trips/01624469-a516-4633-a69d-e83743d1d44b 200 in 709ms (next.js: 78ms, application-code: 631ms)
+Γ£ô Compiled in 593ms
+Γ£ô Compiled in 1ms
+ GET /trips/01624469-a516-4633-a69d-e83743d1d44b 200 in 1345ms (next.js: 784ms, application-code: 561ms)
+ GET /trips/01624469-a516-4633-a69d-e83743d1d44b 200 in 188ms (next.js: 129ms, application-code: 60ms)
+Γ£ô Compiled in 66ms
+ GET /trips/01624469-a516-4633-a69d-e83743d1d44b 200 in 164ms (next.js: 125ms, application-code: 39ms)
+Γ£ô Compiled in 56ms
+ GET /trips/01624469-a516-4633-a69d-e83743d1d44b 200 in 149ms (next.js: 78ms, application-code: 71ms)
+Γ£ô Compiled in 107ms
+ GET /trips/01624469-a516-4633-a69d-e83743d1d44b 200 in 123ms (next.js: 80ms, application-code: 42ms)
+Γ£ô Compiled in 89ms
+ GET /trips/01624469-a516-4633-a69d-e83743d1d44b 200 in 125ms (next.js: 87ms, application-code: 38ms)
+Γ£ô Compiled in 58ms
+ GET /trips/01624469-a516-4633-a69d-e83743d1d44b 200 in 124ms (next.js: 81ms, application-code: 42ms)
+Γ£ô Compiled in 663ms
+ GET /trips/01624469-a516-4633-a69d-e83743d1d44b 200 in 1180ms (next.js: 743ms, application-code: 437ms)
+Γ£ô Compiled in 718ms
+ GET /trips/01624469-a516-4633-a69d-e83743d1d44b 200 in 1736ms (next.js: 586ms, application-code: 1150ms)
+Γ£ô Compiled in 418ms
+ GET /trips/01624469-a516-4633-a69d-e83743d1d44b 200 in 1118ms (next.js: 926ms, application-code: 192ms)
+Γ£ô Compiled in 638ms
+ GET /trips/01624469-a516-4633-a69d-e83743d1d44b 200 in 1140ms (next.js: 921ms, application-code: 219ms)
+Γ£ô Compiled in 564ms
+ GET /trips/01624469-a516-4633-a69d-e83743d1d44b 200 in 751ms (next.js: 466ms, application-code: 285ms)
+Γ£ô Compiled in 155ms
+ GET /trips/01624469-a516-4633-a69d-e83743d1d44b 200 in 400ms (next.js: 118ms, application-code: 282ms)
+Γ£ô Compiled in 168ms
+ GET /trips/01624469-a516-4633-a69d-e83743d1d44b 200 in 199ms (next.js: 124ms, application-code: 74ms)
+Γ£ô Compiled in 680ms
+Γ£ô Compiled in 527ms
+ GET /trips/01624469-a516-4633-a69d-e83743d1d44b 200 in 1677ms (next.js: 469ms, application-code: 1208ms)
+ GET /trips/01624469-a516-4633-a69d-e83743d1d44b 200 in 813ms (next.js: 276ms, application-code: 536ms)
+ GET /trips/01624469-a516-4633-a69d-e83743d1d44b 200 in 228ms (next.js: 79ms, application-code: 149ms)
+ GET /trips/01624469-a516-4633-a69d-e83743d1d44b 200 in 233ms (next.js: 17ms, application-code: 216ms)
+ GET /trips/01624469-a516-4633-a69d-e83743d1d44b 200 in 229ms (next.js: 149ms, application-code: 79ms)
+Γ£ô Compiled in 66ms
+ GET /trips/01624469-a516-4633-a69d-e83743d1d44b 200 in 156ms (next.js: 114ms, application-code: 42ms)
+Γ£ô Compiled in 92ms
+ GET /trips/01624469-a516-4633-a69d-e83743d1d44b 200 in 1028ms (next.js: 138ms, application-code: 890ms)
+ GET /trips/01624469-a516-4633-a69d-e83743d1d44b 200 in 348ms (next.js: 57ms, application-code: 291ms)
+Γ£ô Compiled in 156ms
+ GET /trips/01624469-a516-4633-a69d-e83743d1d44b 200 in 882ms (next.js: 609ms, application-code: 273ms)
+Γ£ô Compiled in 127ms
+ GET /trips/01624469-a516-4633-a69d-e83743d1d44b 200 in 183ms (next.js: 143ms, application-code: 40ms)
+Γ£ô Compiled in 145ms
+ GET /trips/01624469-a516-4633-a69d-e83743d1d44b 200 in 335ms (next.js: 198ms, application-code: 137ms)
+Γ£ô Compiled in 97ms
+ GET /trips/01624469-a516-4633-a69d-e83743d1d44b 200 in 185ms (next.js: 118ms, application-code: 67ms)
+Γ£ô Compiled in 105ms
+ GET /trips/01624469-a516-4633-a69d-e83743d1d44b 200 in 160ms (next.js: 114ms, application-code: 46ms)
+Γ£ô Compiled in 67ms
+ GET /trips/01624469-a516-4633-a69d-e83743d1d44b 200 in 239ms (next.js: 193ms, application-code: 46ms)
+Γ£ô Compiled in 63ms
+ GET /trips/01624469-a516-4633-a69d-e83743d1d44b 200 in 150ms (next.js: 117ms, application-code: 34ms)
+Γ£ô Compiled in 72ms
+Γ£ô Compiled in 84ms
+ GET /trips/01624469-a516-4633-a69d-e83743d1d44b 200 in 423ms (next.js: 147ms, application-code: 277ms)
+ GET /trips/01624469-a516-4633-a69d-e83743d1d44b 200 in 193ms (next.js: 106ms, application-code: 87ms)
+ GET /trips/01624469-a516-4633-a69d-e83743d1d44b 200 in 40ms (next.js: 5ms, application-code: 35ms)
+Γ£ô Compiled in 69ms
+ GET /trips/01624469-a516-4633-a69d-e83743d1d44b 200 in 155ms (next.js: 111ms, application-code: 44ms)
+Γ£ô Compiled in 68ms
+ GET /trips/01624469-a516-4633-a69d-e83743d1d44b 200 in 134ms (next.js: 79ms, application-code: 55ms)
+Γ£ô Compiled in 96ms
+ GET /trips/01624469-a516-4633-a69d-e83743d1d44b 200 in 123ms (next.js: 91ms, application-code: 33ms)
+Γ£ô Compiled in 68ms
+ GET /trips/01624469-a516-4633-a69d-e83743d1d44b 200 in 140ms (next.js: 105ms, application-code: 36ms)
+Γ£ô Compiled in 456ms
+ GET /trips/01624469-a516-4633-a69d-e83743d1d44b 200 in 784ms (next.js: 332ms, application-code: 452ms)
+Γ£ô Compiled in 163ms
+ GET /trips/01624469-a516-4633-a69d-e83743d1d44b 200 in 468ms (next.js: 290ms, application-code: 178ms)
+[browser] Uncaught TypeError: Cannot read properties of undefined (reading 'appendChild')
+    at MapInner (file://C:/Users/shayn/Documents/tripcraft/.next/dev/static/chunks/src_components_0_lktn1._.js:14567:215)
+    at TripMap (file://C:/Users/shayn/Documents/tripcraft/.next/dev/static/chunks/src_components_0_lktn1._.js:14490:243)
+    at TripDetailPage (src/app/trips/[id]/page.js:1299:17)
+  1297 |               icon: <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="cu...
+  1298 |               content: (
+> 1299 |                 <TripMap
+       |                 ^
+  1300 |                   tripDestination={trip?.destination}
+  1301 |                   tripStart={trip?.start_date}
+  1302 |                   tripEnd={trip?.end_date}
+[browser] Uncaught Error: Map container is being reused by another instance
+    at MapContainerComponent (<anonymous>)
+ GET /trips/01624469-a516-4633-a69d-e83743d1d44b 200 in 1618ms (next.js: 36ms, application-code: 1581ms)
+Γ£ô Compiled in 314ms
+ GET /trips/01624469-a516-4633-a69d-e83743d1d44b 200 in 757ms (next.js: 593ms, application-code: 164ms)
+Γ£ô Compiled in 206ms
+ GET /trips/01624469-a516-4633-a69d-e83743d1d44b 200 in 245ms (next.js: 127ms, application-code: 118ms)
+[browser] Uncaught TypeError: Cannot read properties of undefined (reading 'appendChild')
+    at MapInner (src/components/TripMap.js:568:24)
+    at TripMap (src/components/TripMap.js:517:62)
+    at TripDetailPage (src/app/trips/[id]/page.js:1299:17)
+  566 |       style={{ height: "100%", width: "100%" }}
+  567 |       ref={mapRef}
+> 568 |       scrollWheelZoom={true}
+      |                        ^
+  569 |     >
+  570 |       <TileLayer
+  571 |         attribution='&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetM...
+[browser] Uncaught Error: Map container is being reused by another instance
+    at MapContainerComponent (<anonymous>)
+ΓÜá Fast Refresh had to perform a full reload due to a runtime error.
+Γ£ô Compiled in 82ms
+ GET /trips/01624469-a516-4633-a69d-e83743d1d44b 200 in 840ms (next.js: 172ms, application-code: 668ms)
+Γ£ô Compiled in 92ms
+ GET /trips/01624469-a516-4633-a69d-e83743d1d44b 200 in 152ms (next.js: 114ms, application-code: 37ms)
+Γ£ô Compiled in 125ms
+ GET /trips/01624469-a516-4633-a69d-e83743d1d44b 200 in 152ms (next.js: 106ms, application-code: 46ms)
+Γ£ô Compiled in 118ms
+ GET /trips/01624469-a516-4633-a69d-e83743d1d44b 200 in 204ms (next.js: 117ms, application-code: 87ms)
+Γ£ô Compiled in 104ms
+ GET /trips/01624469-a516-4633-a69d-e83743d1d44b 200 in 153ms (next.js: 111ms, application-code: 42ms)
+[browser] Uncaught ReferenceError: collapsed is not defined
+    at TripMap (src/components/TripMap.js:392:14)
+    at TripDetailPage (src/app/trips/[id]/page.js:1299:17)
+  390 |             className="flex items-center gap-1.5 px-3 py-1.5 text-xs font-medium rounded-...
+  391 |           >
+> 392 |             {collapsed ? "Show" : "Hide"}
+      |              ^
+  393 |             <svg className={`w-3.5 h-3.5 transition-transform ${collapsed ? "" : "rotate-...
+  394 |               <path strokeLinecap="round" strokeLinejoin="round" d="M19 9l-7 7-7-7" />
+  395 |             </svg>
+ΓÜá Fast Refresh had to perform a full reload due to a runtime error.
+Γ£ô Compiled in 69ms
+ GET /trips/01624469-a516-4633-a69d-e83743d1d44b 200 in 1690ms (next.js: 161ms, application-code: 1529ms)
+Γ£ô Compiled in 166ms
+ GET /trips/01624469-a516-4633-a69d-e83743d1d44b 200 in 415ms (next.js: 280ms, application-code: 136ms)
+Γ£ô Compiled in 353ms
+Γ¿» ./src/components/TripMap.js:515:8
+Unexpected token. Did you mean `{'}'}` or `&rbrace;`?
+  513 |           </div>
+  514 |         </div>
+> 515 |       )}
+      |        ^
+  516 |     </div>
+  517 |   );
+  518 | }
+
+Parsing ecmascript source code failed
+
+Import traces:
+  Client Component Browser:
+    ./src/components/TripMap.js [Client Component Browser]
+    ./src/app/trips/[id]/page.js [Client Component Browser]
+    ./src/app/trips/[id]/page.js [Server Component]
+
+  Client Component SSR:
+    ./src/components/TripMap.js [Client Component SSR]
+    ./src/app/trips/[id]/page.js [Client Component SSR]
+    ./src/app/trips/[id]/page.js [Server Component]
+
+
+[browser] ./src/components/TripMap.js:515:8
+Unexpected token. Did you mean `{'}'}` or `&rbrace;`?
+  513 |           </div>
+  514 |         </div>
+> 515 |       )}
+      |        ^
+  516 |     </div>
+  517 |   );
+  518 | }
+
+Parsing ecmascript source code failed
+
+Import traces:
+  Client Component Browser:
+    ./src/components/TripMap.js [Client Component Browser]
+    ./src/app/trips/[id]/page.js [Client Component Browser]
+    ./src/app/trips/[id]/page.js [Server Component]
+
+  Client Component SSR:
+    ./src/components/TripMap.js [Client Component SSR]
+    ./src/app/trips/[id]/page.js [Client Component SSR]
+    ./src/app/trips/[id]/page.js [Server Component] 
+ GET /trips/01624469-a516-4633-a69d-e83743d1d44b 500 in 80ms (next.js: 51ms, application-code: 29ms)
+[browser] ./src/components/TripMap.js:515:8
+Unexpected token. Did you mean `{'}'}` or `&rbrace;`?
+  513 |           </div>
+  514 |         </div>
+> 515 |       )}
+      |        ^
+  516 |     </div>
+  517 |   );
+  518 | }
+
+Parsing ecmascript source code failed
+
+Import traces:
+  Client Component Browser:
+    ./src/components/TripMap.js [Client Component Browser]
+    ./src/app/trips/[id]/page.js [Client Component Browser]
+    ./src/app/trips/[id]/page.js [Server Component]
+
+  Client Component SSR:
+    ./src/components/TripMap.js [Client Component SSR]
+    ./src/app/trips/[id]/page.js [Client Component SSR]
+    ./src/app/trips/[id]/page.js [Server Component] 
+Γ¿» ./src/components/TripMap.js:515:8
+Unexpected token. Did you mean `{'}'}` or `&rbrace;`?
+  513 |           </div>
+  514 |         </div>
+> 515 |       )}
+      |        ^
+  516 |     </div>
+  517 |   );
+  518 | }
+
+Parsing ecmascript source code failed
+
+Import traces:
+  Client Component Browser:
+    ./src/components/TripMap.js [Client Component Browser]
+    ./src/app/trips/[id]/page.js [Client Component Browser]
+    ./src/app/trips/[id]/page.js [Server Component]
+
+  Client Component SSR:
+    ./src/components/TripMap.js [Client Component SSR]
+    ./src/app/trips/[id]/page.js [Client Component SSR]
+    ./src/app/trips/[id]/page.js [Server Component]
+
+
+ GET /trips/01624469-a516-4633-a69d-e83743d1d44b 500 in 42ms (next.js: 28ms, application-code: 14ms)
+[browser] ./src/components/TripMap.js:515:8
+Unexpected token. Did you mean `{'}'}` or `&rbrace;`?
+  513 |           </div>
+  514 |         </div>
+> 515 |       )}
+      |        ^
+  516 |     </div>
+  517 |   );
+  518 | }
+
+Parsing ecmascript source code failed
+
+Import traces:
+  Client Component Browser:
+    ./src/components/TripMap.js [Client Component Browser]
+    ./src/app/trips/[id]/page.js [Client Component Browser]
+    ./src/app/trips/[id]/page.js [Server Component]
+
+  Client Component SSR:
+    ./src/components/TripMap.js [Client Component SSR]
+    ./src/app/trips/[id]/page.js [Client Component SSR]
+    ./src/app/trips/[id]/page.js [Server Component] 
+[browser] Uncaught Error: ./src/components/TripMap.js:515:8
+Unexpected token. Did you mean `{'}'}` or `&rbrace;`?
+  513 |           </div>
+  514 |         </div>
+> 515 |       )}
+      |        ^
+  516 |     </div>
+  517 |   );
+  518 | }
+
+Parsing ecmascript source code failed
+
+Import traces:
+  Client Component Browser:
+    ./src/components/TripMap.js [Client Component Browser]
+    ./src/app/trips/[id]/page.js [Client Component Browser]
+    ./src/app/trips/[id]/page.js [Server Component]
+
+  Client Component SSR:
+    ./src/components/TripMap.js [Client Component SSR]
+    ./src/app/trips/[id]/page.js [Client Component SSR]
+    ./src/app/trips/[id]/page.js [Server Component]
+
+
+    at <unknown> (Error: ./src/components/TripMap.js:515:8)
+    at <unknown> (Error: (./src/components/TripMap.js:515:8)
+[browser] ./src/components/TripMap.js:515:8
+Unexpected token. Did you mean `{'}'}` or `&rbrace;`?
+  513 |           </div>
+  514 |         </div>
+> 515 |       )}
+      |        ^
+  516 |     </div>
+  517 |   );
+  518 | }
+
+Parsing ecmascript source code failed
+
+Import traces:
+  Client Component Browser:
+    ./src/components/TripMap.js [Client Component Browser]
+    ./src/app/trips/[id]/page.js [Client Component Browser]
+    ./src/app/trips/[id]/page.js [Server Component]
+
+  Client Component SSR:
+    ./src/components/TripMap.js [Client Component SSR]
+    ./src/app/trips/[id]/page.js [Client Component SSR]
+    ./src/app/trips/[id]/page.js [Server Component] 
+Γ£ô Compiled in 142ms
+ GET /trips/01624469-a516-4633-a69d-e83743d1d44b 200 in 521ms (next.js: 129ms, application-code: 391ms)
+ GET /trips/01624469-a516-4633-a69d-e83743d1d44b 200 in 303ms (next.js: 12ms, application-code: 291ms)
+Γ£ô Compiled in 406ms
+ GET /trips/01624469-a516-4633-a69d-e83743d1d44b 200 in 1666ms (next.js: 1291ms, application-code: 375ms)
+[browser] Uncaught ReferenceError: DAY_COLORS is not defined
+    at TripMap.useMemo[routeViewData] (src/components/TripMap.js:316:21)
+    at TripMap (src/components/TripMap.js:274:32)
+    at TripDetailPage (src/app/trips/[id]/page.js:1299:17)
+  314 |       // Single day
+  315 |       const dayIdx = tripDates.indexOf(selectedDay);
+> 316 |       const color = DAY_COLORS[dayIdx % DAY_COLORS.length];
+      |                     ^
+  317 |       const dayPins = (dayGroups[selectedDay] || []).map((pin, i) => ({
+  318 |         ...pin, dayColor: color, dayIndex: dayIdx + 1, stepIndex: i + 1,
+  319 |       }));
+ΓÜá Fast Refresh had to perform a full reload due to a runtime error.
+Γ£ô Compiled in 135ms
+ GET /trips/01624469-a516-4633-a69d-e83743d1d44b 200 in 1172ms (next.js: 178ms, application-code: 994ms)
+Γ£ô Compiled in 82ms
+ GET /trips/01624469-a516-4633-a69d-e83743d1d44b 200 in 172ms (next.js: 127ms, application-code: 45ms)
+Γ£ô Compiled in 202ms
+ GET /trips/01624469-a516-4633-a69d-e83743d1d44b 200 in 172ms (next.js: 130ms, application-code: 43ms)
+Γ£ô Compiled in 137ms
+ GET /trips/01624469-a516-4633-a69d-e83743d1d44b 200 in 221ms (next.js: 119ms, application-code: 102ms)
+Γ£ô Compiled in 337ms
+ GET /trips/01624469-a516-4633-a69d-e83743d1d44b 200 in 691ms (next.js: 469ms, application-code: 221ms)
+Γ£ô Compiled in 536ms
+ GET /trips/01624469-a516-4633-a69d-e83743d1d44b 200 in 861ms (next.js: 649ms, application-code: 212ms)
+[browser] Uncaught ReferenceError: expandedAccordions is not defined
+    at eval (src/app/trips/[id]/page.js:1354:28)
+    at Array.map (<anonymous>)
+    at TripDetailPage (src/app/trips/[id]/page.js:1353:13)
+  1352 |             },
+  1353 |           ].map((section) => {
+> 1354 |             const isOpen = !!expandedAccordions[section.key];
+       |                            ^
+  1355 |             return (
+  1356 |               <div key={section.key} className="rounded-xl overflow-hidden" style={{ bac...
+  1357 |                 <button
+Γ£ô Compiled in 145ms
+ΓÜá Fast Refresh had to perform a full reload due to a runtime error.
+ GET /trips/01624469-a516-4633-a69d-e83743d1d44b 200 in 2.1s (next.js: 218ms, application-code: 1844ms)
+Γ£ô Compiled in 168ms
+ GET /trips/01624469-a516-4633-a69d-e83743d1d44b 200 in 211ms (next.js: 139ms, application-code: 71ms)
+Γ£ô Compiled in 75ms
+ GET /trips/01624469-a516-4633-a69d-e83743d1d44b 200 in 155ms (next.js: 101ms, application-code: 53ms)
+Γ£ô Compiled in 240ms
+ GET /trips/01624469-a516-4633-a69d-e83743d1d44b 200 in 214ms (next.js: 122ms, application-code: 91ms)
+Γ£ô Compiled in 66ms
+ GET /trips/01624469-a516-4633-a69d-e83743d1d44b 200 in 150ms (next.js: 111ms, application-code: 40ms)
+Γ£ô Compiled in 439ms
+ GET /trips/01624469-a516-4633-a69d-e83743d1d44b 200 in 819ms (next.js: 550ms, application-code: 268ms)
+Γ£ô Compiled in 112ms
+ GET /trips/01624469-a516-4633-a69d-e83743d1d44b 200 in 544ms (next.js: 173ms, application-code: 371ms)
+Γ£ô Compiled in 113ms
+ GET /trips/01624469-a516-4633-a69d-e83743d1d44b 200 in 212ms (next.js: 120ms, application-code: 93ms)
+Γ£ô Compiled in 154ms
+ GET /trips/01624469-a516-4633-a69d-e83743d1d44b 200 in 350ms (next.js: 171ms, application-code: 179ms)
+Γ£ô Compiled in 147ms
+ GET /trips/01624469-a516-4633-a69d-e83743d1d44b 200 in 539ms (next.js: 340ms, application-code: 198ms)
+Γ£ô Compiled in 182ms
+ GET /trips/01624469-a516-4633-a69d-e83743d1d44b 200 in 300ms (next.js: 145ms, application-code: 155ms)
+Γ£ô Compiled in 156ms
+ GET /trips/01624469-a516-4633-a69d-e83743d1d44b 200 in 376ms (next.js: 216ms, application-code: 160ms)
+Γ£ô Compiled in 93ms
+ GET /trips/01624469-a516-4633-a69d-e83743d1d44b 200 in 247ms (next.js: 152ms, application-code: 96ms)
+Γ£ô Compiled in 105ms
+ GET /trips/01624469-a516-4633-a69d-e83743d1d44b 200 in 163ms (next.js: 112ms, application-code: 51ms)
+Γ£ô Compiled in 230ms
+ GET /trips/01624469-a516-4633-a69d-e83743d1d44b 200 in 300ms (next.js: 126ms, application-code: 174ms)
+Γ£ô Compiled in 174ms
+ GET /trips/01624469-a516-4633-a69d-e83743d1d44b 200 in 290ms (next.js: 142ms, application-code: 148ms)
+Γ£ô Compiled in 709ms
+ GET /trips/01624469-a516-4633-a69d-e83743d1d44b 200 in 765ms (next.js: 472ms, application-code: 293ms)
+Γ£ô Compiled in 114ms
+ GET /trips/01624469-a516-4633-a69d-e83743d1d44b 200 in 229ms (next.js: 174ms, application-code: 55ms)
+[browser] Uncaught TypeError: Cannot read properties of undefined (reading 'appendChild')
+    at MapInner (src/components/TripMap.js:614:24)
+    at TripMap (src/components/TripMap.js:452:15)
+    at TripDetailPage (src/app/trips/[id]/page.js:1369:15)
+  612 |       style={{ height: "100%", width: "100%" }}
+  613 |       ref={mapRef}
+> 614 |       scrollWheelZoom={true}
+      |                        ^
+  615 |     >
+  616 |       <TileLayer
+  617 |         attribution='&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetM...
+[browser] Uncaught Error: Map container is being reused by another instance
+    at MapContainerComponent (<anonymous>)
+Γ£ô Compiled in 90ms
+ΓÜá Fast Refresh had to perform a full reload due to a runtime error.
+ GET /trips/01624469-a516-4633-a69d-e83743d1d44b 200 in 874ms (next.js: 167ms, application-code: 707ms)
+Γ£ô Compiled in 749ms
+ GET /trips/01624469-a516-4633-a69d-e83743d1d44b 200 in 941ms (next.js: 527ms, application-code: 414ms)
+[browser] Uncaught TypeError: Cannot read properties of undefined (reading 'appendChild')
+    at MapInner (src/components/TripMap.js:616:7)
+    at TripMap (src/components/TripMap.js:452:15)
+    at TripDetailPage (src/app/trips/[id]/page.js:1369:15)
+  614 |       scrollWheelZoom={true}
+  615 |     >
+> 616 |       <TileLayer
+      |       ^
+  617 |         attribution='&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetM...
+  618 |         url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
+  619 |       />
+[browser] Uncaught Error: Map container is being reused by another instance
+    at MapContainerComponent (<anonymous>)
+ GET /trips/01624469-a516-4633-a69d-e83743d1d44b 200 in 593ms (next.js: 12ms, application-code: 581ms)
+Γ£ô Compiled in 913ms
+ GET /trips/01624469-a516-4633-a69d-e83743d1d44b 200 in 1063ms (next.js: 636ms, application-code: 427ms)
+Γ£ô Compiled in 160ms
+ΓÜá Fast Refresh had to perform a full reload due to a runtime error.
+ GET /trips/01624469-a516-4633-a69d-e83743d1d44b 200 in 1734ms (next.js: 208ms, application-code: 1526ms)
+Γ£ô Compiled in 120ms
+ GET /trips/01624469-a516-4633-a69d-e83743d1d44b 200 in 989ms (next.js: 201ms, application-code: 788ms)
+Γ£ô Compiled in 285ms
+ΓÜá Fast Refresh had to perform a full reload due to a runtime error.
+ GET /trips/01624469-a516-4633-a69d-e83743d1d44b 200 in 1118ms (next.js: 421ms, application-code: 696ms)
+Γ£ô Compiled in 93ms
+ GET /trips/01624469-a516-4633-a69d-e83743d1d44b 200 in 180ms (next.js: 144ms, application-code: 36ms)
+Γ£ô Compiled in 107ms
+ΓÜá Fast Refresh had to perform a full reload due to a runtime error.
+ GET /trips/01624469-a516-4633-a69d-e83743d1d44b 200 in 695ms (next.js: 170ms, application-code: 525ms)
+Γ£ô Compiled in 263ms
+ GET /trips/01624469-a516-4633-a69d-e83743d1d44b 200 in 1156ms (next.js: 505ms, application-code: 651ms)
+[browser] Uncaught TypeError: Cannot read properties of undefined (reading 'appendChild')
+    at MapInner (src/components/TripMap.js:669:58)
+    at TripMap (src/components/TripMap.js:489:24)
+    at TripDetailPage (src/app/trips/[id]/page.js:1369:15)
+  667 |
+  668 |         return (
+> 669 |           <Marker key={`pin-${viewMode}-${i}`} position={[pin.lat, pin.lng]} icon={icon}>
+      |                                                          ^
+  670 |             <Popup>
+  671 |               <div className="text-sm min-w-[140px]">
+  672 |                 {viewMode === "route" && (
+[browser] Uncaught Error: Map container is being reused by another instance
+    at MapContainerComponent (<anonymous>)
+ GET /trips/01624469-a516-4633-a69d-e83743d1d44b 200 in 614ms (next.js: 29ms, application-code: 585ms)
+Γ£ô Compiled in 460ms
+ GET /trips/01624469-a516-4633-a69d-e83743d1d44b 200 in 1274ms (next.js: 939ms, application-code: 335ms)
+[browser] Uncaught TypeError: Cannot read properties of undefined (reading 'appendChild')
+    at MapInner (src/components/TripMap.js:606:15)
+    at TripMap (src/components/TripMap.js:464:109)
+    at TripDetailPage (src/app/trips/[id]/page.js:1369:15)
+  604 |                 {pin.stepIndex}
+  605 |               </span>
+> 606 |               <span>{PIN_CONFIG[pin.type]?.emoji} {pin.name}</span>
+      |               ^
+  607 |               {i < routeViewData.pins.length - 1 && (
+  608 |                 <svg className="w-3 h-3 text-slate-300" fill="none" stroke="currentColor"...
+  609 |                   <path strokeLinecap="round" strokeLinejoin="round" d="M9 5l7 7-7 7" />
+[browser] Uncaught Error: Map container is being reused by another instance
+    at MapContainerComponent (<anonymous>)
+Γ£ô Compiled in 311ms
+ΓÜá Fast Refresh had to perform a full reload due to a runtime error.
+ GET /trips/01624469-a516-4633-a69d-e83743d1d44b 200 in 1348ms (next.js: 172ms, application-code: 1177ms)
+Γ£ô Compiled in 503ms
+ GET /trips/01624469-a516-4633-a69d-e83743d1d44b 200 in 711ms (next.js: 538ms, application-code: 172ms)
+[browser] Uncaught TypeError: Cannot read properties of undefined (reading 'appendChild')
+    at MapInner (src/components/TripMap.js:654:7)
+    at TripMap (src/components/TripMap.js:489:15)
+    at TripDetailPage (src/app/trips/[id]/page.js:1369:15)
+  652 |       scrollWheelZoom={true}
+  653 |     >
+> 654 |       <TileLayer
+      |       ^
+  655 |         key={tileStyle}
+  656 |         attribution={TILE_STYLES[tileStyle].attr}
+  657 |         url={TILE_STYLES[tileStyle].url}
+[browser] Uncaught Error: Map container is being reused by another instance
+    at MapContainerComponent (<anonymous>)
+ GET /trips/01624469-a516-4633-a69d-e83743d1d44b 200 in 1171ms (next.js: 63ms, application-code: 1108ms)
+Γ£ô Compiled in 293ms
+ GET /trips/01624469-a516-4633-a69d-e83743d1d44b 200 in 677ms (next.js: 415ms, application-code: 263ms)
+[browser] Uncaught TypeError: Cannot read properties of undefined (reading 'appendChild')
+    at MapInner (src/components/TripMap.js:654:7)
+    at TripMap (src/components/TripMap.js:489:15)
+    at TripDetailPage (src/app/trips/[id]/page.js:1369:15)
+  652 |       scrollWheelZoom={true}
+  653 |     >
+> 654 |       <TileLayer
+      |       ^
+  655 |         key={tileStyle}
+  656 |         attribution={TILE_STYLES[tileStyle].attr}
+  657 |         url={TILE_STYLES[tileStyle].url}
+[browser] Uncaught Error: Map container is being reused by another instance
+    at MapContainerComponent (<anonymous>)
+Γ£ô Compiled in 148ms
+ΓÜá Fast Refresh had to perform a full reload due to a runtime error.
+ GET /trips/01624469-a516-4633-a69d-e83743d1d44b 200 in 730ms (next.js: 148ms, application-code: 582ms)
+Γ£ô Compiled in 402ms
+ GET /trips/01624469-a516-4633-a69d-e83743d1d44b 200 in 1295ms (next.js: 922ms, application-code: 373ms)
+Γ£ô Compiled in 118ms
+ GET /trips/01624469-a516-4633-a69d-e83743d1d44b 200 in 326ms (next.js: 158ms, application-code: 168ms)
+Γ£ô Compiled in 195ms
+ GET /trips/01624469-a516-4633-a69d-e83743d1d44b 200 in 159ms (next.js: 116ms, application-code: 43ms)
+Γ£ô Compiled in 104ms
+ GET /trips/01624469-a516-4633-a69d-e83743d1d44b 200 in 167ms (next.js: 111ms, application-code: 57ms)
+Γ£ô Compiled in 135ms
+ GET /trips/01624469-a516-4633-a69d-e83743d1d44b 200 in 182ms (next.js: 122ms, application-code: 61ms)
+Γ£ô Compiled in 101ms
+ GET /trips/01624469-a516-4633-a69d-e83743d1d44b 200 in 774ms (next.js: 101ms, application-code: 674ms)
+Γ£ô Compiled in 300ms
+Γ£ô Compiled in 215ms
+ GET /trips/01624469-a516-4633-a69d-e83743d1d44b 200 in 1724ms (next.js: 648ms, application-code: 1075ms)
+ GET /trips/01624469-a516-4633-a69d-e83743d1d44b 200 in 149ms (next.js: 97ms, application-code: 52ms)
+Γ£ô Compiled in 137ms
+ GET /trips/01624469-a516-4633-a69d-e83743d1d44b 200 in 140ms (next.js: 96ms, application-code: 44ms)
+Γ£ô Compiled in 111ms
+ GET /trips/01624469-a516-4633-a69d-e83743d1d44b 200 in 218ms (next.js: 164ms, application-code: 54ms)
+Γ£ô Compiled in 155ms
+ GET /trips/01624469-a516-4633-a69d-e83743d1d44b 200 in 191ms (next.js: 130ms, application-code: 61ms)
+Γ£ô Compiled in 80ms
+ GET /trips/01624469-a516-4633-a69d-e83743d1d44b 200 in 132ms (next.js: 100ms, application-code: 32ms)
+Γ£ô Compiled in 155ms
+ GET /trips/01624469-a516-4633-a69d-e83743d1d44b 200 in 189ms (next.js: 97ms, application-code: 91ms)
+[browser] Uncaught TypeError: Cannot read properties of undefined (reading 'appendChild')
+    at MapInner (src/components/TripMap.js:654:7)
+    at TripMap (src/components/TripMap.js:489:15)
+    at TripDetailPage (src/app/trips/[id]/page.js:1369:15)
+  652 |       scrollWheelZoom={true}
+  653 |     >
+> 654 |       <TileLayer
+      |       ^
+  655 |         key={tileStyle}
+  656 |         attribution={TILE_STYLES[tileStyle].attr}
+  657 |         url={TILE_STYLES[tileStyle].url}
+[browser] Uncaught Error: Map container is being reused by another instance
+    at MapContainerComponent (<anonymous>)
+ΓÜá Fast Refresh had to perform a full reload due to a runtime error.
+Γ£ô Compiled in 75ms
+ GET /trips/01624469-a516-4633-a69d-e83743d1d44b 200 in 943ms (next.js: 118ms, application-code: 826ms)
+Γ£ô Compiled in 98ms
+ GET /trips/01624469-a516-4633-a69d-e83743d1d44b 200 in 432ms (next.js: 169ms, application-code: 263ms)
+Γ£ô Compiled in 170ms
+ GET /trips/01624469-a516-4633-a69d-e83743d1d44b 200 in 336ms (next.js: 100ms, application-code: 236ms)
+Γ£ô Compiled in 499ms
+ GET /trips/01624469-a516-4633-a69d-e83743d1d44b 200 in 558ms (next.js: 368ms, application-code: 191ms)
+Γ£ô Compiled in 324ms
+ GET /trips/01624469-a516-4633-a69d-e83743d1d44b 200 in 1076ms (next.js: 784ms, application-code: 292ms)
+Γ£ô Compiled in 154ms
+ GET /trips/01624469-a516-4633-a69d-e83743d1d44b 200 in 232ms (next.js: 151ms, application-code: 81ms)
+[browser] Uncaught ReferenceError: useMemo is not defined
+    at DayPopout (src/app/trips/[id]/page.js:1525:21)
+    at TripDetailPage (src/app/trips/[id]/page.js:1411:11)
+  1523 |
+  1524 |   // Compute day count relative to trip start
+> 1525 |   const dayNumber = useMemo(() => {
+       |                     ^
+  1526 |     if (!tripStart || !inRange) return null;
+  1527 |     const start = new Date(tripStart + "T00:00:00");
+  1528 |     const current = new Date(dateKey + "T00:00:00");
+Γ£ô Compiled in 202ms
+ΓÜá Fast Refresh had to perform a full reload due to a runtime error.
+ GET /trips/01624469-a516-4633-a69d-e83743d1d44b 200 in 3.9s (next.js: 256ms, application-code: 3.6s)
+Γ£ô Compiled in 912ms
+ GET /trips/01624469-a516-4633-a69d-e83743d1d44b 200 in 1045ms (next.js: 844ms, application-code: 201ms)
+[browser] Uncaught ReferenceError: useMemo is not defined
+    at DayPopout (src/app/trips/[id]/page.js:1525:21)
+    at TripDetailPage (src/app/trips/[id]/page.js:1411:11)
+  1523 |
+  1524 |   // Compute day count relative to trip start
+> 1525 |   const dayNumber = useMemo(() => {
+       |                     ^
+  1526 |     if (!tripStart || !inRange) return null;
+  1527 |     const start = new Date(tripStart + "T00:00:00");
+  1528 |     const current = new Date(dateKey + "T00:00:00");
+ GET /trips/01624469-a516-4633-a69d-e83743d1d44b 200 in 985ms (next.js: 59ms, application-code: 925ms)
+[browser] Uncaught ReferenceError: useMemo is not defined
+    at DayPopout (src/app/trips/[id]/page.js:1525:21)
+  1523 |
+  1524 |   // Compute day count relative to trip start
+> 1525 |   const dayNumber = useMemo(() => {
+       |                     ^
+  1526 |     if (!tripStart || !inRange) return null;
+  1527 |     const start = new Date(tripStart + "T00:00:00");
+  1528 |     const current = new Date(dateKey + "T00:00:00");
+Γ£ô Compiled in 297ms
+ΓÜá Fast Refresh had to perform a full reload due to a runtime error.
+ GET /trips/01624469-a516-4633-a69d-e83743d1d44b 200 in 1095ms (next.js: 527ms, application-code: 568ms)
+Γ£ô Compiled in 242ms
+ GET /trips/01624469-a516-4633-a69d-e83743d1d44b 200 in 874ms (next.js: 503ms, application-code: 371ms)
+Γ£ô Compiled in 123ms
+ GET /trips/01624469-a516-4633-a69d-e83743d1d44b 200 in 197ms (next.js: 147ms, application-code: 50ms)
+Γ£ô Compiled in 131ms
+ GET /trips/01624469-a516-4633-a69d-e83743d1d44b 200 in 150ms (next.js: 91ms, application-code: 59ms)
+Γ£ô Compiled in 863ms
+ GET /trips/01624469-a516-4633-a69d-e83743d1d44b 200 in 1651ms (next.js: 1365ms, application-code: 286ms)
+Γ£ô Compiled in 331ms
+ GET /trips/01624469-a516-4633-a69d-e83743d1d44b 200 in 669ms (next.js: 401ms, application-code: 268ms)
+Γ£ô Compiled in 186ms
+ GET /trips/01624469-a516-4633-a69d-e83743d1d44b 200 in 259ms (next.js: 190ms, application-code: 69ms)
+Γ£ô Compiled in 575ms
+ GET /trips/01624469-a516-4633-a69d-e83743d1d44b 200 in 3.2s (next.js: 804ms, application-code: 2.4s)
+Γ£ô Compiled in 451ms
+ GET /trips/01624469-a516-4633-a69d-e83743d1d44b 200 in 1841ms (next.js: 1454ms, application-code: 387ms)
+Γ£ô Compiled in 188ms
+ GET /trips/01624469-a516-4633-a69d-e83743d1d44b 200 in 303ms (next.js: 175ms, application-code: 128ms)
+Γ£ô Compiled in 106ms
+ GET /trips/01624469-a516-4633-a69d-e83743d1d44b 200 in 179ms (next.js: 120ms, application-code: 59ms)
+Γ£ô Compiled in 559ms
+ GET /trips/01624469-a516-4633-a69d-e83743d1d44b 200 in 2.1s (next.js: 1583ms, application-code: 524ms)
+Γ£ô Compiled in 109ms
+ GET /trips/01624469-a516-4633-a69d-e83743d1d44b 200 in 274ms (next.js: 200ms, application-code: 74ms)
+Γ£ô Compiled in 78ms
+ GET /trips/01624469-a516-4633-a69d-e83743d1d44b 200 in 263ms (next.js: 148ms, application-code: 114ms)
+Γ£ô Compiled in 263ms
+ GET /trips/01624469-a516-4633-a69d-e83743d1d44b 200 in 905ms (next.js: 542ms, application-code: 363ms)
+Γ£ô Compiled in 434ms
+ GET /trips/01624469-a516-4633-a69d-e83743d1d44b 200 in 1192ms (next.js: 831ms, application-code: 361ms)
+Γ£ô Compiled in 177ms
+ GET /trips/01624469-a516-4633-a69d-e83743d1d44b 200 in 228ms (next.js: 126ms, application-code: 102ms)
+Γ£ô Compiled in 599ms
+ GET /trips/01624469-a516-4633-a69d-e83743d1d44b 200 in 1134ms (next.js: 869ms, application-code: 265ms)
+Γ£ô Compiled in 624ms
+ GET /trips/01624469-a516-4633-a69d-e83743d1d44b 200 in 2.0s (next.js: 818ms, application-code: 1213ms)
+Γ£ô Compiled in 625ms
+ GET /trips/01624469-a516-4633-a69d-e83743d1d44b 200 in 901ms (next.js: 584ms, application-code: 318ms)
+Γ£ô Compiled in 265ms
+ GET /trips/01624469-a516-4633-a69d-e83743d1d44b 200 in 308ms (next.js: 207ms, application-code: 101ms)
+Γ£ô Compiled in 178ms
+ GET /trips/01624469-a516-4633-a69d-e83743d1d44b 200 in 210ms (next.js: 161ms, application-code: 49ms)
+Γ£ô Compiled in 101ms
+ GET /trips/01624469-a516-4633-a69d-e83743d1d44b 200 in 303ms (next.js: 133ms, application-code: 169ms)
+Γ£ô Compiled in 74ms
+ GET /trips/01624469-a516-4633-a69d-e83743d1d44b 200 in 196ms (next.js: 135ms, application-code: 61ms)
+Γ£ô Compiled in 181ms
+ GET /trips/01624469-a516-4633-a69d-e83743d1d44b 200 in 396ms (next.js: 171ms, application-code: 225ms)
+Γ£ô Compiled in 291ms
+ GET /trips/01624469-a516-4633-a69d-e83743d1d44b 200 in 373ms (next.js: 173ms, application-code: 200ms)
+Γ£ô Compiled in 143ms
+ GET /trips/01624469-a516-4633-a69d-e83743d1d44b 200 in 211ms (next.js: 137ms, application-code: 74ms)
+Γ£ô Compiled in 179ms
+ GET /trips/01624469-a516-4633-a69d-e83743d1d44b 200 in 192ms (next.js: 119ms, application-code: 73ms)
+Γ£ô Compiled in 751ms
+ GET /trips/01624469-a516-4633-a69d-e83743d1d44b 200 in 586ms (next.js: 377ms, application-code: 208ms)
+Γ£ô Compiled in 478ms
+ GET /trips/01624469-a516-4633-a69d-e83743d1d44b 200 in 752ms (next.js: 557ms, application-code: 194ms)
+Γ£ô Compiled in 435ms
+ GET /trips/01624469-a516-4633-a69d-e83743d1d44b 200 in 1483ms (next.js: 739ms, application-code: 744ms)
+Γ£ô Compiled in 259ms
+ GET /trips/01624469-a516-4633-a69d-e83743d1d44b 200 in 363ms (next.js: 180ms, application-code: 183ms)
+Γ£ô Compiled in 152ms
+ GET /trips/01624469-a516-4633-a69d-e83743d1d44b 200 in 216ms (next.js: 135ms, application-code: 80ms)
+Γ£ô Compiled in 138ms
+ GET /trips/01624469-a516-4633-a69d-e83743d1d44b 200 in 171ms (next.js: 123ms, application-code: 49ms)
+Γ£ô Compiled in 221ms
+ GET /trips/01624469-a516-4633-a69d-e83743d1d44b 200 in 484ms (next.js: 261ms, application-code: 223ms)
+Γ£ô Compiled in 276ms
+ GET /trips/01624469-a516-4633-a69d-e83743d1d44b 200 in 246ms (next.js: 175ms, application-code: 71ms)
+Γ£ô Compiled in 276ms
+ GET /trips/01624469-a516-4633-a69d-e83743d1d44b 200 in 637ms (next.js: 377ms, application-code: 259ms)
+Γ£ô Compiled in 113ms
+ GET /trips/01624469-a516-4633-a69d-e83743d1d44b 200 in 640ms (next.js: 175ms, application-code: 465ms)
+Γ£ô Compiled in 242ms
+ GET /trips/01624469-a516-4633-a69d-e83743d1d44b 200 in 151ms (next.js: 109ms, application-code: 42ms)
+Γ£ô Compiled in 160ms
+ GET /trips/01624469-a516-4633-a69d-e83743d1d44b 200 in 1126ms (next.js: 800ms, application-code: 327ms)
+Γ£ô Compiled in 447ms
+ GET /trips/01624469-a516-4633-a69d-e83743d1d44b 200 in 699ms (next.js: 507ms, application-code: 193ms)
+Γ£ô Compiled in 200ms
+ GET /trips/01624469-a516-4633-a69d-e83743d1d44b 200 in 347ms (next.js: 166ms, application-code: 182ms)
+Γ£ô Compiled in 373ms
+ GET /trips/01624469-a516-4633-a69d-e83743d1d44b 200 in 1310ms (next.js: 948ms, application-code: 362ms)
+Γ£ô Compiled in 375ms
+ GET /trips/01624469-a516-4633-a69d-e83743d1d44b 200 in 1724ms (next.js: 959ms, application-code: 765ms)
+Γ£ô Compiled in 472ms
+ GET /trips/01624469-a516-4633-a69d-e83743d1d44b 200 in 1160ms (next.js: 825ms, application-code: 335ms)
+Γ£ô Compiled in 202ms
+ GET /trips/01624469-a516-4633-a69d-e83743d1d44b 200 in 317ms (next.js: 212ms, application-code: 105ms)
+Γ£ô Compiled in 623ms
+ GET /trips/01624469-a516-4633-a69d-e83743d1d44b 200 in 430ms (next.js: 162ms, application-code: 267ms)
+[browser] Uncaught TypeError: Cannot read properties of undefined (reading 'appendChild')
+    at MapInner (src/components/TripMap.js:654:7)
+    at TripMap (src/components/TripMap.js:489:15)
+    at TripDetailPage (src/app/trips/[id]/page.js:1369:15)
+  652 |       scrollWheelZoom={true}
+  653 |     >
+> 654 |       <TileLayer
+      |       ^
+  655 |         key={tileStyle}
+  656 |         attribution={TILE_STYLES[tileStyle].attr}
+  657 |         url={TILE_STYLES[tileStyle].url}
+[browser] Uncaught Error: Map container is being reused by another instance
+    at MapContainerComponent (<anonymous>)
+ GET /trips/01624469-a516-4633-a69d-e83743d1d44b 200 in 2.6s (next.js: 99ms, application-code: 2.5s)
+ GET /trips/01624469-a516-4633-a69d-e83743d1d44b 200 in 2.5s (next.js: 8ms, application-code: 2.5s)
+Γ£ô Compiled in 468ms
+ GET /trips/01624469-a516-4633-a69d-e83743d1d44b 200 in 1390ms (next.js: 883ms, application-code: 506ms)
+Γ£ô Compiled in 1000ms
+ GET /trips/01624469-a516-4633-a69d-e83743d1d44b 200 in 946ms (next.js: 581ms, application-code: 366ms)
+Γ£ô Compiled in 189ms
+ GET /trips/01624469-a516-4633-a69d-e83743d1d44b 200 in 385ms (next.js: 141ms, application-code: 244ms)
+Γ£ô Compiled in 272ms
+ GET /trips/01624469-a516-4633-a69d-e83743d1d44b 200 in 208ms (next.js: 147ms, application-code: 61ms)
+Γ£ô Compiled in 99ms
+ GET /trips/01624469-a516-4633-a69d-e83743d1d44b 200 in 183ms (next.js: 112ms, application-code: 71ms)
+Γ£ô Compiled in 128ms
+ GET /trips/01624469-a516-4633-a69d-e83743d1d44b 200 in 146ms (next.js: 108ms, application-code: 39ms)
+Γ£ô Compiled in 115ms
+ GET /trips/01624469-a516-4633-a69d-e83743d1d44b 200 in 243ms (next.js: 131ms, application-code: 112ms)
+Γ£ô Compiled in 232ms
+ GET /trips/01624469-a516-4633-a69d-e83743d1d44b 200 in 220ms (next.js: 122ms, application-code: 98ms)
+ GET /trips/01624469-a516-4633-a69d-e83743d1d44b 200 in 145ms (next.js: 9ms, application-code: 135ms)
+ GET /trips/01624469-a516-4633-a69d-e83743d1d44b 200 in 126ms (next.js: 7ms, application-code: 119ms)
+ GET /trips/01624469-a516-4633-a69d-e83743d1d44b 200 in 62ms (next.js: 32ms, application-code: 29ms)
+ GET /trips/01624469-a516-4633-a69d-e83743d1d44b 200 in 64ms (next.js: 6ms, application-code: 58ms)
+Γ£ô Compiled in 137ms
+ GET /trips/01624469-a516-4633-a69d-e83743d1d44b 200 in 417ms (next.js: 166ms, application-code: 251ms)
+ GET /trips/01624469-a516-4633-a69d-e83743d1d44b 200 in 300ms (next.js: 5ms, application-code: 295ms)
+ GET /trips/01624469-a516-4633-a69d-e83743d1d44b 200 in 186ms (next.js: 51ms, application-code: 135ms)
+ GET /trips/01624469-a516-4633-a69d-e83743d1d44b 200 in 189ms (next.js: 7ms, application-code: 182ms)
+ GET /trips/01624469-a516-4633-a69d-e83743d1d44b 200 in 188ms (next.js: 86ms, application-code: 102ms)
+ GET /trips/01624469-a516-4633-a69d-e83743d1d44b 200 in 190ms (next.js: 119ms, application-code: 71ms)
+Γ£ô Compiled in 186ms
+ GET /trips/01624469-a516-4633-a69d-e83743d1d44b 200 in 980ms (next.js: 121ms, application-code: 859ms)
+ GET /trips/01624469-a516-4633-a69d-e83743d1d44b 200 in 46ms (next.js: 14ms, application-code: 32ms)
+ GET /trips/01624469-a516-4633-a69d-e83743d1d44b 200 in 815ms (next.js: 5ms, application-code: 810ms)
+Γ£ô Compiled in 163ms
+ GET /trips/01624469-a516-4633-a69d-e83743d1d44b 200 in 2.6s (next.js: 690ms, application-code: 1864ms)
+ GET /trips/01624469-a516-4633-a69d-e83743d1d44b 200 in 2.7s (next.js: 984ms, application-code: 1729ms)
+Γ£ô Compiled in 726ms
+ GET /trips/01624469-a516-4633-a69d-e83743d1d44b 200 in 1925ms (next.js: 1212ms, application-code: 714ms)
+Γ£ô Compiled in 107ms
+ GET /trips/01624469-a516-4633-a69d-e83743d1d44b 200 in 275ms (next.js: 196ms, application-code: 78ms)
+Γ£ô Compiled in 115ms
+ GET /trips/01624469-a516-4633-a69d-e83743d1d44b 200 in 222ms (next.js: 166ms, application-code: 57ms)
+Γ£ô Compiled in 104ms
+ GET /trips/01624469-a516-4633-a69d-e83743d1d44b 200 in 633ms (next.js: 312ms, application-code: 322ms)
+Γ£ô Compiled in 109ms
+ GET /trips/01624469-a516-4633-a69d-e83743d1d44b 200 in 537ms (next.js: 320ms, application-code: 216ms)
+Γ£ô Compiled in 91ms
+ GET /trips/01624469-a516-4633-a69d-e83743d1d44b 200 in 159ms (next.js: 108ms, application-code: 51ms)
+Γ£ô Compiled in 95ms
+ GET /trips/01624469-a516-4633-a69d-e83743d1d44b 200 in 218ms (next.js: 97ms, application-code: 121ms)
+Γ£ô Compiled in 115ms
+ GET /trips/01624469-a516-4633-a69d-e83743d1d44b 200 in 351ms (next.js: 198ms, application-code: 153ms)
+Γ£ô Compiled in 83ms
+ GET /trips/01624469-a516-4633-a69d-e83743d1d44b 200 in 150ms (next.js: 93ms, application-code: 56ms)
+Γ£ô Compiled in 366ms
+ GET /trips/01624469-a516-4633-a69d-e83743d1d44b 200 in 574ms (next.js: 358ms, application-code: 216ms)
+Γ£ô Compiled in 87ms
+ GET /trips/01624469-a516-4633-a69d-e83743d1d44b 200 in 327ms (next.js: 167ms, application-code: 161ms)
+Γ£ô Compiled in 85ms
+ GET /trips/01624469-a516-4633-a69d-e83743d1d44b 200 in 401ms (next.js: 171ms, application-code: 230ms)
+Γ£ô Compiled in 391ms
+Γ¿» ./src/components/TransportationOptions.js:391:1
+Unexpected token. Did you mean `{'}'}` or `&rbrace;`?
+  389 |     </div>
+  390 |   );
+> 391 | }
+      | ^
+  392 |
+  393 | // ΓöÇΓöÇΓöÇ ADD TRANSPORTATION MODAL ΓöÇΓöÇΓöÇ
+  394 | function AddTransportationModal({ tripId, tripStart, tripEnd, onClose, onSave }) {
+
+Parsing ecmascript source code failed
+
+Import traces:
+  Client Component Browser:
+    ./src/components/TransportationOptions.js [Client Component Browser]
+    ./src/app/trips/[id]/page.js [Client Component Browser]
+    ./src/app/trips/[id]/page.js [Server Component]
+
+  Client Component SSR:
+    ./src/components/TransportationOptions.js [Client Component SSR]
+    ./src/app/trips/[id]/page.js [Client Component SSR]
+    ./src/app/trips/[id]/page.js [Server Component]
+
+
+[browser] ./src/components/TransportationOptions.js:391:1
+Unexpected token. Did you mean `{'}'}` or `&rbrace;`?
+  389 |     </div>
+  390 |   );
+> 391 | }
+      | ^
+  392 |
+  393 | // ΓöÇΓöÇΓöÇ ADD TRANSPORTATION MODAL ΓöÇΓöÇΓöÇ
+  394 | function AddTransportationModal({ tripId, tripStart, tripEnd, onClose, onSave }) {
+
+Parsing ecmascript source code failed
+
+Import traces:
+  Client Component Browser:
+    ./src/components/TransportationOptions.js [Client Component Browser]
+    ./src/app/trips/[id]/page.js [Client Component Browser]
+    ./src/app/trips/[id]/page.js [Server Component]
+
+  Client Component SSR:
+    ./src/components/TransportationOptions.js [Client Component SSR]
+    ./src/app/trips/[id]/page.js [Client Component SSR]
+    ./src/app/trips/[id]/page.js [Server Component] 
+[browser] ./src/components/TransportationOptions.js:391:1
+Unexpected token. Did you mean `{'}'}` or `&rbrace;`?
+  389 |     </div>
+  390 |   );
+> 391 | }
+      | ^
+  392 |
+  393 | // ΓöÇΓöÇΓöÇ ADD TRANSPORTATION MODAL ΓöÇΓöÇΓöÇ
+  394 | function AddTransportationModal({ tripId, tripStart, tripEnd, onClose, onSave }) {
+
+Parsing ecmascript source code failed
+
+Import traces:
+  Client Component Browser:
+    ./src/components/TransportationOptions.js [Client Component Browser]
+    ./src/app/trips/[id]/page.js [Client Component Browser]
+    ./src/app/trips/[id]/page.js [Server Component]
+
+  Client Component SSR:
+    ./src/components/TransportationOptions.js [Client Component SSR]
+    ./src/app/trips/[id]/page.js [Client Component SSR]
+    ./src/app/trips/[id]/page.js [Server Component] 
+ GET /trips/01624469-a516-4633-a69d-e83743d1d44b 500 in 409ms (next.js: 141ms, application-code: 268ms)
+[browser] ./src/components/TransportationOptions.js:391:1
+Unexpected token. Did you mean `{'}'}` or `&rbrace;`?
+  389 |     </div>
+  390 |   );
+> 391 | }
+      | ^
+  392 |
+  393 | // ΓöÇΓöÇΓöÇ ADD TRANSPORTATION MODAL ΓöÇΓöÇΓöÇ
+  394 | function AddTransportationModal({ tripId, tripStart, tripEnd, onClose, onSave }) {
+
+Parsing ecmascript source code failed
+
+Import traces:
+  Client Component Browser:
+    ./src/components/TransportationOptions.js [Client Component Browser]
+    ./src/app/trips/[id]/page.js [Client Component Browser]
+    ./src/app/trips/[id]/page.js [Server Component]
+
+  Client Component SSR:
+    ./src/components/TransportationOptions.js [Client Component SSR]
+    ./src/app/trips/[id]/page.js [Client Component SSR]
+    ./src/app/trips/[id]/page.js [Server Component] 
+Γ¿» ./src/components/TransportationOptions.js:391:1
+Unexpected token. Did you mean `{'}'}` or `&rbrace;`?
+  389 |     </div>
+  390 |   );
+> 391 | }
+      | ^
+  392 |
+  393 | // ΓöÇΓöÇΓöÇ ADD TRANSPORTATION MODAL ΓöÇΓöÇΓöÇ
+  394 | function AddTransportationModal({ tripId, tripStart, tripEnd, onClose, onSave }) {
+
+Parsing ecmascript source code failed
+
+Import traces:
+  Client Component Browser:
+    ./src/components/TransportationOptions.js [Client Component Browser]
+    ./src/app/trips/[id]/page.js [Client Component Browser]
+    ./src/app/trips/[id]/page.js [Server Component]
+
+  Client Component SSR:
+    ./src/components/TransportationOptions.js [Client Component SSR]
+    ./src/app/trips/[id]/page.js [Client Component SSR]
+    ./src/app/trips/[id]/page.js [Server Component]
+
+
+ GET /trips/01624469-a516-4633-a69d-e83743d1d44b 500 in 36ms (next.js: 21ms, application-code: 16ms)
+[browser] ./src/components/TransportationOptions.js:391:1
+Unexpected token. Did you mean `{'}'}` or `&rbrace;`?
+  389 |     </div>
+  390 |   );
+> 391 | }
+      | ^
+  392 |
+  393 | // ΓöÇΓöÇΓöÇ ADD TRANSPORTATION MODAL ΓöÇΓöÇΓöÇ
+  394 | function AddTransportationModal({ tripId, tripStart, tripEnd, onClose, onSave }) {
+
+Parsing ecmascript source code failed
+
+Import traces:
+  Client Component Browser:
+    ./src/components/TransportationOptions.js [Client Component Browser]
+    ./src/app/trips/[id]/page.js [Client Component Browser]
+    ./src/app/trips/[id]/page.js [Server Component]
+
+  Client Component SSR:
+    ./src/components/TransportationOptions.js [Client Component SSR]
+    ./src/app/trips/[id]/page.js [Client Component SSR]
+    ./src/app/trips/[id]/page.js [Server Component] 
+[browser] Uncaught Error: ./src/components/TransportationOptions.js:391:1
+Unexpected token. Did you mean `{'}'}` or `&rbrace;`?
+  389 |     </div>
+  390 |   );
+> 391 | }
+      | ^
+  392 |
+  393 | // ΓöÇΓöÇΓöÇ ADD TRANSPORTATION MODAL ΓöÇΓöÇΓöÇ
+  394 | function AddTransportationModal({ tripId, tripStart, tripEnd, onClose, onSave }) {
+
+Parsing ecmascript source code failed
+
+Import traces:
+  Client Component Browser:
+    ./src/components/TransportationOptions.js [Client Component Browser]
+    ./src/app/trips/[id]/page.js [Client Component Browser]
+    ./src/app/trips/[id]/page.js [Server Component]
+
+  Client Component SSR:
+    ./src/components/TransportationOptions.js [Client Component SSR]
+    ./src/app/trips/[id]/page.js [Client Component SSR]
+    ./src/app/trips/[id]/page.js [Server Component]
+
+
+    at <unknown> (Error: ./src/components/TransportationOptions.js:391:1)
+    at <unknown> (Error: (./src/components/TransportationOptions.js:391:1)
+[browser] ./src/components/TransportationOptions.js:391:1
+Unexpected token. Did you mean `{'}'}` or `&rbrace;`?
+  389 |     </div>
+  390 |   );
+> 391 | }
+      | ^
+  392 |
+  393 | // ΓöÇΓöÇΓöÇ ADD TRANSPORTATION MODAL ΓöÇΓöÇΓöÇ
+  394 | function AddTransportationModal({ tripId, tripStart, tripEnd, onClose, onSave }) {
+
+Parsing ecmascript source code failed
+
+Import traces:
+  Client Component Browser:
+    ./src/components/TransportationOptions.js [Client Component Browser]
+    ./src/app/trips/[id]/page.js [Client Component Browser]
+    ./src/app/trips/[id]/page.js [Server Component]
+
+  Client Component SSR:
+    ./src/components/TransportationOptions.js [Client Component SSR]
+    ./src/app/trips/[id]/page.js [Client Component SSR]
+    ./src/app/trips/[id]/page.js [Server Component] 
+[browser] ./src/components/TransportationOptions.js:391:1
+Unexpected token. Did you mean `{'}'}` or `&rbrace;`?
+  389 |     </div>
+  390 |   );
+> 391 | }
+      | ^
+  392 |
+  393 | // ΓöÇΓöÇΓöÇ ADD TRANSPORTATION MODAL ΓöÇΓöÇΓöÇ
+  394 | function AddTransportationModal({ tripId, tripStart, tripEnd, onClose, onSave }) {
+
+Parsing ecmascript source code failed
+
+Import traces:
+  Client Component Browser:
+    ./src/components/TransportationOptions.js [Client Component Browser]
+    ./src/app/trips/[id]/page.js [Client Component Browser]
+    ./src/app/trips/[id]/page.js [Server Component]
+
+  Client Component SSR:
+    ./src/components/TransportationOptions.js [Client Component SSR]
+    ./src/app/trips/[id]/page.js [Client Component SSR]
+    ./src/app/trips/[id]/page.js [Server Component] 
+Γ¿» ./src/components/TransportationOptions.js:391:1
+Unexpected token. Did you mean `{'}'}` or `&rbrace;`?
+  389 |     </div>
+  390 |   );
+> 391 | }
+      | ^
+  392 |
+  393 | // ΓöÇΓöÇΓöÇ ADD TRANSPORTATION MODAL ΓöÇΓöÇΓöÇ
+  394 | function AddTransportationModal({ tripId, tripStart, tripEnd, onClose, onSave }) {
+
+Parsing ecmascript source code failed
+
+Import traces:
+  Client Component Browser:
+    ./src/components/TransportationOptions.js [Client Component Browser]
+    ./src/app/trips/[id]/page.js [Client Component Browser]
+    ./src/app/trips/[id]/page.js [Server Component]
+
+  Client Component SSR:
+    ./src/components/TransportationOptions.js [Client Component SSR]
+    ./src/app/trips/[id]/page.js [Client Component SSR]
+    ./src/app/trips/[id]/page.js [Server Component]
+
+
+ GET /trips/01624469-a516-4633-a69d-e83743d1d44b 500 in 44ms (next.js: 30ms, application-code: 14ms)
+[browser] Uncaught Error: ./src/components/TransportationOptions.js:391:1
+Unexpected token. Did you mean `{'}'}` or `&rbrace;`?
+  389 |     </div>
+  390 |   );
+> 391 | }
+      | ^
+  392 |
+  393 | // ΓöÇΓöÇΓöÇ ADD TRANSPORTATION MODAL ΓöÇΓöÇΓöÇ
+  394 | function AddTransportationModal({ tripId, tripStart, tripEnd, onClose, onSave }) {
+
+Parsing ecmascript source code failed
+
+Import traces:
+  Client Component Browser:
+    ./src/components/TransportationOptions.js [Client Component Browser]
+    ./src/app/trips/[id]/page.js [Client Component Browser]
+    ./src/app/trips/[id]/page.js [Server Component]
+
+  Client Component SSR:
+    ./src/components/TransportationOptions.js [Client Component SSR]
+    ./src/app/trips/[id]/page.js [Client Component SSR]
+    ./src/app/trips/[id]/page.js [Server Component]
+
+
+    at <unknown> (Error: ./src/components/TransportationOptions.js:391:1)
+    at <unknown> (Error: (./src/components/TransportationOptions.js:391:1)
+[browser] ./src/components/TransportationOptions.js:391:1
+Unexpected token. Did you mean `{'}'}` or `&rbrace;`?
+  389 |     </div>
+  390 |   );
+> 391 | }
+      | ^
+  392 |
+  393 | // ΓöÇΓöÇΓöÇ ADD TRANSPORTATION MODAL ΓöÇΓöÇΓöÇ
+  394 | function AddTransportationModal({ tripId, tripStart, tripEnd, onClose, onSave }) {
+
+Parsing ecmascript source code failed
+
+Import traces:
+  Client Component Browser:
+    ./src/components/TransportationOptions.js [Client Component Browser]
+    ./src/app/trips/[id]/page.js [Client Component Browser]
+    ./src/app/trips/[id]/page.js [Server Component]
+
+  Client Component SSR:
+    ./src/components/TransportationOptions.js [Client Component SSR]
+    ./src/app/trips/[id]/page.js [Client Component SSR]
+    ./src/app/trips/[id]/page.js [Server Component] 
+[browser] ./src/components/TransportationOptions.js:391:1
+Unexpected token. Did you mean `{'}'}` or `&rbrace;`?
+  389 |     </div>
+  390 |   );
+> 391 | }
+      | ^
+  392 |
+  393 | // ΓöÇΓöÇΓöÇ ADD TRANSPORTATION MODAL ΓöÇΓöÇΓöÇ
+  394 | function AddTransportationModal({ tripId, tripStart, tripEnd, onClose, onSave }) {
+
+Parsing ecmascript source code failed
+
+Import traces:
+  Client Component Browser:
+    ./src/components/TransportationOptions.js [Client Component Browser]
+    ./src/app/trips/[id]/page.js [Client Component Browser]
+    ./src/app/trips/[id]/page.js [Server Component]
+
+  Client Component SSR:
+    ./src/components/TransportationOptions.js [Client Component SSR]
+    ./src/app/trips/[id]/page.js [Client Component SSR]
+    ./src/app/trips/[id]/page.js [Server Component] 
+Γ¿» ./src/components/TransportationOptions.js:391:1
+Unexpected token. Did you mean `{'}'}` or `&rbrace;`?
+  389 |     </div>
+  390 |   );
+> 391 | }
+      | ^
+  392 |
+  393 | // ΓöÇΓöÇΓöÇ ADD TRANSPORTATION MODAL ΓöÇΓöÇΓöÇ
+  394 | function AddTransportationModal({ tripId, tripStart, tripEnd, onClose, onSave }) {
+
+Parsing ecmascript source code failed
+
+Import traces:
+  Client Component Browser:
+    ./src/components/TransportationOptions.js [Client Component Browser]
+    ./src/app/trips/[id]/page.js [Client Component Browser]
+    ./src/app/trips/[id]/page.js [Server Component]
+
+  Client Component SSR:
+    ./src/components/TransportationOptions.js [Client Component SSR]
+    ./src/app/trips/[id]/page.js [Client Component SSR]
+    ./src/app/trips/[id]/page.js [Server Component]
+
+
+ GET /trips/01624469-a516-4633-a69d-e83743d1d44b 500 in 31ms (next.js: 21ms, application-code: 10ms)
+[browser] Uncaught Error: ./src/components/TransportationOptions.js:391:1
+Unexpected token. Did you mean `{'}'}` or `&rbrace;`?
+  389 |     </div>
+  390 |   );
+> 391 | }
+      | ^
+  392 |
+  393 | // ΓöÇΓöÇΓöÇ ADD TRANSPORTATION MODAL ΓöÇΓöÇΓöÇ
+  394 | function AddTransportationModal({ tripId, tripStart, tripEnd, onClose, onSave }) {
+
+Parsing ecmascript source code failed
+
+Import traces:
+  Client Component Browser:
+    ./src/components/TransportationOptions.js [Client Component Browser]
+    ./src/app/trips/[id]/page.js [Client Component Browser]
+    ./src/app/trips/[id]/page.js [Server Component]
+
+  Client Component SSR:
+    ./src/components/TransportationOptions.js [Client Component SSR]
+    ./src/app/trips/[id]/page.js [Client Component SSR]
+    ./src/app/trips/[id]/page.js [Server Component]
+
+
+    at <unknown> (Error: ./src/components/TransportationOptions.js:391:1)
+    at <unknown> (Error: (./src/components/TransportationOptions.js:391:1)
+[browser] ./src/components/TransportationOptions.js:391:1
+Unexpected token. Did you mean `{'}'}` or `&rbrace;`?
+  389 |     </div>
+  390 |   );
+> 391 | }
+      | ^
+  392 |
+  393 | // ΓöÇΓöÇΓöÇ ADD TRANSPORTATION MODAL ΓöÇΓöÇΓöÇ
+  394 | function AddTransportationModal({ tripId, tripStart, tripEnd, onClose, onSave }) {
+
+Parsing ecmascript source code failed
+
+Import traces:
+  Client Component Browser:
+    ./src/components/TransportationOptions.js [Client Component Browser]
+    ./src/app/trips/[id]/page.js [Client Component Browser]
+    ./src/app/trips/[id]/page.js [Server Component]
+
+  Client Component SSR:
+    ./src/components/TransportationOptions.js [Client Component SSR]
+    ./src/app/trips/[id]/page.js [Client Component SSR]
+    ./src/app/trips/[id]/page.js [Server Component] 
+[browser] ./src/components/TransportationOptions.js:391:1
+Unexpected token. Did you mean `{'}'}` or `&rbrace;`?
+  389 |     </div>
+  390 |   );
+> 391 | }
+      | ^
+  392 |
+  393 | // ΓöÇΓöÇΓöÇ ADD TRANSPORTATION MODAL ΓöÇΓöÇΓöÇ
+  394 | function AddTransportationModal({ tripId, tripStart, tripEnd, onClose, onSave }) {
+
+Parsing ecmascript source code failed
+
+Import traces:
+  Client Component Browser:
+    ./src/components/TransportationOptions.js [Client Component Browser]
+    ./src/app/trips/[id]/page.js [Client Component Browser]
+    ./src/app/trips/[id]/page.js [Server Component]
+
+  Client Component SSR:
+    ./src/components/TransportationOptions.js [Client Component SSR]
+    ./src/app/trips/[id]/page.js [Client Component SSR]
+    ./src/app/trips/[id]/page.js [Server Component] 
+'wmic' is not recognized as an internal or external command,
+operable program or batch file.
+Γ£ô Compiled in 204ms
+ GET /trips/01624469-a516-4633-a69d-e83743d1d44b 200 in 769ms (next.js: 69ms, application-code: 700ms)
+Γ£ô Compiled in 355ms
+ GET /trips/01624469-a516-4633-a69d-e83743d1d44b 200 in 632ms (next.js: 440ms, application-code: 192ms)
+Γ£ô Compiled in 89ms
+ GET /trips/01624469-a516-4633-a69d-e83743d1d44b 200 in 185ms (next.js: 118ms, application-code: 67ms)
+Γ£ô Compiled in 92ms
+ GET /trips/01624469-a516-4633-a69d-e83743d1d44b 200 in 180ms (next.js: 119ms, application-code: 61ms)
+Γ£ô Compiled in 118ms
+ GET /trips/01624469-a516-4633-a69d-e83743d1d44b 200 in 272ms (next.js: 117ms, application-code: 155ms)
+Γ£ô Compiled in 103ms
+ GET /trips/01624469-a516-4633-a69d-e83743d1d44b 200 in 137ms (next.js: 96ms, application-code: 41ms)
+Γ£ô Compiled in 577ms
+ GET /trips/01624469-a516-4633-a69d-e83743d1d44b 200 in 409ms (next.js: 192ms, application-code: 217ms)
+ GET /trips/01624469-a516-4633-a69d-e83743d1d44b 200 in 114ms (next.js: 5ms, application-code: 109ms)
+ GET /trips/01624469-a516-4633-a69d-e83743d1d44b 200 in 67ms (next.js: 32ms, application-code: 36ms)
+ GET /trips/01624469-a516-4633-a69d-e83743d1d44b 200 in 69ms (next.js: 4ms, application-code: 65ms)
+Γ£ô Compiled in 88ms
+ GET /trips/01624469-a516-4633-a69d-e83743d1d44b 200 in 248ms (next.js: 132ms, application-code: 116ms)
+Γ£ô Compiled in 263ms
+ GET /trips/01624469-a516-4633-a69d-e83743d1d44b 200 in 562ms (next.js: 366ms, application-code: 196ms)
+Γ£ô Compiled in 116ms
+ GET /trips/01624469-a516-4633-a69d-e83743d1d44b 200 in 416ms (next.js: 359ms, application-code: 57ms)
+Γ£ô Compiled in 98ms
+ GET /trips/01624469-a516-4633-a69d-e83743d1d44b 200 in 349ms (next.js: 167ms, application-code: 182ms)
+ GET /trips/01624469-a516-4633-a69d-e83743d1d44b 200 in 1363ms (next.js: 15ms, application-code: 1348ms)
+Γ£ô Compiled in 117ms
+ GET /trips/01624469-a516-4633-a69d-e83743d1d44b 200 in 406ms (next.js: 197ms, application-code: 209ms)
+ GET /trips/01624469-a516-4633-a69d-e83743d1d44b 200 in 2.2s (next.js: 260ms, application-code: 1906ms)
+Γ£ô Compiled in 638ms
+ GET /trips/01624469-a516-4633-a69d-e83743d1d44b 200 in 2.7s (next.js: 2.4s, application-code: 297ms)
+Γ£ô Compiled in 189ms
+ GET /trips/01624469-a516-4633-a69d-e83743d1d44b 200 in 334ms (next.js: 262ms, application-code: 71ms)
+Γ£ô Compiled in 114ms
+ GET /trips/01624469-a516-4633-a69d-e83743d1d44b 200 in 192ms (next.js: 107ms, application-code: 85ms)
+Γ£ô Compiled in 300ms
+ GET /trips/01624469-a516-4633-a69d-e83743d1d44b 200 in 241ms (next.js: 150ms, application-code: 91ms)
+Γ£ô Compiled in 144ms
+ GET /trips/01624469-a516-4633-a69d-e83743d1d44b 200 in 204ms (next.js: 150ms, application-code: 54ms)
+ GET /trips/01624469-a516-4633-a69d-e83743d1d44b 200 in 910ms (next.js: 43ms, application-code: 867ms)

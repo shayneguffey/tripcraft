@@ -290,7 +290,9 @@ function ClockSection({ label, value, onChange, autoAdvance }) {
 }
 
 // ─── TimeSelectPopup: the unified time picker ──────────────
-// Props API is identical to the previous version
+// Props API is identical to the previous version.
+// Pass `useFixed={true}` when rendered inside a scroll container (e.g. DayPopout)
+// so the picker floats over the container instead of extending its scroll height.
 export default function TimeSelectPopup({
   startTime: initStart,
   endTime: initEnd,
@@ -301,11 +303,34 @@ export default function TimeSelectPopup({
   startLabel = "Start",
   endLabel = "End",
   showEndTime = true,
+  useFixed = false,
 }) {
   const [startTime, setStartTime] = useState(initStart || { h: "", m: "00", period: "AM" });
   const [endTime, setEndTime] = useState(initEnd || { h: "", m: "00", period: "AM" });
   const [activeSection, setActiveSection] = useState("start"); // "start" | "end"
+  const [fixedPos, setFixedPos] = useState(null);
   const ref = useRef(null);
+
+  // For fixed mode: compute position from parent element's viewport rect
+  useEffect(() => {
+    if (!useFixed || !ref.current) return;
+    const parent = ref.current.parentElement;
+    if (!parent) return;
+    const rect = parent.getBoundingClientRect();
+    const pickerW = 252;
+    const pickerH = ref.current.offsetHeight || 400;
+    // Position below the trigger, but flip up if it would go offscreen
+    let top = rect.bottom + 4;
+    let left = rect.left;
+    if (top + pickerH > window.innerHeight - 8) {
+      top = rect.top - pickerH - 4;
+    }
+    if (left + pickerW > window.innerWidth - 8) {
+      left = window.innerWidth - pickerW - 8;
+    }
+    if (left < 8) left = 8;
+    setFixedPos({ top, left });
+  }, [useFixed]);
 
   // Click outside → save and close
   useEffect(() => {
@@ -326,11 +351,16 @@ export default function TimeSelectPopup({
     if (onClear) onClear();
   }
 
+  const positionClass = useFixed ? "fixed" : "absolute left-0 top-full mt-1";
+  const positionStyle = useFixed && fixedPos
+    ? { width: 252, top: fixedPos.top, left: fixedPos.left }
+    : { width: 252 };
+
   return (
     <div
       ref={ref}
-      className="absolute left-0 top-full mt-1 z-50 bg-white rounded-xl shadow-xl border border-stone-200 overflow-hidden"
-      style={{ width: 252 }}
+      className={`${positionClass} z-50 bg-white rounded-xl shadow-xl border border-stone-200 overflow-hidden`}
+      style={positionStyle}
       onClick={(e) => e.stopPropagation()}
     >
       {/* Section tabs (when showing both start and end) */}

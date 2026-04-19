@@ -248,83 +248,91 @@ function OptionDetail({ option, isItinerarySelected, onToggleSelected, onNotesCh
   const outbound = legs.filter((l) => l.direction === "outbound");
   const returnLegs = legs.filter((l) => l.direction === "return");
   return (
-    <div>
-      {/* Header */}
-      <div className="flex items-start justify-between mb-4">
-        <h3 className="text-lg font-bold text-slate-800">{option.name}</h3>
-        {option.total_price && (
-          <div className="text-right flex-shrink-0 ml-4">
-            <div className="text-2xl font-bold text-slate-800">
-              ${Number(option.total_price).toLocaleString()}
+    <div className="flex gap-4">
+      {/* Itinerary button — fixed left column */}
+      <div className="flex flex-col items-center flex-shrink-0 w-9 pt-0.5">
+        <button
+          type="button"
+          onClick={onToggleSelected}
+          className={`w-9 h-9 rounded-lg flex items-center justify-center transition-colors ${
+            isItinerarySelected ? "bg-emerald-500 text-white hover:bg-emerald-600" : "bg-slate-100 text-slate-400 hover:bg-emerald-50 hover:text-emerald-600"
+          }`}
+          title={isItinerarySelected ? "Remove from itinerary" : "Add to itinerary"}
+        >
+          {isItinerarySelected ? (
+            <svg className="w-4.5 h-4.5" fill="none" stroke="currentColor" viewBox="0 0 24 24" strokeWidth={2.5}><path strokeLinecap="round" strokeLinejoin="round" d="M4.5 12.75l6 6 9-13.5" /></svg>
+          ) : (
+            <svg className="w-4.5 h-4.5" fill="none" stroke="currentColor" viewBox="0 0 24 24" strokeWidth={2}><path strokeLinecap="round" strokeLinejoin="round" d="M12 4.5v15m7.5-7.5h-15" /></svg>
+          )}
+        </button>
+        <span className={`text-[9px] font-semibold uppercase tracking-wide mt-0.5 ${isItinerarySelected ? "text-emerald-600" : "text-slate-400"}`}>
+          {isItinerarySelected ? "Added" : "Add"}
+        </span>
+      </div>
+
+      {/* Detail content — aligned with title */}
+      <div className="flex-1 min-w-0">
+        {/* Header */}
+        <div className="flex items-start justify-between mb-4">
+          <h3 className="text-xl font-bold text-slate-800">{option.name}</h3>
+          {option.total_price && (
+            <div className="text-right flex-shrink-0 ml-4">
+              <div className="text-2xl font-bold text-slate-800">
+                ${Number(option.total_price).toLocaleString()}
+              </div>
+              <div className="text-xs text-slate-400">{option.currency || "USD"}</div>
             </div>
-            <div className="text-xs text-slate-400">{option.currency || "USD"}</div>
+          )}
+        </div>
+
+        {/* Stats row */}
+        <div className="flex gap-4 mt-1 mb-3 pb-4 border-b border-emerald-50">
+          <StatBadge label="Legs" value={legs.length} />
+          <StatBadge label="Cabin" value={legs[0]?.cabin_class || "economy"} />
+          {legs[0]?.airline_name && <StatBadge label="Airline" value={legs[0].airline_name} />}
+          {option.num_passengers && option.num_passengers > 0 && (
+            <StatBadge label="Passengers" value={option.num_passengers} />
+          )}
+        </div>
+
+        {/* Flight legs */}
+        {outbound.length > 0 && (
+          <div className="mb-4">
+            <div className="text-xs font-bold text-slate-400 uppercase tracking-wide mb-2">Outbound</div>
+            {outbound.map((leg) => (
+              <FlightLegCard key={leg.id} leg={leg} />
+            ))}
           </div>
         )}
-      </div>
 
-      {/* Stats row */}
-      <div className="flex gap-4 mb-3 pb-4 border-b border-emerald-50">
-        <StatBadge label="Legs" value={legs.length} />
-        <StatBadge label="Cabin" value={legs[0]?.cabin_class || "economy"} />
-        {outbound[0]?.departure_date && returnLegs[returnLegs.length - 1]?.departure_date && (
-          <StatBadge
-            label="Duration"
-            value={`${daysBetween(outbound[0].departure_date, returnLegs[returnLegs.length - 1].departure_date)} days`}
-          />
+        {returnLegs.length > 0 && (
+          <div className="mb-4">
+            <div className="text-xs font-bold text-slate-400 uppercase tracking-wide mb-2">Return</div>
+            {returnLegs.map((leg) => (
+              <FlightLegCard key={leg.id} leg={leg} />
+            ))}
+          </div>
         )}
-        {legs[0]?.airline_name && <StatBadge label="Airline" value={legs[0].airline_name} />}
-        {option.num_passengers && option.num_passengers > 0 && (
-          <StatBadge label="Passengers" value={option.num_passengers} />
+
+        {legs.length === 0 && (
+          <p className="text-sm text-slate-400 italic">No flight legs parsed. Try adding details manually.</p>
         )}
+
+        {/* Notes */}
+        <EditableNotes notes={option.notes} onSave={onNotesChange} />
+
+        {/* Source thumbnails */}
+        <SourceThumbnails
+          screenshotUrl={option.screenshot_url}
+          sourceUrl={option.source_url}
+          manualData={[
+            { label: "Price", value: option.total_price ? `$${Number(option.total_price).toLocaleString()}` : "" },
+            { label: "Passengers", value: option.num_passengers ? String(option.num_passengers) : "" },
+            { label: "Cabin", value: legs[0]?.cabin_class || "" },
+          ]}
+          accentColor="emerald"
+        />
       </div>
-
-      {/* Add to Itinerary — just below stats */}
-      <div className="mb-4">
-        <button onClick={onToggleSelected}
-          className={`px-3 py-1.5 rounded-lg text-sm font-medium transition-colors ${
-            isItinerarySelected ? "bg-emerald-100 text-emerald-700" : "bg-slate-100 text-slate-600 hover:bg-emerald-50"
-          }`}>
-          {isItinerarySelected ? "✓ Added to Itinerary" : "Add to Itinerary"}
-        </button>
-      </div>
-
-      {/* Flight legs */}
-      {outbound.length > 0 && (
-        <div className="mb-4">
-          <div className="text-xs font-bold text-slate-400 uppercase tracking-wide mb-2">Outbound</div>
-          {outbound.map((leg) => (
-            <FlightLegCard key={leg.id} leg={leg} />
-          ))}
-        </div>
-      )}
-
-      {returnLegs.length > 0 && (
-        <div className="mb-4">
-          <div className="text-xs font-bold text-slate-400 uppercase tracking-wide mb-2">Return</div>
-          {returnLegs.map((leg) => (
-            <FlightLegCard key={leg.id} leg={leg} />
-          ))}
-        </div>
-      )}
-
-      {legs.length === 0 && (
-        <p className="text-sm text-slate-400 italic">No flight legs parsed. Try adding details manually.</p>
-      )}
-
-      {/* Notes */}
-      <EditableNotes notes={option.notes} onSave={onNotesChange} />
-
-      {/* Source thumbnails */}
-      <SourceThumbnails
-        screenshotUrl={option.screenshot_url}
-        sourceUrl={option.source_url}
-        manualData={[
-          { label: "Price", value: option.total_price ? `$${Number(option.total_price).toLocaleString()}` : "" },
-          { label: "Passengers", value: option.num_passengers ? String(option.num_passengers) : "" },
-          { label: "Cabin", value: legs[0]?.cabin_class || "" },
-        ]}
-        accentColor="emerald"
-      />
     </div>
   );
 }
@@ -394,7 +402,7 @@ function FlightLegCard({ leg }) {
 
 function StatBadge({ label, value }) {
   return (
-    <div className="text-center">
+    <div>
       <div className="text-[10px] font-bold text-slate-400 uppercase tracking-wide">{label}</div>
       <div className="text-sm font-semibold text-slate-700 capitalize">{value}</div>
     </div>

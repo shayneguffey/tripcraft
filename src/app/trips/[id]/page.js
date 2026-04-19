@@ -470,7 +470,7 @@ export default function TripDetailPage() {
     const selectedOpts = flightOptions.filter((o) => selectedFlightIds.includes(o.id));
     if (selectedOpts.length === 0) return [];
     return selectedOpts.flatMap((opt) =>
-      (opt.flight_legs || []).filter((leg) => leg.departure_date === dateKey)
+      (opt.flight_legs || []).filter((leg) => leg.departure_date === dateKey).map((leg) => ({ ...leg, _optionId: opt.id, notes: leg.notes || opt.notes, source_url: opt.source_url, screenshot_url: opt.screenshot_url }))
     );
   }
 
@@ -980,7 +980,7 @@ export default function TripDetailPage() {
 
                           {/* Day Header — inline editable */}
                           {inRange && (
-                            <div className="mb-2 flex items-center min-h-[18px]">
+                            <div className="pb-1 mb-1 border-b border-stone-400/60 flex items-center min-h-[18px]">
                               {editingDayHeader === dateKey ? (
                                 <input
                                   type="text"
@@ -995,7 +995,7 @@ export default function TripDetailPage() {
                               ) : (
                                 <div
                                   onClick={(e) => { e.stopPropagation(); setEditingDayHeader(dateKey); setDayHeaderValue(dayData?.title || ""); }}
-                                  className={`w-full text-[10px] font-semibold px-1 py-0.5 rounded cursor-text truncate min-h-[16px] bg-white/80 border border-transparent ${
+                                  className={`w-full text-[10px] font-semibold px-1 py-0.5 cursor-text truncate min-h-[16px] ${
                                     dayData?.title ? "text-stone-700" : "text-transparent"
                                   }`}
                                   title={dayData?.title || "Click to add day title"}
@@ -1014,7 +1014,7 @@ export default function TripDetailPage() {
                               const dining = getScheduledDining(dateKey).map(d => ({ ...d, _type: "dining", _time: d.start_time || null, _name: d.name }));
                               const transport = getScheduledTransport(dateKey).map(t => {
                                 const isReturnT = t.arrival_date === dateKey && t.departure_date !== dateKey;
-                                return { ...t, _type: "transportation", _time: t.departure_time || null, _name: `${isReturnT ? "\u21A9 " : ""}${t.name}` };
+                                return { ...t, _type: "transportation", _isReturn: isReturnT, _time: isReturnT ? (t.arrival_time || null) : (t.departure_time || null), _name: `${isReturnT ? "\u21A9 " : ""}${t.name}` };
                               });
 
                               // Day events (activities from the day detail card)
@@ -1076,28 +1076,42 @@ export default function TripDetailPage() {
 
                           </div>
 
-                          {/* Accommodation footer bar */}
-                          {(() => {
+                          {/* Reserved stay row — always present for stable layout */}
+                          {inRange && (() => {
                             const accoms = getScheduledAccommodations(dateKey);
-                            if (accoms.length === 0) return null;
                             return (
-                              <div className="mt-auto pt-0.5">
-                                {accoms.map((a) => (
-                                  <div
-                                    key={a.id}
-                                    className="flex items-center gap-0.5 bg-sky-100 text-sky-700 rounded px-1 py-0.5 cursor-pointer hover:brightness-95 transition-all"
-                                    onClick={(e) => {
-                                      e.stopPropagation();
-                                      const rect = e.currentTarget.getBoundingClientRect();
-                                      setEventPopup({ type: "accommodation", data: a, dateKey, rect });
-                                    }}
-                                  >
-                                    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor" className="w-2.5 h-2.5 flex-shrink-0">
-                                      <path d="M.75 15.5a.75.75 0 0 0 1.5 0V13h16v2.5a.75.75 0 0 0 1.5 0v-6a.75.75 0 0 0-1.5 0V11H16V4.5A2.5 2.5 0 0 0 13.5 2h-7A2.5 2.5 0 0 0 4 4.5V11H2.25V9.5a.75.75 0 0 0-1.5 0v6ZM5.5 4.5a1 1 0 0 1 1-1h7a1 1 0 0 1 1 1V11h-9V4.5Z" />
-                                    </svg>
-                                    <span className="text-[10px] font-medium truncate">{a.name}</span>
-                                  </div>
-                                ))}
+                              <div className="mt-auto pt-1.5">
+                                <div className="border-t border-stone-400/60 pt-1 min-h-[20px]">
+                                  {accoms.length > 0 ? accoms.map((a) => {
+                                    const isCheckIn = a.check_in_date === dateKey;
+                                    const isCheckOut = a.check_out_date && (() => {
+                                      // check-out date is the day AFTER the last night
+                                      const coDate = new Date(a.check_out_date + "T00:00:00");
+                                      coDate.setDate(coDate.getDate());
+                                      return formatDateKey(coDate) === dateKey || dateKey === a.check_out_date;
+                                    })();
+                                    return (
+                                      <div
+                                        key={a.id}
+                                        className="flex items-center gap-0.5 bg-sky-100/80 text-sky-700 rounded px-1 py-0.5 cursor-pointer hover:brightness-95 transition-all"
+                                        onClick={(e) => {
+                                          e.stopPropagation();
+                                          const rect = e.currentTarget.getBoundingClientRect();
+                                          setEventPopup({ type: "accommodation", data: a, dateKey, rect });
+                                        }}
+                                      >
+                                        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor" className="w-2.5 h-2.5 flex-shrink-0">
+                                          <path d="M.75 15.5a.75.75 0 0 0 1.5 0V13h16v2.5a.75.75 0 0 0 1.5 0v-6a.75.75 0 0 0-1.5 0V11H16V4.5A2.5 2.5 0 0 0 13.5 2h-7A2.5 2.5 0 0 0 4 4.5V11H2.25V9.5a.75.75 0 0 0-1.5 0v6ZM5.5 4.5a1 1 0 0 1 1-1h7a1 1 0 0 1 1 1V11h-9V4.5Z" />
+                                        </svg>
+                                        <span className="text-[10px] font-medium truncate">
+                                          {isCheckIn ? "↓ " : ""}{a.name}
+                                        </span>
+                                      </div>
+                                    );
+                                  }) : (
+                                    <div className="h-[14px]" />
+                                  )}
+                                </div>
                               </div>
                             );
                           })()}
@@ -1417,6 +1431,7 @@ export default function TripDetailPage() {
             dateKey={eventPopup.dateKey}
             rect={eventPopup.rect}
             onClose={() => setEventPopup(null)}
+            onUpdate={loadTrip}
           />
         )}
       </main>
@@ -1425,7 +1440,32 @@ export default function TripDetailPage() {
   );
 }
 
-function EventPopup({ type, data, dateKey, rect, onClose }) {
+function EventPopup({ type, data, dateKey, rect, onClose, onUpdate }) {
+  const [editingNotes, setEditingNotes] = useState(false);
+  const [notesValue, setNotesValue] = useState(data.notes || "");
+
+  const TABLE_MAP = {
+    flight: "flight_options",
+    activity: "activity_options",
+    dining: "dining_options",
+    transportation: "transportation_options",
+    accommodation: "accommodation_options",
+    dayEvent: "activities",
+  };
+
+  async function saveNotes() {
+    setEditingNotes(false);
+    const newNotes = notesValue.trim() || null;
+    if (newNotes === (data.notes || null)) return;
+    const table = TABLE_MAP[type];
+    if (!table) return;
+    // For flights, notes live on the parent option, not the leg
+    const recordId = type === "flight" ? data._optionId : data.id;
+    if (!recordId) return;
+    await supabase.from(table).update({ notes: newNotes }).eq("id", recordId);
+    if (onUpdate) onUpdate();
+  }
+
   const colors = {
     flight: { bg: CATEGORY_COLORS.flight.bg, border: CATEGORY_COLORS.flight.border, text: CATEGORY_COLORS.flight.text, label: "Flight" },
     activity: { bg: CATEGORY_COLORS.activity.bg, border: CATEGORY_COLORS.activity.border, text: CATEGORY_COLORS.activity.text, label: "Activity" },
@@ -1446,29 +1486,163 @@ function EventPopup({ type, data, dateKey, rect, onClose }) {
           <span className={`text-xs font-bold uppercase tracking-wide ${c.text}`}>{c.label}</span>
           <button onClick={onClose} className="text-stone-400 hover:text-stone-600 text-sm">&#x2715;</button>
         </div>
-        <div className="text-sm font-semibold text-stone-800 mb-1">{data.name || data.title || `${data.departure_airport} \u2192 ${data.arrival_airport}`}</div>
-        {data.departure_airport && data.arrival_airport && (
-          <div className="text-xs text-stone-500 mb-1">{data.departure_airport} &rarr; {data.arrival_airport}</div>
+        {/* Title */}
+        {type === "flight" ? (
+          <div className="text-sm font-semibold text-stone-800 mb-1">
+            {data.airline_name || data.airline_code || ""}{data.flight_number ? ` ${data.flight_number}` : ""}
+            {!data.airline_name && !data.airline_code && !data.flight_number && `${data.departure_airport} \u2192 ${data.arrival_airport}`}
+          </div>
+        ) : (
+          <div className="text-sm font-semibold text-stone-800 mb-1">{data.name || data.title || ""}</div>
         )}
-        {data.departure_date && (
-          <div className="text-xs text-stone-500">{new Date(data.departure_date + "T00:00:00").toLocaleDateString("en-US", { month: "short", day: "numeric" })}</div>
-        )}
-        {(data.start_time || data.scheduled_date) && (
-          <div className="text-xs text-stone-500">
-            {data.start_time && `${data.start_time.slice(0,5)}`}
-            {data.end_time && ` \u2013 ${data.end_time.slice(0,5)}`}
+        {/* Flight departure/arrival details */}
+        {type === "flight" && data.departure_airport && (
+          <div className="space-y-1 mb-1">
+            <div className="flex items-center text-xs gap-3">
+              <span className="font-medium text-stone-600 w-10">{data.departure_airport}</span>
+              <span className="text-stone-400 w-12">Depart</span>
+              <span className="text-stone-500">{data.departure_time ? formatTime12hShared(data.departure_time.slice(0,5)) : "—"}</span>
+            </div>
+            {data.arrival_airport && (
+              <div className="flex items-center text-xs gap-3">
+                <span className="font-medium text-stone-600 w-10">{data.arrival_airport}</span>
+                <span className="text-stone-400 w-12">Arrive</span>
+                <span className="text-stone-500">{data.arrival_time ? formatTime12hShared(data.arrival_time.slice(0,5)) : "—"}</span>
+              </div>
+            )}
           </div>
         )}
-        {data.location && <div className="text-xs text-stone-500 mt-1">{"\uD83D\uDCCD"} {data.location}</div>}
-        {data.location_name && <div className="text-xs text-stone-500 mt-1">{"\uD83D\uDCCD"} {data.location_name}</div>}
+        {/* Non-flight: departure date */}
+        {type !== "flight" && data.departure_date && (
+          <div className="text-xs text-stone-500">{new Date(data.departure_date + "T00:00:00").toLocaleDateString("en-US", { month: "short", day: "numeric" })}</div>
+        )}
+        {/* Non-flight: departure/arrival time */}
+        {type !== "flight" && data.departure_time && (() => {
+          if (type === "transportation" && (data.pickup_location || data.dropoff_location)) {
+            const t = data._isReturn ? data.arrival_time : data.departure_time;
+            return t ? <div className="text-xs text-stone-500">{formatTime12hShared(t.slice(0,5))}</div> : null;
+          }
+          return (
+            <div className="text-xs text-stone-500">
+              {formatTime12hShared(data.departure_time.slice(0,5))}
+              {data.arrival_time && ` \u2013 ${formatTime12hShared(data.arrival_time.slice(0,5))}`}
+            </div>
+          );
+        })()}
+        {(data.start_time || data.scheduled_date) && (
+          <div className="text-xs text-stone-500">
+            {data.start_time && formatTime12hShared(data.start_time.slice(0,5))}
+            {data.end_time && ` \u2013 ${formatTime12hShared(data.end_time.slice(0,5))}`}
+          </div>
+        )}
+        {/* Car rental: show pickup or dropoff location based on which day this is */}
+        {type === "transportation" && (data.pickup_location || data.dropoff_location) && (() => {
+          const loc = data._isReturn ? data.dropoff_location : data.pickup_location;
+          const label = data._isReturn ? "Drop-off" : "Pick-up";
+          if (!loc) return null;
+          return (
+            <a
+              href={`https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(loc)}`}
+              target="_blank"
+              rel="noopener noreferrer"
+              className="text-xs text-sky-600 hover:text-sky-800 hover:underline mt-1 flex items-center gap-1 transition-colors"
+              onClick={(e) => e.stopPropagation()}
+            >
+              <span>{"\uD83D\uDCCD"}</span> {label}: {loc}
+            </a>
+          );
+        })()}
+        {/* Generic location — skip for transport with pickup/dropoff */}
+        {!(type === "transportation" && (data.pickup_location || data.dropoff_location)) && (data.address || data.location) && (
+          <a
+            href={`https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(data.address || data.location)}`}
+            target="_blank"
+            rel="noopener noreferrer"
+            className="text-xs text-sky-600 hover:text-sky-800 hover:underline mt-1 flex items-center gap-1 transition-colors"
+            onClick={(e) => e.stopPropagation()}
+          >
+            <span>{"\uD83D\uDCCD"}</span> {data.address || data.location}
+          </a>
+        )}
+        {!(type === "transportation" && (data.pickup_location || data.dropoff_location)) && data.location_name && !data.address && !data.location && (
+          <a
+            href={`https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(data.location_name)}`}
+            target="_blank"
+            rel="noopener noreferrer"
+            className="text-xs text-sky-600 hover:text-sky-800 hover:underline mt-1 flex items-center gap-1 transition-colors"
+            onClick={(e) => e.stopPropagation()}
+          >
+            <span>{"\uD83D\uDCCD"}</span> {data.location_name}
+          </a>
+        )}
         {data.check_in_date && data.check_out_date && (
           <div className="text-xs text-stone-500 mt-1">
             {new Date(data.check_in_date + "T00:00:00").toLocaleDateString("en-US", { month: "short", day: "numeric" })} &ndash; {new Date(data.check_out_date + "T00:00:00").toLocaleDateString("en-US", { month: "short", day: "numeric" })}
           </div>
         )}
-        {data.price_per_night && <div className="text-xs text-stone-500 mt-1">${Number(data.price_per_night).toLocaleString()}/night</div>}
-        {data.total_price && <div className="text-xs text-stone-500 mt-1">${Number(data.total_price).toLocaleString()}</div>}
-        {data.notes && <div className="text-xs text-stone-400 mt-2 italic">{data.notes}</div>}
+        {type !== "accommodation" && data.total_price && <div className="text-xs text-stone-500 mt-1">${Number(data.total_price).toLocaleString()}</div>}
+        {/* Inline-editable notes */}
+        <div className="mt-2">
+          <div className="text-[10px] font-semibold text-stone-400 uppercase tracking-wide mb-1">Notes</div>
+          {editingNotes ? (
+            <textarea
+              value={notesValue}
+              onChange={(e) => setNotesValue(e.target.value)}
+              onBlur={saveNotes}
+              onKeyDown={(e) => { if (e.key === "Escape") { setNotesValue(data.notes || ""); setEditingNotes(false); } }}
+              autoFocus
+              rows={3}
+              placeholder="Add notes..."
+              className="w-full text-xs text-stone-600 bg-white border border-stone-300 rounded-lg px-2 py-1.5 focus:outline-none focus:ring-1 focus:ring-[#da7b4a]/50 focus:border-transparent resize-none"
+            />
+          ) : (
+            <div
+              onClick={(e) => { e.stopPropagation(); setEditingNotes(true); }}
+              className={`text-xs rounded-lg px-2 py-1.5 cursor-text border border-stone-200/60 min-h-[32px] transition-colors hover:border-stone-300 ${
+                notesValue ? "text-stone-500 italic" : "text-stone-300 italic"
+              }`}
+            >
+              {notesValue || "Add notes..."}
+            </div>
+          )}
+        </div>
+        {/* Sources */}
+        {(data.source_url || data.screenshot_url) && (
+          <div className="mt-2 pt-2 border-t border-stone-200/60">
+            <div className="text-[10px] font-semibold text-stone-400 uppercase tracking-wide mb-1">Sources</div>
+            <div className="flex items-center gap-2">
+              {data.source_url && (
+                <a
+                  href={data.source_url}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="text-xs text-sky-600 hover:text-sky-800 hover:underline flex items-center gap-1 transition-colors"
+                  onClick={(e) => e.stopPropagation()}
+                >
+                  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 16 16" fill="currentColor" className="w-3 h-3 flex-shrink-0"><path d="M8.914 6.025a.75.75 0 0 1 1.06 0 3.5 3.5 0 0 1 0 4.95l-2 2a3.5 3.5 0 0 1-5.396-4.402.75.75 0 0 1 1.251.827 2 2 0 0 0 3.085 2.514l2-2a2 2 0 0 0 0-2.828.75.75 0 0 1 0-1.06Z" /><path d="M7.086 9.975a.75.75 0 0 1-1.06 0 3.5 3.5 0 0 1 0-4.95l2-2a3.5 3.5 0 0 1 5.396 4.402.75.75 0 0 1-1.251-.827 2 2 0 0 0-3.085-2.514l-2 2a2 2 0 0 0 0 2.828.75.75 0 0 1 0 1.06Z" /></svg>
+                  {(() => { try { return new URL(data.source_url).hostname.replace("www.", ""); } catch { return "Source"; } })()}
+                </a>
+              )}
+              {data.screenshot_url && (
+                <button
+                  type="button"
+                  className="text-xs text-sky-600 hover:text-sky-800 hover:underline flex items-center gap-1 transition-colors"
+                  onClick={(e) => {
+                    e.stopPropagation();
+                    const w = window.open();
+                    if (w) {
+                      w.document.write(`<html><head><title>Screenshot</title><style>body{margin:0;background:#1a1a1a;display:flex;align-items:center;justify-content:center;min-height:100vh;}</style></head><body><img src="${data.screenshot_url}" style="max-width:100%;max-height:100vh;object-fit:contain;"></body></html>`);
+                      w.document.close();
+                    }
+                  }}
+                >
+                  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 16 16" fill="currentColor" className="w-3 h-3 flex-shrink-0"><path fillRule="evenodd" d="M2 4a2 2 0 0 1 2-2h8a2 2 0 0 1 2 2v8a2 2 0 0 1-2 2H4a2 2 0 0 1-2-2V4Zm10.5 5.707a.5.5 0 0 0-.146-.353l-1-1a.5.5 0 0 0-.708 0l-1.5 1.5-2-2a.5.5 0 0 0-.707 0l-2 2A.5.5 0 0 0 5 10.707V12h8V9.707h-.5ZM7 6a1 1 0 1 1-2 0 1 1 0 0 1 2 0Z" clipRule="evenodd" /></svg>
+                  Screenshot
+                </button>
+              )}
+            </div>
+          </div>
+        )}
       </div>
     </div>
   );
@@ -1683,7 +1857,7 @@ function DayPopout({ dateKey, tripId, tripStart, dayData, activities, inRange, o
           {/* Day count + date info — horizontal layout */}
           <div className="flex items-center gap-2.5">
             {dayNumber && (
-              <div className="text-2xl font-bold text-[#da7b4a] whitespace-nowrap leading-none">Day {dayNumber}</div>
+              <div className="text-2xl font-bold text-[#da7b4a] whitespace-nowrap leading-none">DAY {dayNumber}</div>
             )}
             <div>
               <div className="text-[11px] font-semibold text-stone-500 uppercase tracking-wide leading-tight">{dayOfWeek}</div>
@@ -1898,6 +2072,7 @@ function OptionEventCard({ item, colors: c, canEditTime, onTimeChange, isDraggab
                 startLabel={startLabel}
                 endLabel={endLabel}
                 showEndTime={true}
+                useFixed={true}
                 onSave={(start24, end24) => {
                   setShowPopup(false);
                   if (onTimeChange) onTimeChange(start24, end24);
@@ -1990,6 +2165,7 @@ function UserEventCard({ activity, onUpdate, onDelete, isDraggable }) {
               startTime={to12h(activity.start_time?.slice(0, 5))}
               endTime={to12h(activity.end_time?.slice(0, 5))}
               showEndTime={true}
+              useFixed={true}
               onSave={(start24, end24) => {
                 setShowTimePicker(false);
                 onUpdate({ start_time: start24, end_time: end24 });
@@ -2118,6 +2294,7 @@ function NewEventCard({ onSave, onCancel }) {
               startTime={to12h(savedStart)}
               endTime={to12h(savedEnd)}
               showEndTime={true}
+              useFixed={true}
               onSave={(s, e) => { setShowTimePicker(false); setSavedStart(s); setSavedEnd(e); }}
               onClear={() => { setShowTimePicker(false); setSavedStart(null); setSavedEnd(null); }}
               onClose={() => setShowTimePicker(false)}

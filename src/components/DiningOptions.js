@@ -248,100 +248,128 @@ function OptionTab({ opt, index, isSelected, onClick, onDelete, confirmDelete, o
 
 // ─── OPTION DETAIL ───
 function OptionDetail({ opt, tripStart, tripEnd, onToggleSelected, onSchedule, onTimeChange, onNotesChange }) {
+  const [showCalendar, setShowCalendar] = useState(false);
+  const isScheduled = !!opt.scheduled_date;
   return (
-    <div>
-      {/* Header */}
-      <div className="flex items-start justify-between mb-4">
-        <h3 className="text-xl font-bold text-slate-800">{opt.name}</h3>
-        {(opt.avg_meal_cost || opt.price_range) && (
-          <div className="text-right flex-shrink-0 ml-4">
-            {opt.avg_meal_cost ? (
-              <>
-                <div className="text-2xl font-bold text-slate-800">
-                  {formatPrice(opt.avg_meal_cost, opt.currency)}
-                </div>
-                <div className="text-xs text-slate-400">avg per meal</div>
-              </>
-            ) : (
-              <div className="text-2xl font-bold text-slate-800">{opt.price_range}</div>
-            )}
-          </div>
-        )}
+    <div className="flex gap-4">
+      {/* Itinerary button — fixed left column */}
+      <div className="flex flex-col items-center flex-shrink-0 w-9 pt-0.5">
+        <button
+          type="button"
+          onClick={() => { if (isScheduled) { onSchedule(null); setShowCalendar(false); } else { setShowCalendar(!showCalendar); } }}
+          className={`w-9 h-9 rounded-lg flex items-center justify-center transition-colors ${
+            isScheduled ? "bg-orange-500 text-white hover:bg-orange-600" : "bg-slate-100 text-slate-400 hover:bg-orange-50 hover:text-orange-600"
+          }`}
+          title={isScheduled ? "Remove from itinerary" : "Add to itinerary"}
+        >
+          {isScheduled ? (
+            <svg className="w-4.5 h-4.5" fill="none" stroke="currentColor" viewBox="0 0 24 24" strokeWidth={2.5}><path strokeLinecap="round" strokeLinejoin="round" d="M4.5 12.75l6 6 9-13.5" /></svg>
+          ) : (
+            <svg className="w-4.5 h-4.5" fill="none" stroke="currentColor" viewBox="0 0 24 24" strokeWidth={2}><path strokeLinecap="round" strokeLinejoin="round" d="M12 4.5v15m7.5-7.5h-15" /></svg>
+          )}
+        </button>
+        <span className={`text-[9px] font-semibold uppercase tracking-wide mt-0.5 ${isScheduled ? "text-orange-600" : "text-slate-400"}`}>
+          {isScheduled ? "Added" : "Add"}
+        </span>
       </div>
 
-      {/* Stats row */}
-      <div className="flex gap-4 mb-4 text-sm text-slate-600 flex-wrap">
-        {opt.address && (
-          <div><span className={LABEL}>Address</span><div className="font-medium">{opt.address}</div></div>
-        )}
-        {opt.hours && (
-          <div><span className={LABEL}>Hours</span><div className="font-medium">{opt.hours}</div></div>
-        )}
-      </div>
-
-      {/* Description */}
-      {opt.description && (
-        <div className="mb-4">
-          <p className="text-sm text-slate-600 leading-relaxed">{opt.description}</p>
+      {/* Detail content — aligned with title */}
+      <div className="flex-1 min-w-0">
+        {/* Header */}
+        <div className="flex items-start justify-between mb-4">
+          <h3 className="text-xl font-bold text-slate-800">{opt.name}</h3>
+          {(opt.avg_meal_cost || opt.price_range) && (
+            <div className="text-right flex-shrink-0 ml-4">
+              {opt.avg_meal_cost ? (
+                <>
+                  <div className="text-2xl font-bold text-slate-800">
+                    {formatPrice(opt.avg_meal_cost, opt.currency)}
+                  </div>
+                  <div className="text-xs text-slate-400">avg per meal</div>
+                </>
+              ) : (
+                <div className="text-2xl font-bold text-slate-800">{opt.price_range}</div>
+              )}
+            </div>
+          )}
         </div>
-      )}
 
-      {/* Known for */}
-      {opt.known_for && (
-        <div className="mb-4">
-          <div className={LABEL_MB1}>Known for</div>
-          <p className="text-sm text-slate-700">{opt.known_for}</p>
+        {/* Mini week calendar — visible when scheduled or toggled open */}
+        {(isScheduled || showCalendar) && (
+          <MiniWeekCalendar
+            tripStart={tripStart}
+            tripEnd={tripEnd}
+            scheduledDate={opt.scheduled_date}
+            startTime={opt.start_time}
+            endTime={opt.end_time}
+            accentColor="orange"
+            onSchedule={(date) => { onSchedule(date); if (!date) setShowCalendar(false); }}
+            onTimeChange={onTimeChange}
+          />
+        )}
+
+        {/* Stats row */}
+        <div className="flex gap-4 mb-4 text-sm text-slate-600 flex-wrap">
+          {opt.address && (
+            <div><span className={LABEL}>Address</span><div className="font-medium">{opt.address}</div></div>
+          )}
+          {opt.hours && (
+            <div><span className={LABEL}>Hours</span><div className="font-medium">{opt.hours}</div></div>
+          )}
         </div>
-      )}
 
-      {/* Dietary options */}
-      {opt.dietary_options && (
-        <div className="mb-4">
-          <div className={LABEL_MB1}>Dietary options</div>
-          <div className="flex flex-wrap gap-1">
-            {opt.dietary_options.split(",").map((option, i) => (
-              <span key={i} className="px-2 py-1 rounded text-xs bg-amber-50 text-amber-700 font-medium">
-                {option.trim()}
-              </span>
-            ))}
+        {/* Description */}
+        {opt.description && (
+          <div className="mb-4">
+            <p className="text-sm text-slate-600 leading-relaxed">{opt.description}</p>
           </div>
-        </div>
-      )}
+        )}
 
-      {/* Reservation indicator */}
-      {opt.reservation_required && (
-        <div className="mb-4 px-3 py-2 bg-amber-50 border border-amber-200 rounded-lg text-xs text-amber-700 font-medium">
-          ⚠️ Reservation required
-        </div>
-      )}
+        {/* Known for */}
+        {opt.known_for && (
+          <div className="mb-4">
+            <div className={LABEL_MB1}>Known for</div>
+            <p className="text-sm text-slate-700">{opt.known_for}</p>
+          </div>
+        )}
 
-      {/* Add to itinerary — mini week calendar */}
-      <MiniWeekCalendar
-        tripStart={tripStart}
-        tripEnd={tripEnd}
-        scheduledDate={opt.scheduled_date}
-        startTime={opt.start_time}
-        endTime={opt.end_time}
-        accentColor="orange"
-        onSchedule={onSchedule}
-        onTimeChange={onTimeChange}
-      />
+        {/* Dietary options */}
+        {opt.dietary_options && (
+          <div className="mb-4">
+            <div className={LABEL_MB1}>Dietary options</div>
+            <div className="flex flex-wrap gap-1">
+              {opt.dietary_options.split(",").map((option, i) => (
+                <span key={i} className="px-2 py-1 rounded text-xs bg-amber-50 text-amber-700 font-medium">
+                  {option.trim()}
+                </span>
+              ))}
+            </div>
+          </div>
+        )}
 
-      {/* Notes */}
-      <EditableNotes notes={opt.notes} onSave={onNotesChange} />
+        {/* Reservation indicator */}
+        {opt.reservation_required && (
+          <div className="mb-4 px-3 py-2 bg-amber-50 border border-amber-200 rounded-lg text-xs text-amber-700 font-medium">
+            ⚠️ Reservation required
+          </div>
+        )}
 
-      {/* Source thumbnails */}
-      <SourceThumbnails
-        screenshotUrl={opt.screenshot_url}
-        sourceUrl={opt.source_url}
-        manualData={[
-          { label: "Cuisine", value: opt.cuisine_type || "" },
-          { label: "Meal Type", value: opt.meal_type || "" },
-          { label: "Price Range", value: opt.price_range || "" },
-          { label: "Hours", value: opt.hours || "" },
-        ]}
-        accentColor="orange"
-      />
+        {/* Notes */}
+        <EditableNotes notes={opt.notes} onSave={onNotesChange} />
+
+        {/* Source thumbnails */}
+        <SourceThumbnails
+          screenshotUrl={opt.screenshot_url}
+          sourceUrl={opt.source_url}
+          manualData={[
+            { label: "Cuisine", value: opt.cuisine_type || "" },
+            { label: "Meal Type", value: opt.meal_type || "" },
+            { label: "Price Range", value: opt.price_range || "" },
+            { label: "Hours", value: opt.hours || "" },
+          ]}
+          accentColor="orange"
+        />
+      </div>
     </div>
   );
 }
