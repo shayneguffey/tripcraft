@@ -176,8 +176,8 @@ export default function TransportationOptions({ tripId, tripStart, tripEnd, onTr
       {/* Empty state */}
       {options.length === 0 && !showModal && (
         <div className="bg-white rounded-xl border border-violet-100 shadow-sm p-8 text-center">
-          <svg className="w-10 h-10 text-violet-300 mx-auto mb-3" fill="none" stroke="currentColor" viewBox="0 0 24 24" strokeWidth={1.5}>
-            <path strokeLinecap="round" strokeLinejoin="round" d="M5 8a3 3 0 116 0H5zm0 2h6v4h2V8H3v6h2V10zm0-8h6a3 3 0 013 3v8h2V3a5 5 0 00-5-5H5v5z" />
+          <svg className="w-10 h-10 text-violet-300 mx-auto mb-3" fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor">
+            <path strokeLinecap="round" strokeLinejoin="round" d="M7.5 21 3 16.5m0 0L7.5 12M3 16.5h13.5m0-13.5L21 7.5m0 0L16.5 12M21 7.5H7.5" />
           </svg>
           <p className="text-slate-500 text-sm mb-1">No transportation options yet</p>
           <p className="text-slate-400 text-xs mb-4">Add car rentals, trains, buses, ferries, and transfers to compare</p>

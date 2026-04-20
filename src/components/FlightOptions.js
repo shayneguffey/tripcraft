@@ -125,9 +125,15 @@ export default function FlightOptions({ tripId, tripStart, tripEnd, onFlightOpti
             </svg>
           </div>
           <p className="text-slate-500 mb-1">No flight options yet</p>
-          <p className="text-sm text-slate-400">
+          <p className="text-sm text-slate-400 mb-4">
             Paste a Google Flights link, Skyscanner URL, or screenshot to compare flight options.
           </p>
+          <button
+            onClick={() => setShowAddModal(true)}
+            className="inline-flex items-center gap-1.5 px-4 py-2 text-sm font-medium rounded-lg bg-emerald-50 text-emerald-600 border border-emerald-200 hover:bg-emerald-100 hover:border-emerald-300 transition-colors"
+          >
+            + Add Flight Option
+          </button>
         </div>
       ) : (
         <div className="flex gap-4">

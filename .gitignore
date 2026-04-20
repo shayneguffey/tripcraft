@@ -41,5 +41,3 @@ yarn-error.log*
 next-env.d.ts
 
 .vercel
-public/globe highres posterized.png
-public/globe highres posterized2.png

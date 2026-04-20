@@ -152,8 +152,8 @@ export default function AccommodationOptions({ tripId, tripStart, tripEnd, onAcc
       {/* Empty state */}
       {options.length === 0 && !showModal && (
         <div className="bg-white rounded-xl border border-sky-100 shadow-sm p-8 text-center">
-          <svg className="w-10 h-10 text-sky-300 mx-auto mb-3" fill="none" stroke="currentColor" viewBox="0 0 24 24" strokeWidth={1.5}>
-            <path strokeLinecap="round" strokeLinejoin="round" d="M19 21H5a2 2 0 01-2-2V5a2 2 0 012-2h14a2 2 0 012 2v14a2 2 0 01-2 2z" />
+          <svg className="w-10 h-10 text-sky-300 mx-auto mb-3" viewBox="0 0 20 20" fill="currentColor">
+            <path d="M.75 15.5a.75.75 0 0 0 1.5 0V13h16v2.5a.75.75 0 0 0 1.5 0v-6a.75.75 0 0 0-1.5 0V11H16V4.5A2.5 2.5 0 0 0 13.5 2h-7A2.5 2.5 0 0 0 4 4.5V11H2.25V9.5a.75.75 0 0 0-1.5 0v6ZM5.5 4.5a1 1 0 0 1 1-1h7a1 1 0 0 1 1 1V11h-9V4.5Z" />
           </svg>
           <p className="text-slate-500 text-sm mb-1">No stay options yet</p>
           <p className="text-slate-400 text-xs mb-4">Add hotels, Airbnbs, and other stays to compare</p>
