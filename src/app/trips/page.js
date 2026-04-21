@@ -323,17 +323,37 @@ function TripCard({ trip, index, onRegenerate, onStatusChange, onArchive, onFiel
         )}
       </div>
 
-      {/* Regenerate image button — hover only, right side */}
-      {canRegenerate && hovered && !trip._generating && (
-        <button
-          onClick={(e) => { e.preventDefault(); e.stopPropagation(); onRegenerate(trip.id, trip.destination); }}
-          title="Regenerate poster image"
-          className="absolute right-2 top-[35%] -translate-y-1/2 z-20 w-7 h-7 rounded-full bg-black/50 hover:bg-black/70 text-white flex items-center justify-center transition-colors backdrop-blur-sm"
-        >
-          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor" className="w-3.5 h-3.5">
-            <path fillRule="evenodd" d="M15.312 11.424a5.5 5.5 0 0 1-9.201 2.466l-.312-.311h2.451a.75.75 0 0 0 0-1.5H4.5a.75.75 0 0 0-.75.75v3.75a.75.75 0 0 0 1.5 0v-2.127l.209.209a7 7 0 0 0 11.713-3.138.75.75 0 0 0-1.46-.349Zm-10.624-2.85a5.5 5.5 0 0 1 9.201-2.465l.312.31H12.75a.75.75 0 0 0 0 1.5h3.75a.75.75 0 0 0 .75-.75V3.42a.75.75 0 0 0-1.5 0v2.127l-.209-.209A7 7 0 0 0 3.828 8.476a.75.75 0 1 0 1.46.349l-.6.749Z" clipRule="evenodd" />
-          </svg>
-        </button>
+      {/* Hover action buttons — right side */}
+      {hovered && !trip._generating && (
+        <div className="absolute right-2 top-[30%] -translate-y-1/2 z-20 flex flex-col gap-1.5">
+          {/* Regenerate poster */}
+          {canRegenerate && (
+            <button
+              onClick={(e) => { e.preventDefault(); e.stopPropagation(); onRegenerate(trip.id, trip.destination); }}
+              title="Regenerate poster image"
+              className="w-7 h-7 rounded-full bg-black/50 hover:bg-black/70 text-white flex items-center justify-center transition-colors backdrop-blur-sm"
+            >
+              <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor" className="w-3.5 h-3.5">
+                <path fillRule="evenodd" d="M15.312 11.424a5.5 5.5 0 0 1-9.201 2.466l-.312-.311h2.451a.75.75 0 0 0 0-1.5H4.5a.75.75 0 0 0-.75.75v3.75a.75.75 0 0 0 1.5 0v-2.127l.209.209a7 7 0 0 0 11.713-3.138.75.75 0 0 0-1.46-.349Zm-10.624-2.85a5.5 5.5 0 0 1 9.201-2.465l.312.31H12.75a.75.75 0 0 0 0 1.5h3.75a.75.75 0 0 0 .75-.75V3.42a.75.75 0 0 0-1.5 0v2.127l-.209-.209A7 7 0 0 0 3.828 8.476a.75.75 0 1 0 1.46.349l-.6.749Z" clipRule="evenodd" />
+              </svg>
+            </button>
+          )}
+          {/* Share itinerary link */}
+          {trip._shareToken && (
+            <a
+              href={`/share/${trip._shareToken}`}
+              target="_blank"
+              rel="noopener noreferrer"
+              onClick={(e) => e.stopPropagation()}
+              title="View shared itinerary"
+              className="w-7 h-7 rounded-full bg-black/50 hover:bg-black/70 text-white flex items-center justify-center transition-colors backdrop-blur-sm"
+            >
+              <svg className="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24" strokeWidth={2}>
+                <path strokeLinecap="round" strokeLinejoin="round" d="M13.5 6H5.25A2.25 2.25 0 003 8.25v10.5A2.25 2.25 0 005.25 21h10.5A2.25 2.25 0 0018 18.75V10.5m-10.5 6L21 3m0 0h-5.25M21 3v5.25" />
+              </svg>
+            </a>
+          )}
+        </div>
       )}
     </div>
   );
@@ -499,6 +519,24 @@ export default function DashboardPage() {
     // Active trips for card grid
     const all = [...ownTrips, ...collabTrips]
       .sort((a, b) => new Date(b.updated_at || b.created_at) - new Date(a.updated_at || a.created_at));
+
+    // Fetch share tokens for each trip's first itinerary
+    const tripIds = all.map((t) => t.id);
+    if (tripIds.length > 0) {
+      const { data: itinTokens } = await supabase
+        .from("itineraries")
+        .select("trip_id, share_token")
+        .in("trip_id", tripIds)
+        .not("share_token", "is", null)
+        .order("sort_order", { ascending: true });
+
+      const tokenMap = {};
+      (itinTokens || []).forEach((it) => {
+        if (!tokenMap[it.trip_id]) tokenMap[it.trip_id] = it.share_token;
+      });
+      all.forEach((t) => { if (tokenMap[t.id]) t._shareToken = tokenMap[t.id]; });
+    }
+
     setTrips(all);
 
     // All trips (including archived) for globe pins

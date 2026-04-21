@@ -104,6 +104,11 @@ export default function TripDetailPage() {
   const [itineraryTravelersValue, setItineraryTravelersValue] = useState("");
   const [confirmDeleteItinerary, setConfirmDeleteItinerary] = useState(null);
   const [editingItineraryDates, setEditingItineraryDates] = useState(false);
+  const [shareUrl, setShareUrl] = useState(null);
+  const [shareLoading, setShareLoading] = useState(false);
+  const [shareCopied, setShareCopied] = useState(false);
+  const [shareDropdownPos, setShareDropdownPos] = useState(null);
+  const shareBtnRef = useRef(null);
   const router = useRouter();
   const params = useParams();
 
@@ -131,6 +136,23 @@ export default function TripDetailPage() {
     }
 
     setTrip(tripData);
+
+    // Generate banner image if missing (fire and forget — page loads immediately)
+    if (tripData.destination && !tripData.banner_image) {
+      fetch("/api/generate-banner", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ destination: tripData.destination, tripId: tripData.id }),
+      })
+        .then((res) => res.json())
+        .then((data) => {
+          if (data.imageUrl) {
+            supabase.from("trips").update({ banner_image: data.imageUrl }).eq("id", tripData.id);
+            setTrip((prev) => ({ ...prev, banner_image: data.imageUrl }));
+          }
+        })
+        .catch((err) => console.error("Banner generation error:", err));
+    }
 
     // Fetch itineraries for this trip
     const { data: itinerariesData, error: itinError } = await supabase
@@ -402,6 +424,60 @@ export default function TripDetailPage() {
     }
   }
 
+  async function shareItinerary() {
+    if (!activeItineraryId) return;
+
+    // If dropdown is already open, close it
+    if (shareUrl) { setShareUrl(null); setShareCopied(false); setShareDropdownPos(null); return; }
+
+    setShareLoading(true);
+
+    // Calculate dropdown position from button
+    const btnRect = shareBtnRef.current?.getBoundingClientRect();
+    if (btnRect) {
+      setShareDropdownPos({ top: btnRect.bottom + 4, right: window.innerWidth - btnRect.right });
+    }
+
+    try {
+      // Check if this itinerary already has a share token
+      const activeItin = itineraries.find((i) => i.id === activeItineraryId);
+      if (activeItin?.share_token) {
+        setShareUrl(`${window.location.origin}/share/${activeItin.share_token}`);
+        setShareLoading(false);
+        return;
+      }
+
+      // Generate a new share token
+      const token = crypto.randomUUID().replace(/-/g, "").slice(0, 16);
+      const { data: updatedRow, error } = await supabase
+        .from("itineraries")
+        .update({ share_token: token })
+        .eq("id", activeItineraryId)
+        .select("id, share_token")
+        .single();
+
+      console.log("[share] update result:", { updatedRow, error: error?.message });
+
+      if (error || !updatedRow) {
+        console.error("[share] Failed to save share token:", error?.message || "no row returned");
+        alert("Could not generate share link. Check the browser console for details.");
+        setShareLoading(false);
+        setShareDropdownPos(null);
+        return;
+      }
+
+      const url = `${window.location.origin}/share/${token}`;
+      setShareUrl(url);
+      setItineraries((prev) =>
+        prev.map((i) => (i.id === activeItineraryId ? { ...i, share_token: token } : i))
+      );
+    } catch (err) {
+      console.error("[share] Unexpected error:", err);
+      setShareDropdownPos(null);
+    }
+    setShareLoading(false);
+  }
+
   async function toggleSelection(optionType, optionId) {
     if (!activeItineraryId) return;
 
@@ -644,102 +720,193 @@ export default function TripDetailPage() {
       className="min-h-screen relative"
       onMouseUp={handleMouseUp}
     >
+      {/* ─── Share dropdown (rendered outside overflow-hidden banner) ─── */}
+      {shareUrl && shareDropdownPos && (
+        <>
+          <div className="fixed inset-0 z-[100]" onClick={() => { setShareUrl(null); setShareCopied(false); setShareDropdownPos(null); }} />
+          <div
+            className="fixed z-[101] bg-white rounded-xl shadow-xl border border-stone-200 px-4 py-3"
+            style={{ top: shareDropdownPos.top, right: shareDropdownPos.right, width: 320 }}
+          >
+            <p className="text-xs font-medium text-stone-600 mb-2">Share this itinerary</p>
+            <div className="flex items-center gap-2">
+              <input
+                type="text"
+                readOnly
+                value={shareUrl}
+                className="flex-1 text-xs text-stone-700 bg-stone-50 rounded-lg px-3 py-2 border border-stone-200 truncate"
+                onClick={(e) => e.target.select()}
+              />
+              <button
+                onClick={async () => {
+                  await navigator.clipboard.writeText(shareUrl);
+                  setShareCopied(true);
+                  setTimeout(() => setShareCopied(false), 2000);
+                }}
+                className="text-xs px-3 py-2 rounded-lg font-semibold transition-colors flex-shrink-0"
+                style={{ background: shareCopied ? "#4a965a" : "#da7b4a", color: "white" }}
+              >
+                {shareCopied ? "Copied!" : "Copy"}
+              </button>
+            </div>
+            <div className="flex items-center justify-between mt-2">
+              <p className="text-[10px] text-stone-400">Anyone with this link can view — no login required.</p>
+              <a
+                href={shareUrl}
+                target="_blank"
+                rel="noopener noreferrer"
+                className="text-[10px] font-semibold flex-shrink-0 ml-2 hover:underline"
+                style={{ color: "#da7b4a" }}
+              >
+                Open &rarr;
+              </a>
+            </div>
+          </div>
+        </>
+      )}
+
       {/* Parchment gradient base */}
       <div className="fixed inset-0" style={{ background: "linear-gradient(to bottom, rgba(210,195,172,0.7) 0%, rgba(222,210,190,0.6) 50%, rgba(210,195,172,0.7) 100%)" }} />
       <MapPatternBg tileSize={280} opacity={1} />
 
       <main className="relative z-10 max-w-6xl mx-auto px-6 py-4">
-        {/* Logo + Back button */}
-        <div className="flex items-center justify-between mb-4">
-          <div className="flex items-center">
-            <img src="/TRIPCRAFTLOGO.png" alt="TripCraft" style={{ height: 150, width: "auto" }} />
-          </div>
-          <Link
-            href="/trips"
-            className="flex items-center gap-2 px-4 py-1.5 rounded-lg text-sm font-semibold text-stone-600 transition-all hover:ring-2 hover:ring-[#da7b4a]/40"
-            style={{
-              background: "rgba(255,255,255,0.45)",
-              border: "1px solid rgba(180, 165, 140, 0.4)",
-            }}
-          >
-            <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 16 16" fill="currentColor" className="w-3.5 h-3.5">
-              <path fillRule="evenodd" d="M9.78 4.22a.75.75 0 0 1 0 1.06L7.06 8l2.72 2.72a.75.75 0 1 1-1.06 1.06L5.47 8.53a.75.75 0 0 1 0-1.06l3.25-3.25a.75.75 0 0 1 1.06 0Z" clipRule="evenodd" />
-            </svg>
-            Back to Trips
-          </Link>
-        </div>
-
-        {/* Trip Header with inline editing */}
-        <div className="mb-8 space-y-2">
-          {/* Title — click to edit */}
-          <div className="min-h-[44px]">
-            {editingField === "title" ? (
-              <input
-                type="text"
-                value={editValue}
-                onChange={(e) => setEditValue(e.target.value)}
-                onBlur={() => saveField("title")}
-                onKeyDown={(e) => handleFieldKeyDown(e, "title")}
-                autoFocus
-                className="text-3xl font-bold text-stone-800 bg-white border border-stone-300 rounded-lg px-2 py-1 focus:outline-none focus:ring-2 focus:ring-[#da7b4a]/50 focus:border-transparent w-full max-w-xl"
+        {/* ═══ HEADER WITH BANNER IMAGE ═══ */}
+        <div className="relative overflow-hidden rounded-t-2xl" style={{ marginBottom: "-20px", paddingBottom: "20px" }}>
+          {/* Banner image layer — behind all header content */}
+          {trip?.banner_image && (
+            <div className="absolute inset-0 z-0">
+              <img
+                src={trip.banner_image}
+                alt=""
+                className="w-full h-full object-cover"
+                style={{ transform: "scale(1.08)", transformOrigin: "center" }}
               />
-            ) : (
-              <h1
-                onClick={() => startEditing("title")}
-                className="text-3xl font-bold text-stone-800 cursor-text hover:text-[#da7b4a] transition-colors px-2 py-1"
-                title="Click to edit trip name"
-              >
-                {trip.title || "Untitled Trip"}
-              </h1>
-            )}
-          </div>
+              {/* Bottom fade — subtle blend at the calendar edge */}
+              <div
+                className="absolute inset-x-0 bottom-0 h-[15%]"
+                style={{
+                  background: "linear-gradient(to top, rgba(210,195,172,0.7) 0%, transparent 100%)",
+                }}
+              />
+              {/* Subtle overall darkening for text readability */}
+              <div className="absolute inset-0" style={{ background: "rgba(0,0,0,0.1)" }} />
+            </div>
+          )}
 
-          {/* Destination — click to edit */}
-          <div className="min-h-[28px]">
-            {editingField === "destination" ? (
-              <div className="flex items-center gap-1.5">
-                <svg className="w-4 h-4 text-stone-400 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24" strokeWidth={2}><path strokeLinecap="round" strokeLinejoin="round" d="M15 10.5a3 3 0 11-6 0 3 3 0 016 0z" /><path strokeLinecap="round" strokeLinejoin="round" d="M19.5 10.5c0 7.142-7.5 11.25-7.5 11.25S4.5 17.642 4.5 10.5a7.5 7.5 0 1115 0z" /></svg>
-                <input
-                  type="text"
-                  value={editValue}
-                  onChange={(e) => setEditValue(e.target.value)}
-                  onBlur={() => saveField("destination")}
-                  onKeyDown={(e) => handleFieldKeyDown(e, "destination")}
-                  autoFocus
-                  placeholder="Enter destination"
-                  className="text-stone-500 bg-white border border-stone-300 rounded-lg px-2 py-1 focus:outline-none focus:ring-2 focus:ring-[#da7b4a]/50 focus:border-transparent"
+          {/* Header content — on top of banner */}
+          <div className={`relative z-10 ${trip?.banner_image ? "pb-4" : ""}`}>
+            {/* Logo + Back button */}
+            <div className="flex items-start justify-between mb-4">
+              <div className="flex items-center pt-2 pl-2">
+                <img
+                  src="/TRIPCRAFTLOGO.png"
+                  alt="TripCraft"
+                  style={{
+                    height: 200,
+                    width: "auto",
+                    ...(trip?.banner_image ? { filter: "brightness(0) invert(1)" } : {}),
+                  }}
                 />
               </div>
-            ) : (
-              <div
-                onClick={() => startEditing("destination")}
-                className="flex items-center gap-1.5 text-stone-500 cursor-text hover:text-[#da7b4a] transition-colors px-2 py-1"
-                title="Click to edit destination"
+              <Link
+                href="/trips"
+                className={`flex items-center gap-2 px-4 py-1.5 mr-4 mt-4 rounded-lg text-sm font-semibold transition-all hover:ring-2 hover:ring-[#da7b4a]/40 ${
+                  trip?.banner_image ? "text-white/90" : "text-stone-600"
+                }`}
+                style={{
+                  background: trip?.banner_image ? "rgba(30, 22, 12, 0.5)" : "rgba(255,255,255,0.45)",
+                  border: trip?.banner_image ? "1px solid rgba(212, 165, 116, 0.3)" : "1px solid rgba(180, 165, 140, 0.4)",
+                  backdropFilter: trip?.banner_image ? "blur(8px)" : "none",
+                }}
               >
-                <svg className="w-4 h-4 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24" strokeWidth={2}><path strokeLinecap="round" strokeLinejoin="round" d="M15 10.5a3 3 0 11-6 0 3 3 0 016 0z" /><path strokeLinecap="round" strokeLinejoin="round" d="M19.5 10.5c0 7.142-7.5 11.25-7.5 11.25S4.5 17.642 4.5 10.5a7.5 7.5 0 1115 0z" /></svg>
-                {trip.destination || <span className="italic text-stone-400">No destination set</span>}
+                <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 16 16" fill="currentColor" className="w-3.5 h-3.5">
+                  <path fillRule="evenodd" d="M9.78 4.22a.75.75 0 0 1 0 1.06L7.06 8l2.72 2.72a.75.75 0 1 1-1.06 1.06L5.47 8.53a.75.75 0 0 1 0-1.06l3.25-3.25a.75.75 0 0 1 1.06 0Z" clipRule="evenodd" />
+                </svg>
+                Back to Trips
+              </Link>
+            </div>
+
+            {/* Trip Header with inline editing */}
+            <div className="px-2 mt-4">
+              {/* Title — click to edit */}
+              <div>
+                {editingField === "title" ? (
+                  <input
+                    type="text"
+                    value={editValue}
+                    onChange={(e) => setEditValue(e.target.value)}
+                    onBlur={() => saveField("title")}
+                    onKeyDown={(e) => handleFieldKeyDown(e, "title")}
+                    autoFocus
+                    className="text-3xl font-bold text-stone-800 bg-white border border-stone-300 rounded-lg px-2 py-1 focus:outline-none focus:ring-2 focus:ring-[#da7b4a]/50 focus:border-transparent w-full max-w-xl"
+                  />
+                ) : (
+                  <h1
+                    onClick={() => startEditing("title")}
+                    className={`text-6xl font-normal cursor-text transition-colors px-2 pb-0.5 ${
+                      trip?.banner_image
+                        ? "text-white drop-shadow-md hover:text-white/90"
+                        : "text-stone-800 hover:text-[#da7b4a]"
+                    }`}
+                    style={{ fontFamily: "var(--font-bebas), sans-serif", letterSpacing: "2px" }}
+                    title="Click to edit trip name"
+                  >
+                    {trip.title || "Untitled Trip"}
+                  </h1>
+                )}
               </div>
-            )}
+
+              {/* Destination — click to edit */}
+              <div>
+                {editingField === "destination" ? (
+                  <div className="flex items-center gap-1.5">
+                    <svg className="w-4 h-4 text-stone-400 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24" strokeWidth={2}><path strokeLinecap="round" strokeLinejoin="round" d="M15 10.5a3 3 0 11-6 0 3 3 0 016 0z" /><path strokeLinecap="round" strokeLinejoin="round" d="M19.5 10.5c0 7.142-7.5 11.25-7.5 11.25S4.5 17.642 4.5 10.5a7.5 7.5 0 1115 0z" /></svg>
+                    <input
+                      type="text"
+                      value={editValue}
+                      onChange={(e) => setEditValue(e.target.value)}
+                      onBlur={() => saveField("destination")}
+                      onKeyDown={(e) => handleFieldKeyDown(e, "destination")}
+                      autoFocus
+                      placeholder="Enter destination"
+                      className="text-stone-500 bg-white border border-stone-300 rounded-lg px-2 py-1 focus:outline-none focus:ring-2 focus:ring-[#da7b4a]/50 focus:border-transparent"
+                    />
+                  </div>
+                ) : (
+                  <div
+                    onClick={() => startEditing("destination")}
+                    className={`flex items-center gap-1.5 font-semibold italic cursor-text transition-colors px-2 pt-0 ${
+                      trip?.banner_image
+                        ? "text-white drop-shadow-md hover:text-white/90"
+                        : "text-stone-500 hover:text-[#da7b4a]"
+                    }`}
+                    title="Click to edit destination"
+                  >
+                    <svg className="w-4 h-4 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24" strokeWidth={2}><path strokeLinecap="round" strokeLinejoin="round" d="M15 10.5a3 3 0 11-6 0 3 3 0 016 0z" /><path strokeLinecap="round" strokeLinejoin="round" d="M19.5 10.5c0 7.142-7.5 11.25-7.5 11.25S4.5 17.642 4.5 10.5a7.5 7.5 0 1115 0z" /></svg>
+                    {trip.destination || <span className="italic text-stone-400">No destination set</span>}
+                  </div>
+                )}
+              </div>
+            </div>
           </div>
 
-        </div>
-
-        {/* ═══ ITINERARY VERSION TABS ═══ */}
-        {itineraries.length > 0 && (
-          <div className="flex items-end gap-0.5 -mb-px relative z-10">
+          {/* ═══ ITINERARY VERSION TABS ═══ */}
+          {itineraries.length > 0 && (
+            <div className="flex items-end gap-0.5 -mb-px relative z-10 px-2">
             {itineraries.map((itin) => {
               const isActive = itin.id === activeItineraryId;
               return (
                 <div
                   key={itin.id}
                   className={`relative flex items-center gap-1.5 px-5 py-2.5 rounded-t-xl text-sm font-semibold cursor-pointer transition-all ${
-                    isActive ? "text-white" : "text-stone-600 hover:text-stone-800"
+                    isActive ? "text-white" : trip?.banner_image ? "text-white/80 hover:text-white" : "text-stone-600 hover:text-stone-800"
                   }`}
                   style={{
-                    background: isActive ? "#da7b4a" : "rgba(195,178,155,0.35)",
+                    background: isActive ? "#da7b4a" : trip?.banner_image ? "rgba(30, 22, 12, 0.4)" : "rgba(195,178,155,0.35)",
+                    backdropFilter: !isActive && trip?.banner_image ? "blur(4px)" : "none",
                     borderTop: isActive ? "2px solid #b5552a" : "2px solid transparent",
-                    borderLeft: isActive ? "1px solid #b5552a" : "1px solid rgba(180,165,140,0.3)",
-                    borderRight: isActive ? "1px solid #b5552a" : "1px solid rgba(180,165,140,0.3)",
+                    borderLeft: isActive ? "1px solid #b5552a" : trip?.banner_image ? "1px solid rgba(255,255,255,0.15)" : "1px solid rgba(180,165,140,0.3)",
+                    borderRight: isActive ? "1px solid #b5552a" : trip?.banner_image ? "1px solid rgba(255,255,255,0.15)" : "1px solid rgba(180,165,140,0.3)",
                     borderBottom: isActive ? "2px solid transparent" : "2px solid rgba(180,165,140,0.3)",
                     marginBottom: -2,
                     minWidth: "140px",
@@ -799,24 +966,53 @@ export default function TripDetailPage() {
             })}
             <button
               onClick={createItinerary}
-              className="flex items-center gap-1 px-3 py-2 mb-px rounded-t-lg text-xs font-semibold text-stone-400 hover:text-[#da7b4a] transition-all"
-              style={{ border: "1px dashed rgba(180,165,140,0.4)", borderBottom: "none" }}
+              className="flex items-center gap-1 px-3 py-2 mb-px rounded-t-lg text-xs font-semibold text-white/80 hover:text-white transition-all"
+              style={{
+                background: "#c4886a",
+                border: "1px solid #b5774d",
+                borderBottom: "none",
+              }}
               title="Create new itinerary version"
             >
               <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 16 16" fill="currentColor" className="w-3 h-3"><path d="M8.75 3.75a.75.75 0 0 0-1.5 0v3.5h-3.5a.75.75 0 0 0 0 1.5h3.5v3.5a.75.75 0 0 0 1.5 0v-3.5h3.5a.75.75 0 0 0 0-1.5h-3.5v-3.5Z" /></svg>
               New
             </button>
-          </div>
-        )}
+            {/* Share button */}
+            <div className="ml-auto">
+              <button
+                ref={shareBtnRef}
+                onClick={shareItinerary}
+                disabled={shareLoading}
+                className="flex items-center gap-1 px-3 py-2 mb-px rounded-t-lg text-xs font-semibold transition-all"
+                style={{
+                  background: shareUrl ? "rgba(30,22,12,0.75)" : "rgba(30,22,12,0.55)",
+                  backdropFilter: "blur(6px)",
+                  border: "1px solid rgba(212,165,116,0.3)",
+                  borderBottom: "none",
+                  color: "rgba(255,255,255,0.85)",
+                }}
+                title="Share this itinerary"
+              >
+                {shareLoading ? (
+                  <div className="w-3 h-3 border border-white/40 border-t-white rounded-full animate-spin" />
+                ) : (
+                  <svg className="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24" strokeWidth={2}><path strokeLinecap="round" strokeLinejoin="round" d="M7.217 10.907a2.25 2.25 0 100 2.186m0-2.186c.18.324.283.696.283 1.093s-.103.77-.283 1.093m0-2.186l9.566-5.314m-9.566 7.5l9.566 5.314m0 0a2.25 2.25 0 103.935 2.186 2.25 2.25 0 00-3.935-2.186zm0-12.814a2.25 2.25 0 103.933-2.185 2.25 2.25 0 00-3.933 2.185z" /></svg>
+                )}
+                Share
+              </button>
+            </div>
+            </div>
+          )}
+        </div>
 
         {/* ═══ CALENDAR ═══ */}
         {calendarDates.length > 0 ? (
-          <div className="bg-white rounded-2xl border border-stone-200 shadow-sm overflow-hidden select-none uppercase">
+          <div className="relative z-10 bg-white rounded-2xl border border-stone-200 shadow-sm overflow-hidden select-none uppercase">
             {/* Itinerary Info Row */}
-            <div className="px-6 py-3 border-b border-stone-200/60 bg-white normal-case">
+            <div className="px-6 py-2 border-b border-stone-200/60 bg-white normal-case">
               <div className="flex items-start gap-6">
                 {/* Left: Dates + Travelers */}
-                <div className="flex-shrink-0 w-64">
+                <div className="flex-shrink-0">
                   {/* Date range — clickable to open date picker */}
                   <div className="relative mt-0.5 min-h-[16px]">
                     <div
@@ -872,8 +1068,12 @@ export default function TripDetailPage() {
                   </div>
                 </div>
 
-                {/* Right: Description — inline editable, aligned with date range */}
-                <div className="flex-1 min-w-0">
+              </div>
+
+              {/* Description (left) + Calendar range (right) */}
+              <div className="flex items-end justify-between mt-2">
+                {/* Itinerary description */}
+                <div className="w-full max-w-md">
                   {editingItineraryDesc ? (
                     <textarea
                       value={itineraryDescValue}
@@ -882,13 +1082,13 @@ export default function TripDetailPage() {
                       onKeyDown={(e) => { if (e.key === "Escape") setEditingItineraryDesc(false); }}
                       autoFocus
                       rows={1}
-                      placeholder="Add a description for this itinerary..."
+                      placeholder="Add itinerary description..."
                       className="w-full text-sm text-stone-600 bg-white border border-stone-300 rounded-lg px-2 py-1 focus:outline-none focus:ring-2 focus:ring-inset focus:ring-[#da7b4a]/50 resize-none min-h-[32px] max-h-[32px] overflow-y-auto"
                     />
                   ) : (
                     <div
                       onClick={() => { setEditingItineraryDesc(true); setItineraryDescValue(activeItinerary?.description || ""); }}
-                      className={`text-sm px-2 py-1 rounded-lg cursor-text min-h-[32px] whitespace-pre-wrap transition-colors border border-stone-300 ${
+                      className={`text-sm px-2 py-1 rounded-lg cursor-text whitespace-pre-wrap transition-colors border border-stone-300 ${
                         activeItinerary?.description
                           ? "text-stone-600"
                           : "text-stone-300 italic hover:bg-stone-50"
@@ -900,8 +1100,8 @@ export default function TripDetailPage() {
                   )}
                 </div>
 
-                {/* Far right: Calendar View label + month range */}
-                <div className="flex-shrink-0 text-right self-center">
+                {/* Calendar View label + month range */}
+                <div className="flex-shrink-0 text-right">
                   <div className="text-[10px] font-semibold text-stone-400 uppercase tracking-widest mb-0.5">Calendar View</div>
                   <div className="text-sm font-medium text-stone-400 tracking-wide">{getCalendarTitle()}</div>
                 </div>

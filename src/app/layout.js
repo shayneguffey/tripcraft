@@ -1,4 +1,4 @@
-import { Geist, Geist_Mono, Playfair_Display, Barlow_Condensed } from "next/font/google";
+import { Geist, Geist_Mono, Playfair_Display, Barlow_Condensed, Abril_Fatface, Bebas_Neue } from "next/font/google";
 import "./globals.css";
 
 const geistSans = Geist({
@@ -18,6 +18,18 @@ const playfair = Playfair_Display({
   weight: ["400", "500", "600", "700"],
 });
 
+const abrilFatface = Abril_Fatface({
+  variable: "--font-abril",
+  subsets: ["latin"],
+  weight: ["400"],
+});
+
+const bebasNeue = Bebas_Neue({
+  variable: "--font-bebas",
+  subsets: ["latin"],
+  weight: ["400"],
+});
+
 const barlowCondensed = Barlow_Condensed({
   variable: "--font-barlow-condensed",
   subsets: ["latin"],
@@ -33,7 +45,7 @@ export default function RootLayout({ children }) {
   return (
     <html
       lang="en"
-      className={`${geistSans.variable} ${geistMono.variable} ${playfair.variable} ${barlowCondensed.variable} h-full antialiased`}
+      className={`${geistSans.variable} ${geistMono.variable} ${playfair.variable} ${abrilFatface.variable} ${bebasNeue.variable} ${barlowCondensed.variable} h-full antialiased`}
     >
       <head>
         <link rel="preload" href="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js" as="script" />
