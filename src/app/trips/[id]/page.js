@@ -442,7 +442,7 @@ export default function TripDetailPage() {
       // Check if this itinerary already has a share token
       const activeItin = itineraries.find((i) => i.id === activeItineraryId);
       if (activeItin?.share_token) {
-        setShareUrl(`${window.location.origin}/share/${activeItin.share_token}`);
+        setShareUrl(`${window.location.origin}/guide/${activeItin.share_token}`);
         setShareLoading(false);
         return;
       }
@@ -466,7 +466,7 @@ export default function TripDetailPage() {
         return;
       }
 
-      const url = `${window.location.origin}/share/${token}`;
+      const url = `${window.location.origin}/guide/${token}`;
       setShareUrl(url);
       setItineraries((prev) =>
         prev.map((i) => (i.id === activeItineraryId ? { ...i, share_token: token } : i))
@@ -728,7 +728,7 @@ export default function TripDetailPage() {
             className="fixed z-[101] bg-white rounded-xl shadow-xl border border-stone-200 px-4 py-3"
             style={{ top: shareDropdownPos.top, right: shareDropdownPos.right, width: 320 }}
           >
-            <p className="text-xs font-medium text-stone-600 mb-2">Share this itinerary</p>
+            <p className="text-xs font-medium text-stone-600 mb-2">Pocket Guide link</p>
             <div className="flex items-center gap-2">
               <input
                 type="text"
@@ -750,7 +750,7 @@ export default function TripDetailPage() {
               </button>
             </div>
             <div className="flex items-center justify-between mt-2">
-              <p className="text-[10px] text-stone-400">Anyone with this link can view — no login required.</p>
+              <p className="text-[10px] text-stone-400">Mobile-friendly travel view. Anyone with the link can open it — no login.</p>
               <a
                 href={shareUrl}
                 target="_blank"

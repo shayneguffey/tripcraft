@@ -341,11 +341,11 @@ function TripCard({ trip, index, onRegenerate, onStatusChange, onArchive, onFiel
           {/* Share itinerary link */}
           {trip._shareToken && (
             <a
-              href={`/share/${trip._shareToken}`}
+              href={`/guide/${trip._shareToken}`}
               target="_blank"
               rel="noopener noreferrer"
               onClick={(e) => e.stopPropagation()}
-              title="View shared itinerary"
+              title="Open Pocket Guide"
               className="w-7 h-7 rounded-full bg-black/50 hover:bg-black/70 text-white flex items-center justify-center transition-colors backdrop-blur-sm"
             >
               <svg className="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24" strokeWidth={2}>
