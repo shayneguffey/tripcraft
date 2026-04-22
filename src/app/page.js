@@ -89,7 +89,7 @@ export default function Home() {
     const { data, error } = await supabase.auth.signInWithOAuth({
       provider: "google",
       options: {
-        redirectTo: `${window.location.origin}/auth/callback`,
+        redirectTo: `${window.location.origin}/auth/callback?popup=1`,
         skipBrowserRedirect: true,
       },
     });

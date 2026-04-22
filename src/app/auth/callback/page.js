@@ -8,7 +8,13 @@ export default function AuthCallbackPage() {
   const router = useRouter();
 
   useEffect(() => {
-    const isPopup = window.opener && window.opener !== window;
+    // Popup detection: prefer the ?popup=1 URL param (survives cross-origin
+    // navigation to Google and back). Fall back to window.opener in case the
+    // query string is stripped for any reason.
+    const qs = typeof window !== "undefined" ? new URLSearchParams(window.location.search) : null;
+    const isPopup =
+      (qs && qs.get("popup") === "1") ||
+      (typeof window !== "undefined" && window.opener && window.opener !== window);
 
     async function handleCallback() {
       const { data: { session }, error } = await supabase.auth.getSession();
@@ -26,12 +32,13 @@ export default function AuthCallbackPage() {
       function onSignedIn() {
         if (isPopup) {
           // Close the popup — the parent page's onAuthStateChange listener
-          // will detect the sign-in and redirect to /trips
+          // will detect the sign-in (shared Supabase localStorage) and
+          // redirect to /trips.
           window.close();
           return;
         }
 
-        // Normal redirect flow
+        // Normal full-redirect flow.
         const pendingInvite = localStorage.getItem("pending_invite_token");
         if (pendingInvite) {
           localStorage.removeItem("pending_invite_token");

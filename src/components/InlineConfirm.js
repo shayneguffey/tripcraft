@@ -7,19 +7,11 @@ import { createPortal } from "react-dom";
  * InlineConfirm — a small confirmation popup that appears near the item being deleted.
  * Replaces browser confirm() dialogs with a styled inline popup.
  *
- * Usage:
- *   const [confirmId, setConfirmId] = useState(null);
- *   <InlineConfirm
- *     open={confirmId === item.id}
- *     message="Delete this flight?"
- *     onConfirm={() => { actualDelete(item.id); setConfirmId(null); }}
- *     onCancel={() => setConfirmId(null)}
- *   />
- *
- * Rendering: portaled to document.body with position:fixed, coordinates
- * computed from the parent elements getBoundingClientRect. This guarantees
- * the popup is never clipped by ancestor overflow:hidden wrappers or by
- * narrow parents (e.g., a 140-220px itinerary tab).
+ * Rendering: portaled to document.body with position:fixed. Coordinates are
+ * computed from the parents getBoundingClientRect, then CLAMPED to the
+ * nearest <main> elements bounds (with an 8px inset) so the popup always
+ * stays within the page content area — never drifts off the page or
+ * viewport.
  */
 export default function InlineConfirm({ open, message = "Delete?", onConfirm, onCancel }) {
   const anchorRef = useRef(null);
@@ -36,21 +28,49 @@ export default function InlineConfirm({ open, message = "Delete?", onConfirm, on
     const parent = anchorRef.current.parentElement;
     if (!parent) return;
 
+    function findMain(el) {
+      let node = el;
+      while (node && node !== document.body) {
+        if (node.tagName === "MAIN") return node;
+        node = node.parentElement;
+      }
+      return null;
+    }
+
     function updatePosition() {
       const rect = parent.getBoundingClientRect();
-      const popupWidth = popupRef.current?.offsetWidth || 240;
-      const viewportWidth = window.innerWidth;
-      let right = viewportWidth - rect.right;
-      if (rect.right - popupWidth < 8) {
-        right = Math.max(8, viewportWidth - (popupWidth + 8));
+      const popupWidth = popupRef.current?.offsetWidth || 260;
+      const vw = window.innerWidth;
+
+      const main = findMain(parent);
+      const mainRect = main ? main.getBoundingClientRect() : null;
+      const leftBound = (mainRect ? mainRect.left : 0) + 8;
+      const rightBound = (mainRect ? mainRect.right : vw) - 8;
+
+      // Default: popup's right edge aligns with parent's right edge.
+      let rightEdge = rect.right;
+
+      // Clamp left: if the popup would extend past the left bound, slide it right.
+      const leftEdge = rightEdge - popupWidth;
+      if (leftEdge < leftBound) {
+        rightEdge = leftBound + popupWidth;
       }
-      setCoords({ top: rect.bottom + 4, right });
+
+      // Clamp right: if the popup would extend past the right bound, slide it left.
+      if (rightEdge > rightBound) {
+        rightEdge = rightBound;
+      }
+
+      setCoords({ top: rect.bottom + 4, right: vw - rightEdge });
     }
 
     updatePosition();
+    // Re-measure after the popup mounts so we know its real width.
+    const raf = requestAnimationFrame(updatePosition);
     window.addEventListener("resize", updatePosition);
     window.addEventListener("scroll", updatePosition, true);
     return () => {
+      cancelAnimationFrame(raf);
       window.removeEventListener("resize", updatePosition);
       window.removeEventListener("scroll", updatePosition, true);
     };
