@@ -771,10 +771,10 @@ export default function TripDetailPage() {
 
       <main className="relative z-10 max-w-6xl mx-auto px-6 py-4">
         {/* ═══ HEADER WITH BANNER IMAGE ═══ */}
-        <div className="relative overflow-hidden rounded-t-2xl" style={{ marginBottom: "-20px", paddingBottom: "20px" }}>
-          {/* Banner image layer — behind all header content */}
+        <div className="relative" style={{ marginBottom: "-20px", paddingBottom: "20px" }}>
+          {/* Banner image layer — behind all header content. overflow-hidden lives here (not on the outer wrapper) so InlineConfirm popups on the itinerary tabs aren't clipped. */}
           {trip?.banner_image && (
-            <div className="absolute inset-0 z-0">
+            <div className="absolute inset-0 z-0 overflow-hidden rounded-t-2xl">
               <img
                 src={trip.banner_image}
                 alt=""

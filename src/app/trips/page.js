@@ -1023,7 +1023,7 @@ export default function DashboardPage() {
       </div>{/* end content layer */}
 
       <footer className="fixed bottom-0 left-0 right-0 z-20 text-center text-xs text-stone-400/60 py-2 pointer-events-none">
-        v3.4.0 — Apr 12 2026
+        v4.1 Pocket Guide — Apr 20 2026
       </footer>
     </div>
   );

@@ -1,6 +1,7 @@
 "use client";
 
 import { useState, useEffect, useRef } from "react";
+import { createPortal } from "react-dom";
 
 /**
  * InlineConfirm — a small confirmation popup that appears near the item being deleted.
@@ -15,30 +16,71 @@ import { useState, useEffect, useRef } from "react";
  *     onCancel={() => setConfirmId(null)}
  *   />
  *
- * Position: renders as an absolutely positioned popup relative to its parent container.
- * Parent should have `position: relative`.
+ * Rendering: portaled to document.body with position:fixed, coordinates
+ * computed from the parent elements getBoundingClientRect. This guarantees
+ * the popup is never clipped by ancestor overflow:hidden wrappers or by
+ * narrow parents (e.g., a 140-220px itinerary tab).
  */
 export default function InlineConfirm({ open, message = "Delete?", onConfirm, onCancel }) {
-  const ref = useRef(null);
+  const anchorRef = useRef(null);
+  const popupRef = useRef(null);
+  const [coords, setCoords] = useState(null);
+  const [mounted, setMounted] = useState(false);
+
+  useEffect(() => {
+    setMounted(true);
+  }, []);
+
+  useEffect(() => {
+    if (!open || !anchorRef.current) return;
+    const parent = anchorRef.current.parentElement;
+    if (!parent) return;
+
+    function updatePosition() {
+      const rect = parent.getBoundingClientRect();
+      const popupWidth = popupRef.current?.offsetWidth || 240;
+      const viewportWidth = window.innerWidth;
+      let right = viewportWidth - rect.right;
+      if (rect.right - popupWidth < 8) {
+        right = Math.max(8, viewportWidth - (popupWidth + 8));
+      }
+      setCoords({ top: rect.bottom + 4, right });
+    }
+
+    updatePosition();
+    window.addEventListener("resize", updatePosition);
+    window.addEventListener("scroll", updatePosition, true);
+    return () => {
+      window.removeEventListener("resize", updatePosition);
+      window.removeEventListener("scroll", updatePosition, true);
+    };
+  }, [open]);
 
   useEffect(() => {
     if (!open) return;
     function handleClick(e) {
-      if (ref.current && !ref.current.contains(e.target)) {
+      if (popupRef.current && !popupRef.current.contains(e.target)) {
         onCancel?.();
       }
     }
-    document.addEventListener("mousedown", handleClick);
-    return () => document.removeEventListener("mousedown", handleClick);
+    const t = setTimeout(() => {
+      document.addEventListener("mousedown", handleClick);
+    }, 0);
+    return () => {
+      clearTimeout(t);
+      document.removeEventListener("mousedown", handleClick);
+    };
   }, [open, onCancel]);
 
-  if (!open) return null;
+  if (!open) {
+    return <span ref={anchorRef} style={{ display: "none" }} aria-hidden="true" />;
+  }
 
-  return (
+  const popup = coords ? (
     <div
-      ref={ref}
-      className="absolute z-50 bg-white rounded-lg shadow-xl border border-stone-200 px-3 py-2.5 flex items-center gap-2 animate-[cardFadeIn_0.15s_ease-out]"
-      style={{ right: 0, top: "100%", marginTop: 4, whiteSpace: "nowrap" }}
+      ref={popupRef}
+      className="fixed z-[9999] bg-white rounded-lg shadow-xl border border-stone-200 px-3 py-2.5 flex items-center gap-2 animate-[cardFadeIn_0.15s_ease-out]"
+      style={{ top: coords.top, right: coords.right, whiteSpace: "nowrap" }}
     >
       <span className="text-xs text-stone-600">{message}</span>
       <button
@@ -54,5 +96,12 @@ export default function InlineConfirm({ open, message = "Delete?", onConfirm, on
         Cancel
       </button>
     </div>
+  ) : null;
+
+  return (
+    <>
+      <span ref={anchorRef} style={{ display: "none" }} aria-hidden="true" />
+      {mounted && popup ? createPortal(popup, document.body) : null}
+    </>
   );
 }
