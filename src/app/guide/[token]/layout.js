@@ -44,7 +44,7 @@ export async function generateMetadata({ params }) {
     const supabase = getSupabaseAdmin();
     const { data: itinerary } = await supabase
       .from("itineraries")
-      .select("trip_id")
+      .select("trip_id, title")
       .eq("share_token", realToken)
       .maybeSingle();
 
@@ -58,23 +58,27 @@ export async function generateMetadata({ params }) {
 
     if (!trip) return { title: "Pocket Guide · TripCraft" };
 
-    const title = trip.title || "Trip";
+    const tripTitle = trip.title || "Trip";
+    // If the itinerary has a custom name, surface it so different itineraries
+    // for the same trip produce distinguishable link previews.
+    const itinTitle = itinerary.title && itinerary.title.trim() ? itinerary.title.trim() : null;
+    const displayTitle = itinTitle ? `${tripTitle} — ${itinTitle}` : tripTitle;
     const description = buildDescription(trip);
     const image = trip.banner_image || null;
 
     return {
-      title: `${title} · Pocket Guide`,
+      title: `${displayTitle} · Pocket Guide`,
       description,
       openGraph: {
-        title,
+        title: displayTitle,
         description,
         type: "article",
         siteName: "TripCraft",
-        images: image ? [{ url: image, alt: `${title} banner` }] : [],
+        images: image ? [{ url: image, alt: `${tripTitle} banner` }] : [],
       },
       twitter: {
         card: image ? "summary_large_image" : "summary",
-        title,
+        title: displayTitle,
         description,
         images: image ? [image] : [],
       },

@@ -494,7 +494,7 @@ export default function TripDetailPage() {
         );
       }
 
-      router.push(guideUrl(trip, token));
+      router.push(guideUrl(trip, token, activeItin));
     } catch (err) {
       console.error("[pocket-guide] Unexpected error:", err);
     }
@@ -955,30 +955,54 @@ export default function TripDetailPage() {
               <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 16 16" fill="currentColor" className="w-3 h-3"><path d="M8.75 3.75a.75.75 0 0 0-1.5 0v3.5h-3.5a.75.75 0 0 0 0 1.5h3.5v3.5a.75.75 0 0 0 1.5 0v-3.5h3.5a.75.75 0 0 0 0-1.5h-3.5v-3.5Z" /></svg>
               New
             </button>
-            {/* Pocket Guide button — opens the traveler-facing view in a new tab */}
-            <div className="ml-auto">
+            </div>
+          )}
+
+          {/* ─── Active-itinerary action drawer ────────────────────────────
+             Hangs below the tab row, styled to blend into the active tab so
+             the active itinerary's actions feel tied to its tab. Holds the
+             Pocket Guide button and (coming soon) Print PDF. ────────────── */}
+          {activeItineraryId && (
+            <div
+              className="relative z-10 flex items-center gap-1 px-3 py-1.5 mx-2 flex-wrap"
+              style={{
+                background: "#da7b4a",
+                borderLeft: "1px solid #b5552a",
+                borderRight: "1px solid #b5552a",
+                borderBottom: "1px solid #b5552a",
+                borderBottomLeftRadius: "10px",
+                borderBottomRightRadius: "10px",
+              }}
+            >
               <button
                 ref={guideBtnRef}
                 onClick={openPocketGuide}
                 disabled={guideLoading}
-                className="flex items-center gap-1 px-3 py-2 mb-px rounded-t-lg text-xs font-semibold transition-all"
-                style={{
-                  background: "rgba(30,22,12,0.55)",
-                  backdropFilter: "blur(6px)",
-                  border: "1px solid rgba(212,165,116,0.3)",
-                  borderBottom: "none",
-                  color: "rgba(255,255,255,0.85)",
-                }}
-                title="Open the Pocket Guide (traveler view)"
+                className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-md text-xs font-semibold text-white transition-colors hover:bg-white/15 disabled:opacity-60 disabled:cursor-not-allowed"
+                title="Open the Pocket Guide (traveler view) for this itinerary"
               >
                 {guideLoading ? (
                   <div className="w-3 h-3 border border-white/40 border-t-white rounded-full animate-spin" />
                 ) : (
-                  <svg className="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24" strokeWidth={2}><path strokeLinecap="round" strokeLinejoin="round" d="M12 6.253v13m0-13C10.832 5.477 9.246 5 7.5 5S4.168 5.477 3 6.253v13C4.168 18.477 5.754 18 7.5 18s3.332.477 4.5 1.253m0-13C13.168 5.477 14.754 5 16.5 5c1.747 0 3.332.477 4.5 1.253v13C19.832 18.477 18.247 18 16.5 18c-1.746 0-3.332.477-4.5 1.253" /></svg>
+                  <svg className="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24" strokeWidth={2}>
+                    <path strokeLinecap="round" strokeLinejoin="round" d="M12 6.253v13m0-13C10.832 5.477 9.246 5 7.5 5S4.168 5.477 3 6.253v13C4.168 18.477 5.754 18 7.5 18s3.332.477 4.5 1.253m0-13C13.168 5.477 14.754 5 16.5 5c1.747 0 3.332.477 4.5 1.253v13C19.832 18.477 18.247 18 16.5 18c-1.746 0-3.332.477-4.5 1.253" />
+                  </svg>
                 )}
                 Pocket Guide
               </button>
-            </div>
+              <span className="text-white/30">·</span>
+              <button
+                type="button"
+                disabled
+                className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-md text-xs font-semibold text-white/70 cursor-not-allowed"
+                title="Coming soon — printable PDF of this itinerary"
+              >
+                <svg className="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24" strokeWidth={2}>
+                  <path strokeLinecap="round" strokeLinejoin="round" d="M6.72 13.829q-.22-.04-.441-.081m.441.081a24 24 0 0 0 10.56 0m-10.56 0a24 24 0 1 0 0-5.658m10.56 5.658q.22-.04.441-.081M6.72 13.829a24 24 0 0 0 10.56 0m0 0a24 24 0 1 1 0-5.658M6 10.5h.008v.008H6zm.375 0a.375.375 0 1 1-.75 0 .375.375 0 0 1 .75 0m11.625 0h.008v.008H18zm.375 0a.375.375 0 1 1-.75 0 .375.375 0 0 1 .75 0" />
+                </svg>
+                Print PDF
+                <span className="text-[9px] bg-white/20 px-1.5 py-0.5 rounded-full uppercase tracking-wider">soon</span>
+              </button>
             </div>
           )}
         </div>

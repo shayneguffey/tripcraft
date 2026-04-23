@@ -306,6 +306,11 @@ export default function GuidePage({ params }) {
           >
             {trip.title || "Untitled Trip"}
           </h1>
+          {itinerary?.title && (
+            <p className="text-white/70 text-xs font-semibold uppercase tracking-[0.15em] mb-1">
+              {itinerary.title}
+            </p>
+          )}
           {trip.destination && (
             <p className="text-white/90 text-base font-semibold italic">{trip.destination}</p>
           )}

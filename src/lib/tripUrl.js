@@ -2,7 +2,7 @@
  * Shared helpers for building human-readable planning + Pocket Guide URLs.
  *
  * Planning page:  /trips/{slug}--{shortId}   (shortId = first 8 chars of trip UUID)
- * Pocket Guide:   /guide/{slug}--{shareToken}
+ * Pocket Guide:   /guide/{tripSlug}[-{itinerarySlug}]--{shareToken}
  *
  * Both formats are backwards-compatible: the server-side lookup still accepts
  * a bare UUID or bare share token, so legacy links keep working.
@@ -24,7 +24,14 @@ export function tripPlanningUrl(trip) {
   return `/trips/${planningSlug(trip.title)}--${shortId}`;
 }
 
-export function guideUrl(trip, shareToken) {
+export function guideUrl(trip, shareToken, itinerary) {
   if (!shareToken) return "/trips";
-  return `/guide/${planningSlug(trip?.title)}--${shareToken}`;
+  const tripPart = planningSlug(trip?.title);
+  const itinPart = itinerary?.title ? planningSlug(itinerary.title) : "";
+  // Combine trip + itinerary slugs when we have an itinerary name, so different
+  // itineraries for the same trip have distinguishable URLs. The `--` separator
+  // before the share token stays unique, so the token extractor ("split on --,
+  // take last") keeps working for both forms.
+  const slug = itinPart && itinPart !== "trip" ? `${tripPart}-${itinPart}` : tripPart;
+  return `/guide/${slug}--${shareToken}`;
 }
