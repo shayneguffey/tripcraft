@@ -870,13 +870,13 @@ export default function TripDetailPage() {
 
           {/* ═══ ITINERARY VERSION TABS ═══ */}
           {itineraries.length > 0 && (
-            <div className="flex items-end gap-0.5 -mb-px relative z-20 px-2">
+            <div className="flex items-end gap-0.5 -mb-px relative z-10 px-2">
             {itineraries.map((itin) => {
               const isActive = itin.id === activeItineraryId;
               return (
                 <div
                   key={itin.id}
-                  className={`relative flex items-center gap-1.5 px-5 py-2.5 rounded-t-xl text-sm font-semibold cursor-pointer transition-all ${
+                  className={`relative flex flex-col items-center px-5 py-2.5 rounded-t-xl text-sm font-semibold cursor-pointer transition-all ${
                     isActive ? "text-white" : trip?.banner_image ? "text-white/80 hover:text-white" : "text-stone-600 hover:text-stone-800"
                   }`}
                   style={{
@@ -892,97 +892,91 @@ export default function TripDetailPage() {
                   }}
                   onClick={() => switchItinerary(itin.id)}
                 >
-                  {editingItineraryTitle === itin.id ? (
-                    <input
-                      type="text"
-                      value={itineraryTitleValue}
-                      onChange={(e) => setItineraryTitleValue(e.target.value)}
-                      onBlur={() => saveItineraryTitle(itin.id)}
-                      onKeyDown={(e) => {
-                        if (e.key === "Enter") saveItineraryTitle(itin.id);
-                        if (e.key === "Escape") setEditingItineraryTitle(null);
-                      }}
-                      onClick={(e) => e.stopPropagation()}
-                      autoFocus
-                      className="bg-white/90 text-stone-800 border border-stone-300 rounded px-1.5 py-0.5 text-sm font-semibold focus:outline-none focus:ring-2 focus:ring-[#da7b4a]/50 w-32"
+                  {/* Row 1: itinerary title (+ delete X when active) */}
+                  <div className="flex items-center gap-1.5">
+                    {editingItineraryTitle === itin.id ? (
+                      <input
+                        type="text"
+                        value={itineraryTitleValue}
+                        onChange={(e) => setItineraryTitleValue(e.target.value)}
+                        onBlur={() => saveItineraryTitle(itin.id)}
+                        onKeyDown={(e) => {
+                          if (e.key === "Enter") saveItineraryTitle(itin.id);
+                          if (e.key === "Escape") setEditingItineraryTitle(null);
+                        }}
+                        onClick={(e) => e.stopPropagation()}
+                        autoFocus
+                        className="bg-white/90 text-stone-800 border border-stone-300 rounded px-1.5 py-0.5 text-sm font-semibold focus:outline-none focus:ring-2 focus:ring-[#da7b4a]/50 w-32"
+                      />
+                    ) : (
+                      <span
+                        onClick={(e) => {
+                          if (isActive) {
+                            e.stopPropagation();
+                            setEditingItineraryTitle(itin.id);
+                            setItineraryTitleValue(itin.title);
+                          }
+                        }}
+                        className={`uppercase line-clamp-2 text-center ${isActive ? "cursor-text" : ""}`}
+                        title={isActive ? "Click to rename" : ""}
+                      >
+                        {itin.title}
+                      </span>
+                    )}
+                    {/* Delete button — only if more than 1 itinerary */}
+                    {itineraries.length > 1 && isActive && editingItineraryTitle !== itin.id && (
+                      <button
+                        onClick={(e) => { e.stopPropagation(); setConfirmDeleteItinerary(itin.id); }}
+                        className="w-4 h-4 flex items-center justify-center rounded-full text-white/60 hover:text-white hover:bg-white/20 transition-colors"
+                        title="Delete itinerary"
+                      >
+                        <svg className="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24" strokeWidth={2}>
+                          <path strokeLinecap="round" strokeLinejoin="round" d="M6 18L18 6M6 6l12 12" />
+                        </svg>
+                      </button>
+                    )}
+                    <InlineConfirm
+                      open={confirmDeleteItinerary === itin.id}
+                      message="Delete this itinerary?"
+                      onConfirm={() => deleteItineraryConfirmed(itin.id)}
+                      onCancel={() => setConfirmDeleteItinerary(null)}
                     />
-                  ) : (
-                    <span
-                      onClick={(e) => {
-                        if (isActive) {
-                          e.stopPropagation();
-                          setEditingItineraryTitle(itin.id);
-                          setItineraryTitleValue(itin.title);
-                        }
-                      }}
-                      className={`uppercase line-clamp-2 ${isActive ? "cursor-text" : ""}`}
-                      title={isActive ? "Click to rename" : ""}
-                    >
-                      {itin.title}
-                    </span>
-                  )}
-                  {/* Delete button — only if more than 1 itinerary */}
-                  {itineraries.length > 1 && isActive && editingItineraryTitle !== itin.id && (
-                    <button
-                      onClick={(e) => { e.stopPropagation(); setConfirmDeleteItinerary(itin.id); }}
-                      className="ml-1 w-4 h-4 flex items-center justify-center rounded-full text-white/60 hover:text-white hover:bg-white/20 transition-colors"
-                      title="Delete itinerary"
-                    >
-                      <svg className="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24" strokeWidth={2}>
-                        <path strokeLinecap="round" strokeLinejoin="round" d="M6 18L18 6M6 6l12 12" />
-                      </svg>
-                    </button>
-                  )}
-                  <InlineConfirm
-                    open={confirmDeleteItinerary === itin.id}
-                    message="Delete this itinerary?"
-                    onConfirm={() => deleteItineraryConfirmed(itin.id)}
-                    onCancel={() => setConfirmDeleteItinerary(null)}
-                  />
-                  {/* Drawer: hangs below active tab into the calendar */}
+                  </div>
+
+                  {/* Row 2: Pocket Guide / Print PDF — shown only on the active tab. */}
                   {isActive && (
                     <div
                       onClick={(e) => e.stopPropagation()}
-                      className="absolute top-full left-1/2 -translate-x-1/2 flex items-center gap-0.5 px-2 py-1 shadow-md"
-                      style={{
-                        background: "#da7b4a",
-                        borderLeft: "1px solid #b5552a",
-                        borderRight: "1px solid #b5552a",
-                        borderBottom: "1px solid #b5552a",
-                        borderBottomLeftRadius: "10px",
-                        borderBottomRightRadius: "10px",
-                        whiteSpace: "nowrap",
-                      }}
+                      className="flex items-center justify-center gap-1 mt-1.5 pt-1.5 border-t border-white/20 w-full"
                     >
                       <button
                         ref={guideBtnRef}
                         onClick={(e) => { e.stopPropagation(); openPocketGuide(); }}
                         disabled={guideLoading}
-                        className="inline-flex items-center gap-1 px-2 py-0.5 rounded text-[11px] font-semibold text-white transition-colors hover:bg-white/15 disabled:opacity-60 disabled:cursor-not-allowed"
-                        title="Open the Pocket Guide (traveler view) for this itinerary"
+                        className="inline-flex items-center gap-1 px-1.5 py-0.5 rounded text-[10px] font-semibold uppercase tracking-wider text-white transition-colors hover:bg-white/15 disabled:opacity-60 disabled:cursor-not-allowed"
+                        title="Open the Pocket Guide (traveler view)"
                       >
                         {guideLoading ? (
-                          <div className="w-3 h-3 border border-white/40 border-t-white rounded-full animate-spin" />
+                          <div className="w-2.5 h-2.5 border border-white/40 border-t-white rounded-full animate-spin" />
                         ) : (
-                          <svg className="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24" strokeWidth={2}>
+                          <svg className="w-2.5 h-2.5" fill="none" stroke="currentColor" viewBox="0 0 24 24" strokeWidth={2.5}>
                             <path strokeLinecap="round" strokeLinejoin="round" d="M12 6.253v13m0-13C10.832 5.477 9.246 5 7.5 5S4.168 5.477 3 6.253v13C4.168 18.477 5.754 18 7.5 18s3.332.477 4.5 1.253m0-13C13.168 5.477 14.754 5 16.5 5c1.747 0 3.332.477 4.5 1.253v13C19.832 18.477 18.247 18 16.5 18c-1.746 0-3.332.477-4.5 1.253" />
                           </svg>
                         )}
                         Pocket Guide
                       </button>
-                      <span className="text-white/30 text-xs">·</span>
+                      <span className="text-white/30 text-[10px]">·</span>
                       <button
                         type="button"
                         disabled
                         onClick={(e) => e.stopPropagation()}
-                        className="inline-flex items-center gap-1 px-2 py-0.5 rounded text-[11px] font-semibold text-white/70 cursor-not-allowed"
-                        title="Coming soon — printable PDF of this itinerary"
+                        className="inline-flex items-center gap-1 px-1.5 py-0.5 rounded text-[10px] font-semibold uppercase tracking-wider text-white/50 cursor-not-allowed"
+                        title="Coming soon — printable PDF"
                       >
-                        <svg className="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24" strokeWidth={2}>
+                        <svg className="w-2.5 h-2.5" fill="none" stroke="currentColor" viewBox="0 0 24 24" strokeWidth={2.5}>
                           <path strokeLinecap="round" strokeLinejoin="round" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
                         </svg>
                         Print PDF
-                        <span className="text-[8px] bg-white/20 px-1 py-0.5 rounded-full uppercase tracking-wider">soon</span>
                       </button>
                     </div>
                   )}
