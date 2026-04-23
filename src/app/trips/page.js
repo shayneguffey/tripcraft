@@ -488,7 +488,7 @@ export default function DashboardPage() {
 
   async function loadDashboard() {
     const { data: { user } } = await supabase.auth.getUser();
-    if (!user) { router.push("/login"); return; }
+    if (!user) { router.replace("/?auth=login"); return; }
     setUser(user);
 
     // Parallel fetch: own trips (active + archived for globe) + collaborator IDs

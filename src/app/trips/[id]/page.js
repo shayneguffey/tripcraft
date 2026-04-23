@@ -165,7 +165,7 @@ export default function TripDetailPage() {
     } = await supabase.auth.getUser();
 
     if (!user) {
-      router.push("/login");
+      router.replace("/?auth=login");
       return;
     }
 

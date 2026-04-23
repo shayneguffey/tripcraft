@@ -26,7 +26,7 @@ export default function InviteAcceptPage() {
       if (!currentUser) {
         // Save invite token and redirect to login
         localStorage.setItem("pending_invite_token", params.token);
-        router.push("/login");
+        router.replace("/?auth=login");
         return;
       }
 

@@ -147,7 +147,7 @@ export default function GlobePage() {
 
   async function loadTrips() {
     const { data: { user } } = await supabase.auth.getUser();
-    if (!user) { router.push("/login"); return; }
+    if (!user) { router.replace("/?auth=login"); return; }
     setUser(user);
 
     // Parallel fetch: own trips + collaborator IDs at the same time

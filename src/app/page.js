@@ -2,7 +2,7 @@
 
 import { useState, useEffect } from "react";
 import { supabase } from "@/lib/supabase";
-import { useRouter } from "next/navigation";
+import { useRouter, useSearchParams } from "next/navigation";
 import Link from "next/link";
 import HomeGlobeAnimated from "@/components/HomeGlobeAnimated";
 import MapPatternBg from "@/components/MapPatternBg";
@@ -18,6 +18,18 @@ export default function Home() {
   const [loading, setLoading] = useState(false);
   const [googleLoading, setGoogleLoading] = useState(false);
   const router = useRouter();
+  const searchParams = useSearchParams();
+
+  // Auto-open the auth modal when the URL carries ?auth=login or ?auth=signup
+  // (used by redirect stubs at /login and /signup so the standalone routes
+  // stay out of history but still land on the login form).
+  useEffect(() => {
+    const authParam = searchParams?.get("auth");
+    if (authParam === "login" || authParam === "signup" || authParam === "forgot") {
+      setMode(authParam);
+      setShowAuth(true);
+    }
+  }, [searchParams]);
 
   // Handle OAuth — listen for sign-in from popup or redirect
   useEffect(() => {
