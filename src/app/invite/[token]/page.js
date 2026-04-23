@@ -4,6 +4,7 @@ import { useState, useEffect } from "react";
 import { supabase } from "@/lib/supabase";
 import { useRouter, useParams } from "next/navigation";
 import Link from "next/link";
+import FlightPathLoader from "@/components/FlightPathLoader";
 
 export default function InviteAcceptPage() {
   const [loading, setLoading] = useState(true);
@@ -73,16 +74,7 @@ export default function InviteAcceptPage() {
     router.push(`/trips/${data.tripId}`);
   }
 
-  if (loading) {
-    return (
-      <div className="flex min-h-screen items-center justify-center bg-gradient-to-b from-sky-50 to-white">
-        <div className="text-center">
-          <div className="text-4xl mb-4 animate-bounce">✈️</div>
-          <p className="text-slate-500">Loading invite...</p>
-        </div>
-      </div>
-    );
-  }
+  if (loading) return <FlightPathLoader text="Loading invite..." />;
 
   if (error && !invite) {
     return (

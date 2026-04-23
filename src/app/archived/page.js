@@ -5,6 +5,7 @@ import { supabase } from "@/lib/supabase";
 import { useRouter } from "next/navigation";
 import Link from "next/link";
 import MapPatternBg from "@/components/MapPatternBg";
+import FlightPathLoader from "@/components/FlightPathLoader";
 
 function formatTripDates(startStr, endStr) {
   if (!startStr || !endStr) return "";
@@ -114,18 +115,7 @@ export default function ArchivedPage() {
     setDeleteId(null);
   }
 
-  if (loading) {
-    return (
-      <div className="flex min-h-screen items-center justify-center relative">
-        <div className="fixed inset-0" style={{ background: "linear-gradient(to bottom, rgba(210,195,172,0.7) 0%, rgba(222,210,190,0.6) 50%, rgba(210,195,172,0.7) 100%)" }} />
-        <MapPatternBg tileSize={280} opacity={1} />
-        <div className="text-center relative z-10">
-          <div className="w-8 h-8 mx-auto mb-4 border-[3px] border-stone-400 border-t-[#da7b4a] rounded-full animate-spin" />
-          <p className="text-stone-500 text-sm font-medium tracking-wide">Loading archived trips...</p>
-        </div>
-      </div>
-    );
-  }
+  if (loading) return <FlightPathLoader text="Loading archived trips..." />;
 
   return (
     <div className="min-h-screen relative">
