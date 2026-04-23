@@ -223,10 +223,11 @@ export default function GuidePage({ params }) {
             src={trip.banner_image}
             alt=""
             className="absolute inset-0 w-full h-full object-cover"
-            style={{ filter: "sepia(0.15) saturate(1.1) brightness(0.85)" }}
+            style={{ filter: "sepia(0.1) saturate(1.05)" }}
           />
         )}
-        <div className="absolute inset-0" style={{ background: "linear-gradient(to bottom, rgba(0,0,0,0.25), rgba(0,0,0,0.6))" }} />
+        {/* Bottom-weighted scrim so the hero text stays legible without dimming the whole image */}
+        <div className="absolute inset-0" style={{ background: "linear-gradient(to bottom, transparent 0%, rgba(0,0,0,0.1) 55%, rgba(0,0,0,0.55) 100%)" }} />
         <div className="relative z-10 px-5 pt-10 pb-8 flex flex-col justify-end" style={{ minHeight: heroStyle.minHeight }}>
           <div className="text-white/60 text-[10px] font-semibold uppercase tracking-[0.2em] mb-1">Pocket Guide</div>
           <h1
