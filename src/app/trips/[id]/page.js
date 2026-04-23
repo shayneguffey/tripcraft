@@ -72,24 +72,45 @@ function isInRange(date, start, end) {
 // Route-param → trip row lookup. Accepts bare UUIDs (legacy URLs) and the
 // hybrid `{slug}--{shortId}` format used by new planning URLs. Returns
 // { data, error } mirroring Supabase's own query shape.
+//
+// The prefix match uses a UUID range query instead of a text cast because
+// PostgREST's `.filter("id::text", "like", ...)` isn't reliably wired up
+// through the Supabase JS client — UUIDs compare byte-by-byte in Postgres,
+// so any UUID starting with the 8-hex-char shortId falls between
+// `{shortId}-0000-...` and `{shortId}-ffff-...`.
 async function buildTripLookup(supabase, routeParam) {
   if (!routeParam) return { data: null, error: new Error("no route param") };
-  // 1. Try exact UUID match (legacy URLs that still use the raw id).
-  const exact = await supabase.from("trips").select("*").eq("id", routeParam).maybeSingle();
-  if (exact.data) return { data: exact.data, error: null };
-  // 2. Parse hybrid URL: everything after the last "--" is the short id.
-  const shortId = routeParam.includes("--") ? routeParam.split("--").pop() : routeParam;
-  if (!shortId) return { data: null, error: new Error("invalid route param") };
-  // 3. UUID prefix match — cast id to text so LIKE works.
-  const prefix = await supabase
+  const UUID_RE = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
+
+  // 1. Legacy URL: full UUID as the route param.
+  if (UUID_RE.test(routeParam)) {
+    const { data, error } = await supabase
+      .from("trips")
+      .select("*")
+      .eq("id", routeParam)
+      .maybeSingle();
+    if (data) return { data, error: null };
+    if (error) return { data: null, error };
+  }
+
+  // 2. Hybrid URL: parse the trailing short id (everything after the last "--").
+  const shortId = (routeParam.includes("--") ? routeParam.split("--").pop() : routeParam).toLowerCase();
+  if (!/^[0-9a-f]{1,8}$/.test(shortId)) {
+    return { data: null, error: new Error("invalid route param") };
+  }
+  const pad = shortId.padEnd(8, "0");
+  const low = `${pad}-0000-0000-0000-000000000000`;
+  const high = `${pad}-ffff-ffff-ffff-ffffffffffff`;
+  const { data: rows, error } = await supabase
     .from("trips")
     .select("*")
-    .filter("id::text", "like", `${shortId}%`)
+    .gte("id", low)
+    .lte("id", high)
     .limit(2);
-  if (prefix.error) return { data: null, error: prefix.error };
-  const rows = prefix.data || [];
-  if (rows.length === 1) return { data: rows[0], error: null };
-  if (rows.length === 0) return { data: null, error: new Error("trip not found") };
+  if (error) return { data: null, error };
+  const list = rows || [];
+  if (list.length === 1) return { data: list[0], error: null };
+  if (list.length === 0) return { data: null, error: new Error("trip not found") };
   return { data: null, error: new Error("ambiguous trip id") };
 }
 
