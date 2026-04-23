@@ -203,8 +203,16 @@ export default function TripDetailPage() {
 
     let itins = itinerariesData || [];
 
-    // Auto-create a default itinerary if table exists but is empty
-    if (!itinError && itins.length === 0) {
+    // Auto-create a default itinerary if table exists but is empty.
+    // IMPORTANT: only do this for the trip owner. Otherwise a collaborator
+    // or shared-link viewer who can't see any itineraries (RLS filters by
+    // user_id + share_token) would auto-seed a phantom "Itinerary 1" row
+    // owned by them — exactly how the Olympic Peninsula duplicates were
+    // created. React's Strict-Mode double render made that worse by firing
+    // the insert twice in parallel, so we also log + skip if we somehow get
+    // here a second time before the first insert has resolved.
+    const isOwner = tripData.user_id === user.id;
+    if (!itinError && itins.length === 0 && isOwner) {
       const { data: newItin } = await supabase
         .from("itineraries")
         .insert({
@@ -876,7 +884,7 @@ export default function TripDetailPage() {
               return (
                 <div
                   key={itin.id}
-                  className={`relative flex flex-col items-center px-5 py-2.5 rounded-t-xl text-sm font-semibold cursor-pointer transition-all ${
+                  className={`relative flex flex-col items-center px-5 rounded-t-xl text-sm font-semibold cursor-pointer transition-all ${isActive ? "pt-1.5 pb-1" : "py-2.5"} ${
                     isActive ? "text-white" : trip?.banner_image ? "text-white/80 hover:text-white" : "text-stone-600 hover:text-stone-800"
                   }`}
                   style={{
@@ -947,13 +955,13 @@ export default function TripDetailPage() {
                   {isActive && (
                     <div
                       onClick={(e) => e.stopPropagation()}
-                      className="flex items-center justify-center gap-1 mt-1.5 pt-1.5 border-t border-white/20 w-full"
+                      className="flex items-center justify-center gap-1 mt-0.5 pt-0.5 border-t border-white/20 w-full"
                     >
                       <button
                         ref={guideBtnRef}
                         onClick={(e) => { e.stopPropagation(); openPocketGuide(); }}
                         disabled={guideLoading}
-                        className="inline-flex items-center gap-1 px-1.5 py-0.5 rounded text-[10px] font-semibold uppercase tracking-wider text-white transition-colors hover:bg-white/15 disabled:opacity-60 disabled:cursor-not-allowed"
+                        className="inline-flex items-center gap-1 px-1.5 py-0 rounded text-[10px] font-semibold uppercase tracking-wider text-white transition-colors hover:bg-white/15 disabled:opacity-60 disabled:cursor-not-allowed"
                         title="Open the Pocket Guide (traveler view)"
                       >
                         {guideLoading ? (
@@ -970,7 +978,7 @@ export default function TripDetailPage() {
                         type="button"
                         disabled
                         onClick={(e) => e.stopPropagation()}
-                        className="inline-flex items-center gap-1 px-1.5 py-0.5 rounded text-[10px] font-semibold uppercase tracking-wider text-white/50 cursor-not-allowed"
+                        className="inline-flex items-center gap-1 px-1.5 py-0 rounded text-[10px] font-semibold uppercase tracking-wider text-white/50 cursor-not-allowed"
                         title="Coming soon — printable PDF"
                       >
                         <svg className="w-2.5 h-2.5" fill="none" stroke="currentColor" viewBox="0 0 24 24" strokeWidth={2.5}>
