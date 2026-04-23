@@ -21,6 +21,7 @@ import InlineConfirm from "@/components/InlineConfirm";
 import CATEGORY_COLORS from "@/lib/categoryColors";
 import DateRangePicker from "@/components/DateRangePicker";
 import FlightPathLoader from "@/components/FlightPathLoader";
+import { tripPlanningUrl, guideUrl } from "@/lib/tripUrl";
 
 // Helper: generate array of dates for calendar display
 function getCalendarRange(startDate, endDate) {
@@ -68,12 +69,28 @@ function isInRange(date, start, end) {
 }
 
 
-// Build a readable Pocket Guide URL slug from a trip title.
-// Kebab-cases the title, strips all non-alphanum, falls back to "trip"
-// if the title is empty. Used in the hybrid guide URL: `/guide/{slug}--{token}`.
-function guideSlug(title) {
-  const s = (title || "").toLowerCase().replace(/[^a-z0-9]+/g, "-").replace(/^-+|-+$/g, "");
-  return s || "trip";
+// Route-param → trip row lookup. Accepts bare UUIDs (legacy URLs) and the
+// hybrid `{slug}--{shortId}` format used by new planning URLs. Returns
+// { data, error } mirroring Supabase's own query shape.
+async function buildTripLookup(supabase, routeParam) {
+  if (!routeParam) return { data: null, error: new Error("no route param") };
+  // 1. Try exact UUID match (legacy URLs that still use the raw id).
+  const exact = await supabase.from("trips").select("*").eq("id", routeParam).maybeSingle();
+  if (exact.data) return { data: exact.data, error: null };
+  // 2. Parse hybrid URL: everything after the last "--" is the short id.
+  const shortId = routeParam.includes("--") ? routeParam.split("--").pop() : routeParam;
+  if (!shortId) return { data: null, error: new Error("invalid route param") };
+  // 3. UUID prefix match — cast id to text so LIKE works.
+  const prefix = await supabase
+    .from("trips")
+    .select("*")
+    .filter("id::text", "like", `${shortId}%`)
+    .limit(2);
+  if (prefix.error) return { data: null, error: prefix.error };
+  const rows = prefix.data || [];
+  if (rows.length === 1) return { data: rows[0], error: null };
+  if (rows.length === 0) return { data: null, error: new Error("trip not found") };
+  return { data: null, error: new Error("ambiguous trip id") };
 }
 
 export default function TripDetailPage() {
@@ -133,11 +150,7 @@ export default function TripDetailPage() {
 
     setCurrentUser(user);
 
-    const { data: tripData, error: tripError } = await supabase
-      .from("trips")
-      .select("*")
-      .eq("id", params.id)
-      .single();
+    const { data: tripData, error: tripError } = await buildTripLookup(supabase, tripData.id);
 
     if (tripError || !tripData) {
       router.push("/trips");
@@ -167,7 +180,7 @@ export default function TripDetailPage() {
     const { data: itinerariesData, error: itinError } = await supabase
       .from("itineraries")
       .select("*")
-      .eq("trip_id", params.id)
+      .eq("trip_id", tripData.id)
       .order("sort_order", { ascending: true });
 
     let itins = itinerariesData || [];
@@ -177,7 +190,7 @@ export default function TripDetailPage() {
       const { data: newItin } = await supabase
         .from("itineraries")
         .insert({
-          trip_id: params.id,
+          trip_id: tripData.id,
           user_id: user.id,
           title: "Itinerary 1",
           start_date: tripData.start_date || null,
@@ -198,7 +211,7 @@ export default function TripDetailPage() {
           { table: "transportation_options", type: "transportation" },
         ];
         for (const { table, type } of tables) {
-          const { data: selected } = await supabase.from(table).select("id").eq("trip_id", params.id).eq("is_selected", true);
+          const { data: selected } = await supabase.from(table).select("id").eq("trip_id", tripData.id).eq("is_selected", true);
           if (selected && selected.length > 0) {
             await supabase.from("itinerary_selections").insert(
               selected.map((s) => ({ itinerary_id: newItin.id, option_type: type, option_id: s.id }))
@@ -234,7 +247,7 @@ export default function TripDetailPage() {
       ? (itins.find((i) => i.id === activeItineraryId)?.id || itins[0].id)
       : null;
 
-    let daysQuery = supabase.from("days").select("*").eq("trip_id", params.id);
+    let daysQuery = supabase.from("days").select("*").eq("trip_id", tripData.id);
     if (activeItinId) {
       daysQuery = daysQuery.eq("itinerary_id", activeItinId);
     }
@@ -271,11 +284,11 @@ export default function TripDetailPage() {
       { data: diningData },
       { data: transportData },
     ] = await Promise.all([
-      supabase.from("flight_options").select("*").eq("trip_id", params.id).order("sort_order", { ascending: true }),
-      supabase.from("activity_options").select("*").eq("trip_id", params.id).order("sort_order", { ascending: true }),
-      supabase.from("accommodation_options").select("*").eq("trip_id", params.id).order("sort_order", { ascending: true }),
-      supabase.from("dining_options").select("*").eq("trip_id", params.id).order("sort_order", { ascending: true }),
-      supabase.from("transportation_options").select("*").eq("trip_id", params.id).order("sort_order", { ascending: true }),
+      supabase.from("flight_options").select("*").eq("trip_id", tripData.id).order("sort_order", { ascending: true }),
+      supabase.from("activity_options").select("*").eq("trip_id", tripData.id).order("sort_order", { ascending: true }),
+      supabase.from("accommodation_options").select("*").eq("trip_id", tripData.id).order("sort_order", { ascending: true }),
+      supabase.from("dining_options").select("*").eq("trip_id", tripData.id).order("sort_order", { ascending: true }),
+      supabase.from("transportation_options").select("*").eq("trip_id", tripData.id).order("sort_order", { ascending: true }),
     ]);
     setFlightOptions(flightData || []);
     setActivityOptions(activityData || []);
@@ -295,7 +308,7 @@ export default function TripDetailPage() {
     await supabase
       .from("trips")
       .update({ start_date: newStart, end_date: newEnd, updated_at: new Date().toISOString() })
-      .eq("id", params.id);
+      .eq("id", trip?.id);
 
     setTrip((prev) => ({ ...prev, start_date: newStart, end_date: newEnd }));
   }
@@ -324,7 +337,7 @@ export default function TripDetailPage() {
     else if (field === "description") updates.description = editValue || null;
     else if (field === "num_travelers") updates.num_travelers = Math.max(1, parseInt(editValue) || 1);
 
-    await supabase.from("trips").update(updates).eq("id", params.id);
+    await supabase.from("trips").update(updates).eq("id", trip?.id);
     setEditingField(null);
     loadTrip();
   }
@@ -347,7 +360,7 @@ export default function TripDetailPage() {
     const { data: newItin, error: insertError } = await supabase
       .from("itineraries")
       .insert({
-        trip_id: params.id,
+        trip_id: trip?.id,
         user_id: user.id,
         title: `Itinerary ${newSort + 1}`,
         start_date: activeItin?.start_date || trip?.start_date || null,
@@ -376,7 +389,7 @@ export default function TripDetailPage() {
     // Fetch both selections and days in parallel, then batch state updates
     const [selectionsRes, daysRes] = await Promise.all([
       supabase.from("itinerary_selections").select("*").eq("itinerary_id", id),
-      supabase.from("days").select("*").eq("trip_id", params.id).eq("itinerary_id", id),
+      supabase.from("days").select("*").eq("trip_id", trip?.id).eq("itinerary_id", id),
     ]);
     const daysMap = {};
     (daysRes.data || []).forEach((d) => { daysMap[d.date] = d; });
@@ -451,7 +464,7 @@ export default function TripDetailPage() {
       // Check if this itinerary already has a share token
       const activeItin = itineraries.find((i) => i.id === activeItineraryId);
       if (activeItin?.share_token) {
-        setShareUrl(`${window.location.origin}/guide/${guideSlug(trip?.title)}--${activeItin.share_token}`);
+        setShareUrl(`${window.location.origin}${guideUrl(trip, activeItin.share_token)}`);
         setShareLoading(false);
         return;
       }
@@ -475,7 +488,7 @@ export default function TripDetailPage() {
         return;
       }
 
-      const url = `${window.location.origin}/guide/${guideSlug(trip?.title)}--${token}`;
+      const url = `${window.location.origin}${guideUrl(trip, token)}`;
       setShareUrl(url);
       setItineraries((prev) =>
         prev.map((i) => (i.id === activeItineraryId ? { ...i, share_token: token } : i))
@@ -536,7 +549,7 @@ export default function TripDetailPage() {
       await supabase.from("days").update(updates).eq("id", existing.id);
     } else if (dayHeaderValue.trim()) {
       await supabase.from("days").insert({
-        trip_id: params.id,
+        trip_id: trip?.id,
         date: dateKey,
         title: dayHeaderValue || null,
         itinerary_id: activeItineraryId || null,
@@ -1426,7 +1439,7 @@ export default function TripDetailPage() {
           >
             <div style={{ display: activeItineraryTab === "flights" ? "block" : "none" }}>
               <FlightOptions
-                tripId={params.id}
+                tripId={trip?.id}
                 tripStart={trip?.start_date}
                 tripEnd={trip?.end_date}
                 onFlightOptionsChange={setFlightOptions}
@@ -1437,7 +1450,7 @@ export default function TripDetailPage() {
             </div>
             <div style={{ display: activeItineraryTab === "accommodations" ? "block" : "none" }}>
               <AccommodationOptions
-                tripId={params.id}
+                tripId={trip?.id}
                 tripStart={trip?.start_date}
                 tripEnd={trip?.end_date}
                 onAccommodationOptionsChange={setAccommodationOptions}
@@ -1448,7 +1461,7 @@ export default function TripDetailPage() {
             </div>
             <div style={{ display: activeItineraryTab === "activities" ? "block" : "none" }}>
               <ActivityOptions
-                tripId={params.id}
+                tripId={trip?.id}
                 tripStart={activeItinerary?.start_date || trip?.start_date}
                 tripEnd={activeItinerary?.end_date || trip?.end_date}
                 onActivityOptionsChange={setActivityOptions}
@@ -1459,7 +1472,7 @@ export default function TripDetailPage() {
             </div>
             <div style={{ display: activeItineraryTab === "dining" ? "block" : "none" }}>
               <DiningOptions
-                tripId={params.id}
+                tripId={trip?.id}
                 tripStart={activeItinerary?.start_date || trip?.start_date}
                 tripEnd={activeItinerary?.end_date || trip?.end_date}
                 onDiningOptionsChange={setDiningOptions}
@@ -1470,7 +1483,7 @@ export default function TripDetailPage() {
             </div>
             <div style={{ display: activeItineraryTab === "transportation" ? "block" : "none" }}>
               <TransportationOptions
-                tripId={params.id}
+                tripId={trip?.id}
                 tripStart={trip?.start_date}
                 tripEnd={trip?.end_date}
                 onTransportationOptionsChange={setTransportOptions}
@@ -1481,7 +1494,7 @@ export default function TripDetailPage() {
             </div>
             <div style={{ display: activeItineraryTab === "budget" ? "block" : "none" }}>
               <BudgetTracker
-                tripId={params.id}
+                tripId={trip?.id}
                 numTravelers={activeItinerary?.num_travelers || trip?.num_travelers || 1}
                 flightOptions={flightOptions}
                 activityOptions={activityOptions}
@@ -1585,11 +1598,11 @@ export default function TripDetailPage() {
               />
             </div>
             <div style={{ display: activeLowerTab === "checklist" ? "block" : "none" }}>
-              <PlanningChecklist tripId={params.id} />
+              <PlanningChecklist tripId={trip?.id} />
             </div>
             <div style={{ display: activeLowerTab === "packing" ? "block" : "none" }}>
               <PackingList
-                tripId={params.id}
+                tripId={trip?.id}
                 tripDestination={trip?.destination}
                 tripStartDate={trip?.start_date}
                 tripEndDate={trip?.end_date}
@@ -1598,11 +1611,11 @@ export default function TripDetailPage() {
               />
             </div>
             <div style={{ display: activeLowerTab === "documents" ? "block" : "none" }}>
-              <TravelDocuments tripId={params.id} />
+              <TravelDocuments tripId={trip?.id} />
             </div>
             <div style={{ display: activeLowerTab === "collaborators" ? "block" : "none" }}>
               <TripCollaborators
-                tripId={params.id}
+                tripId={trip?.id}
                 tripTitle={trip?.title}
                 userId={currentUser?.id}
                 userEmail={currentUser?.email}
@@ -1616,7 +1629,7 @@ export default function TripDetailPage() {
         {selectedDay && (
           <DayPopout
             dateKey={selectedDay}
-            tripId={params.id}
+            tripId={trip?.id}
             tripStart={effectiveStart}
             dayData={days[selectedDay]}
             activities={days[selectedDay] ? (activities[days[selectedDay].id] || []) : []}

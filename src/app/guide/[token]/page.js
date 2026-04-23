@@ -19,6 +19,7 @@ import Link from "next/link";
 import { supabase } from "@/lib/supabase";
 import CATEGORY_COLORS from "@/lib/categoryColors";
 import FlightPathLoader from "@/components/FlightPathLoader";
+import { tripPlanningUrl } from "@/lib/tripUrl";
 
 /* ─── Date / time / money helpers ─── */
 function formatDate(dateStr) {
@@ -204,7 +205,7 @@ export default function GuidePage({ params }) {
       {canEdit && (
         <div className="absolute top-0 left-0 right-0 z-30 px-4 pt-3 flex justify-between">
           <Link
-            href={`/trips/${trip.id}`}
+            href={tripPlanningUrl(trip)}
             className="inline-flex items-center gap-1.5 text-white/95 text-xs font-semibold tracking-wide px-3 py-1.5 rounded-full backdrop-blur-sm hover:brightness-110 transition-all"
             style={{ background: "rgba(30,22,12,0.55)", border: "1px solid rgba(212,165,116,0.25)" }}
           >

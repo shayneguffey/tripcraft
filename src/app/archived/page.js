@@ -6,6 +6,7 @@ import { useRouter } from "next/navigation";
 import Link from "next/link";
 import MapPatternBg from "@/components/MapPatternBg";
 import FlightPathLoader from "@/components/FlightPathLoader";
+import { tripPlanningUrl } from "@/lib/tripUrl";
 
 function formatTripDates(startStr, endStr) {
   if (!startStr || !endStr) return "";
@@ -179,7 +180,7 @@ export default function ArchivedPage() {
               const statusColor = STATUS_OPTIONS.find((s) => s.key === (trip.status || "planning"))?.color || "#4a965a";
               return (
                 <div key={trip.id} className="relative group">
-                  <Link href={`/trips/${trip.id}`} className="block">
+                  <Link href={tripPlanningUrl(trip)} className="block">
                     <div
                       className="relative rounded-2xl overflow-hidden aspect-[3/4] flex flex-col justify-end shadow-sm hover:shadow-xl transition-all duration-300"
                       style={{ borderBottom: `8px solid ${statusColor}`, transition: "border-color 0.4s ease-in-out, box-shadow 0.3s ease" }}

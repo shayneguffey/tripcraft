@@ -7,6 +7,7 @@ import Link from "next/link";
 import GlobeCanvas from "@/components/GlobeCanvas";
 import MapPatternBg from "@/components/MapPatternBg";
 import FlightPathLoader from "@/components/FlightPathLoader";
+import { tripPlanningUrl, guideUrl } from "@/lib/tripUrl";
 
 // Format trip dates: "Jun 5-12, 2026" or "Jun 5 - Jul 3, 2026"
 function formatTripDates(startStr, endStr) {
@@ -225,7 +226,7 @@ function TripCard({ trip, index, onRegenerate, onStatusChange, onArchive, onFiel
       onMouseLeave={() => setHovered(false)}
     >
       {/* Card body — clickable link */}
-      <Link href={`/trips/${trip.id}`} className="block">
+      <Link href={tripPlanningUrl(trip)} className="block">
         <div
           className="relative rounded-2xl overflow-hidden aspect-[3/4] shadow-sm hover:shadow-xl transition-all duration-300"
           style={{
@@ -341,7 +342,7 @@ function TripCard({ trip, index, onRegenerate, onStatusChange, onArchive, onFiel
           {/* Share itinerary link */}
           {trip._shareToken && (
             <a
-              href={`/guide/${guideSlug(trip.title)}--${trip._shareToken}`}
+              href={guideUrl(trip, trip._shareToken)}
               target="_blank"
               rel="noopener noreferrer"
               onClick={(e) => e.stopPropagation()}
@@ -361,11 +362,6 @@ function TripCard({ trip, index, onRegenerate, onStatusChange, onArchive, onFiel
 
 // ─── Main Page ────────────────────────────────────────────
 
-// Build a readable Pocket Guide URL slug from a trip title.
-function guideSlug(title) {
-  const s = (title || "").toLowerCase().replace(/[^a-z0-9]+/g, "-").replace(/^-+|-+$/g, "");
-  return s || "trip";
-}
 
 export default function DashboardPage() {
   const [user, setUser] = useState(null);
@@ -739,7 +735,7 @@ export default function DashboardPage() {
     setCreating(false);
     setNewTitle(""); setNewDest(""); setNewStart(""); setNewEnd(""); setNewTravelers(1);
     setShowCalendar(false); setSaving(false);
-    router.push(`/trips/${data.id}`);
+    router.push(tripPlanningUrl(data));
   }
 
   function cancelCreate() {

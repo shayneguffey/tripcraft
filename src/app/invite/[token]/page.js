@@ -5,6 +5,7 @@ import { supabase } from "@/lib/supabase";
 import { useRouter, useParams } from "next/navigation";
 import Link from "next/link";
 import FlightPathLoader from "@/components/FlightPathLoader";
+import { tripPlanningUrl } from "@/lib/tripUrl";
 
 export default function InviteAcceptPage() {
   const [loading, setLoading] = useState(true);
@@ -71,7 +72,8 @@ export default function InviteAcceptPage() {
       return;
     }
 
-    router.push(`/trips/${data.tripId}`);
+    // Prefer the fully-loaded trip (has title for slug); fall back to just the id.
+    router.push(tripPlanningUrl(trip ?? { id: data.tripId }));
   }
 
   if (loading) return <FlightPathLoader text="Loading invite..." />;
