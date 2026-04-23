@@ -341,7 +341,7 @@ function TripCard({ trip, index, onRegenerate, onStatusChange, onArchive, onFiel
           {/* Share itinerary link */}
           {trip._shareToken && (
             <a
-              href={`/guide/${trip._shareToken}`}
+              href={`/guide/${guideSlug(trip.title)}--${trip._shareToken}`}
               target="_blank"
               rel="noopener noreferrer"
               onClick={(e) => e.stopPropagation()}
@@ -360,6 +360,13 @@ function TripCard({ trip, index, onRegenerate, onStatusChange, onArchive, onFiel
 }
 
 // ─── Main Page ────────────────────────────────────────────
+
+// Build a readable Pocket Guide URL slug from a trip title.
+function guideSlug(title) {
+  const s = (title || "").toLowerCase().replace(/[^a-z0-9]+/g, "-").replace(/^-+|-+$/g, "");
+  return s || "trip";
+}
+
 export default function DashboardPage() {
   const [user, setUser] = useState(null);
   const [trips, setTrips] = useState([]);

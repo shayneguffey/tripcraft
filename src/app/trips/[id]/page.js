@@ -67,6 +67,15 @@ function isInRange(date, start, end) {
   return d >= start && d <= end;
 }
 
+
+// Build a readable Pocket Guide URL slug from a trip title.
+// Kebab-cases the title, strips all non-alphanum, falls back to "trip"
+// if the title is empty. Used in the hybrid guide URL: `/guide/{slug}--{token}`.
+function guideSlug(title) {
+  const s = (title || "").toLowerCase().replace(/[^a-z0-9]+/g, "-").replace(/^-+|-+$/g, "");
+  return s || "trip";
+}
+
 export default function TripDetailPage() {
   const [trip, setTrip] = useState(null);
   const [days, setDays] = useState({});
@@ -442,7 +451,7 @@ export default function TripDetailPage() {
       // Check if this itinerary already has a share token
       const activeItin = itineraries.find((i) => i.id === activeItineraryId);
       if (activeItin?.share_token) {
-        setShareUrl(`${window.location.origin}/guide/${activeItin.share_token}`);
+        setShareUrl(`${window.location.origin}/guide/${guideSlug(trip?.title)}--${activeItin.share_token}`);
         setShareLoading(false);
         return;
       }
@@ -466,7 +475,7 @@ export default function TripDetailPage() {
         return;
       }
 
-      const url = `${window.location.origin}/guide/${token}`;
+      const url = `${window.location.origin}/guide/${guideSlug(trip?.title)}--${token}`;
       setShareUrl(url);
       setItineraries((prev) =>
         prev.map((i) => (i.id === activeItineraryId ? { ...i, share_token: token } : i))

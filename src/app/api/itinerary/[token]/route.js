@@ -23,16 +23,21 @@ export async function GET(request, { params }) {
       return Response.json({ error: "Missing share token" }, { status: 400 });
     }
 
+    // Pocket Guide URLs use a readable hybrid form: `/guide/{slug}--{token}`.
+    // Extract the real token (always the last `--`-separated segment). If no
+    // separator is present, the param IS the token — keeps old URLs working.
+    const realToken = token.includes("--") ? token.split("--").pop() : token;
+
     const supabase = getSupabaseAdmin();
 
     // ─── Look up itinerary by share token ───
     const { data: itinerary, error: itinError } = await supabase
       .from("itineraries")
       .select("*")
-      .eq("share_token", token)
+      .eq("share_token", realToken)
       .maybeSingle();
 
-    console.log("[itinerary API] token:", token, "found:", !!itinerary, "error:", itinError?.message || "none");
+    console.log("[itinerary API] token:", token, "realToken:", realToken, "found:", !!itinerary, "error:", itinError?.message || "none");
 
     if (itinError || !itinerary) {
       return Response.json({ error: "Itinerary not found", detail: itinError?.message || "No matching token" }, { status: 404 });
