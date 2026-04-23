@@ -112,6 +112,31 @@ export default function GuidePage({ params }) {
     return () => { cancelled = true; };
   }, [data?.trip?.id, data?.trip?.user_id]);
 
+  // ─ Self-heal: if this trip has no banner yet, generate one.
+  // Fire-and-forget — page renders immediately with the gradient fallback;
+  // banner fades in when the API responds. The endpoint also persists the
+  // URL to the trips row (via service-role key), so the next Pocket Guide
+  // load will see it without regenerating.
+  useEffect(() => {
+    const trip = data?.trip;
+    if (!trip || trip.banner_image || !trip.destination) return;
+    let cancelled = false;
+    fetch("/api/generate-banner", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ destination: trip.destination, tripId: trip.id }),
+    })
+      .then((res) => (res.ok ? res.json() : null))
+      .then((result) => {
+        if (cancelled || !result?.imageUrl) return;
+        setData((prev) =>
+          prev ? { ...prev, trip: { ...prev.trip, banner_image: result.imageUrl } } : prev
+        );
+      })
+      .catch((err) => console.error("Pocket Guide banner generation error:", err));
+    return () => { cancelled = true; };
+  }, [data?.trip?.id, data?.trip?.banner_image, data?.trip?.destination]);
+
   if (loading) return <FlightPathLoader text="Loading your Pocket Guide..." />;
   if (error) return <ErrorScreen message={error} />;
   if (!data) return <ErrorScreen message="No data found." />;

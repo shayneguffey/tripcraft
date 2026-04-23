@@ -48,6 +48,31 @@ function slugify(destination) {
     .replace(/^-+|-+$/g, "");
 }
 
+/**
+ * Persist the generated banner URL to the trips row.
+ * Only writes when tripId is provided AND the existing banner_image is null,
+ * so we never overwrite a user's chosen banner. Failures are logged but
+ * swallowed — we don't want to fail the generation request on a DB hiccup.
+ */
+async function persistBannerUrl(supabase, tripId, imageUrl) {
+  if (!tripId || !imageUrl) return;
+  try {
+    const { data: existing } = await supabase
+      .from("trips")
+      .select("banner_image")
+      .eq("id", tripId)
+      .maybeSingle();
+    if (existing && existing.banner_image) return; // don't overwrite
+    const { error } = await supabase
+      .from("trips")
+      .update({ banner_image: imageUrl })
+      .eq("id", tripId);
+    if (error) console.error("[banner] persist update error:", error);
+  } catch (err) {
+    console.error("[banner] persist error:", err);
+  }
+}
+
 async function generateWithGemini(modelName, prompt, apiKey) {
   const endpoint = `${API_BASE}/${modelName}:generateContent?key=${apiKey}`;
 
@@ -121,6 +146,7 @@ export async function POST(request) {
         .list("banners", { search: `${slug}.png`, limit: 1 });
 
       if (fileList && fileList.length > 0) {
+        await persistBannerUrl(supabase, tripId, cachedFile.publicUrl);
         return Response.json({
           imageUrl: cachedFile.publicUrl,
           cached: true,
@@ -171,6 +197,8 @@ export async function POST(request) {
       .getPublicUrl(cachedPath);
 
     const publicUrl = `${publicUrlData.publicUrl}?t=${Date.now()}`;
+
+    await persistBannerUrl(supabase, tripId, publicUrl);
 
     return Response.json({
       imageUrl: publicUrl,
