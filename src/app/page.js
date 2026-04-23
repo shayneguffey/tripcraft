@@ -1,13 +1,13 @@
 "use client";
 
-import { useState, useEffect } from "react";
+import { useState, useEffect, Suspense } from "react";
 import { supabase } from "@/lib/supabase";
 import { useRouter, useSearchParams } from "next/navigation";
 import Link from "next/link";
 import HomeGlobeAnimated from "@/components/HomeGlobeAnimated";
 import MapPatternBg from "@/components/MapPatternBg";
 
-export default function Home() {
+function HomeInner() {
   const [showAuth, setShowAuth] = useState(false);
   const [mode, setMode] = useState("login"); // "login", "signup", or "forgot"
   const [email, setEmail] = useState("");
@@ -406,5 +406,18 @@ export default function Home() {
         </div>
       </div>
     </div>
+  );
+}
+
+
+// Wrap the landing page in a Suspense boundary: useSearchParams() inside
+// HomeInner forces client-side rendering, which Next.js requires a fallback
+// for during prerendering. Without Suspense, `next build` fails with:
+//   useSearchParams() should be wrapped in a suspense boundary at page "/"
+export default function Home() {
+  return (
+    <Suspense fallback={null}>
+      <HomeInner />
+    </Suspense>
   );
 }
