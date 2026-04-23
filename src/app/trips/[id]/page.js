@@ -494,8 +494,7 @@ export default function TripDetailPage() {
         );
       }
 
-      const url = `${window.location.origin}${guideUrl(trip, token)}`;
-      window.open(url, "_blank", "noopener,noreferrer");
+      router.push(guideUrl(trip, token));
     } catch (err) {
       console.error("[pocket-guide] Unexpected error:", err);
     }
