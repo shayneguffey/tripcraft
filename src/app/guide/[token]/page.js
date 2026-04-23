@@ -18,6 +18,7 @@ import { use, useEffect, useState } from "react";
 import Link from "next/link";
 import { supabase } from "@/lib/supabase";
 import CATEGORY_COLORS from "@/lib/categoryColors";
+import FlightPathLoader from "@/components/FlightPathLoader";
 
 /* ─── Date / time / money helpers ─── */
 function formatDate(dateStr) {
@@ -111,7 +112,7 @@ export default function GuidePage({ params }) {
     return () => { cancelled = true; };
   }, [data?.trip?.id, data?.trip?.user_id]);
 
-  if (loading) return <LoadingScreen />;
+  if (loading) return <FlightPathLoader text="Loading your Pocket Guide..." />;
   if (error) return <ErrorScreen message={error} />;
   if (!data) return <ErrorScreen message="No data found." />;
 
