@@ -14,7 +14,7 @@
    collaborators (checked client-side against Supabase).
    ══════════════════════════════════════════════════════════════════ */
 
-import { use, useEffect, useState } from "react";
+import { use, useEffect, useRef, useState } from "react";
 import Link from "next/link";
 import { supabase } from "@/lib/supabase";
 import CATEGORY_COLORS from "@/lib/categoryColors";
@@ -75,6 +75,31 @@ export default function GuidePage({ params }) {
   const [error, setError] = useState(null);
   const [loading, setLoading] = useState(true);
   const [canEdit, setCanEdit] = useState(false);
+
+  // ─── Share: copy current URL (this page IS the share link) ───
+  const [shareCopied, setShareCopied] = useState(false);
+  const [shareOpen, setShareOpen] = useState(false);
+  const [shareDropdownPos, setShareDropdownPos] = useState(null);
+  const shareBtnRef = useRef(null);
+
+  function handleShareClick() {
+    if (shareOpen) { setShareOpen(false); setShareCopied(false); setShareDropdownPos(null); return; }
+    const btnRect = shareBtnRef.current?.getBoundingClientRect();
+    if (btnRect) {
+      setShareDropdownPos({ top: btnRect.bottom + 6, right: window.innerWidth - btnRect.right });
+    }
+    setShareOpen(true);
+  }
+
+  async function copyShareLink() {
+    try {
+      await navigator.clipboard.writeText(window.location.href);
+      setShareCopied(true);
+      setTimeout(() => setShareCopied(false), 2000);
+    } catch (err) {
+      console.error("[pocket-guide] clipboard error:", err);
+    }
+  }
 
   // ─ Load itinerary ─
   useEffect(() => {
@@ -201,9 +226,9 @@ export default function GuidePage({ params }) {
 
   return (
     <div className="min-h-screen" style={{ background: "linear-gradient(to bottom, rgba(210,195,172,0.9), rgba(195,178,155,0.95), rgba(175,158,135,1))" }}>
-      {/* ─── Top bar: back to planning (only for owner/collaborators) ─── */}
-      {canEdit && (
-        <div className="absolute top-0 left-0 right-0 z-30 px-4 pt-3 flex justify-between">
+      {/* ─── Top bar: Planning (owner/collaborators only) + Share (everyone) ─── */}
+      <div className="absolute top-0 left-0 right-0 z-30 px-4 pt-3 flex justify-between items-start gap-2">
+        {canEdit ? (
           <Link
             href={tripPlanningUrl(trip)}
             className="inline-flex items-center gap-1.5 text-white/95 text-xs font-semibold tracking-wide px-3 py-1.5 rounded-full backdrop-blur-sm hover:brightness-110 transition-all"
@@ -214,7 +239,51 @@ export default function GuidePage({ params }) {
             </svg>
             Planning
           </Link>
-        </div>
+        ) : (
+          <span />
+        )}
+        <button
+          ref={shareBtnRef}
+          onClick={handleShareClick}
+          className="inline-flex items-center gap-1.5 text-white/95 text-xs font-semibold tracking-wide px-3 py-1.5 rounded-full backdrop-blur-sm hover:brightness-110 transition-all"
+          style={{ background: "rgba(30,22,12,0.55)", border: "1px solid rgba(212,165,116,0.25)" }}
+          title="Share this Pocket Guide"
+        >
+          <svg className="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24" strokeWidth={2.5}>
+            <path strokeLinecap="round" strokeLinejoin="round" d="M7.217 10.907a2.25 2.25 0 100 2.186m0-2.186c.18.324.283.696.283 1.093s-.103.77-.283 1.093m0-2.186l9.566-5.314m-9.566 7.5l9.566 5.314m0 0a2.25 2.25 0 103.935 2.186 2.25 2.25 0 00-3.935-2.186zm0-12.814a2.25 2.25 0 103.933-2.185 2.25 2.25 0 00-3.933 2.185z" />
+          </svg>
+          Share
+        </button>
+      </div>
+
+      {/* ─── Share dropdown ─── */}
+      {shareOpen && shareDropdownPos && (
+        <>
+          <div className="fixed inset-0 z-[100]" onClick={() => { setShareOpen(false); setShareCopied(false); setShareDropdownPos(null); }} />
+          <div
+            className="fixed z-[101] bg-white rounded-xl shadow-xl border border-stone-200 px-4 py-3"
+            style={{ top: shareDropdownPos.top, right: shareDropdownPos.right, width: 320 }}
+          >
+            <p className="text-xs font-medium text-stone-600 mb-2">Pocket Guide link</p>
+            <div className="flex items-center gap-2">
+              <input
+                type="text"
+                readOnly
+                value={typeof window !== "undefined" ? window.location.href : ""}
+                className="flex-1 text-xs text-stone-700 bg-stone-50 rounded-lg px-3 py-2 border border-stone-200 truncate"
+                onClick={(e) => e.target.select()}
+              />
+              <button
+                onClick={copyShareLink}
+                className="text-xs px-3 py-2 rounded-lg font-semibold transition-colors flex-shrink-0"
+                style={{ background: shareCopied ? "#4a965a" : "#da7b4a", color: "white" }}
+              >
+                {shareCopied ? "Copied!" : "Copy"}
+              </button>
+            </div>
+            <p className="text-[10px] text-stone-400 mt-2">Anyone with the link can open this Pocket Guide — no login required.</p>
+          </div>
+        </>
       )}
 
       {/* ─── Hero banner ─── */}

@@ -151,11 +151,8 @@ export default function TripDetailPage() {
   const [itineraryTravelersValue, setItineraryTravelersValue] = useState("");
   const [confirmDeleteItinerary, setConfirmDeleteItinerary] = useState(null);
   const [editingItineraryDates, setEditingItineraryDates] = useState(false);
-  const [shareUrl, setShareUrl] = useState(null);
-  const [shareLoading, setShareLoading] = useState(false);
-  const [shareCopied, setShareCopied] = useState(false);
-  const [shareDropdownPos, setShareDropdownPos] = useState(null);
-  const shareBtnRef = useRef(null);
+  const [guideLoading, setGuideLoading] = useState(false);
+  const guideBtnRef = useRef(null);
   const router = useRouter();
   const params = useParams();
 
@@ -467,58 +464,42 @@ export default function TripDetailPage() {
     }
   }
 
-  async function shareItinerary() {
+  async function openPocketGuide() {
     if (!activeItineraryId) return;
-
-    // If dropdown is already open, close it
-    if (shareUrl) { setShareUrl(null); setShareCopied(false); setShareDropdownPos(null); return; }
-
-    setShareLoading(true);
-
-    // Calculate dropdown position from button
-    const btnRect = shareBtnRef.current?.getBoundingClientRect();
-    if (btnRect) {
-      setShareDropdownPos({ top: btnRect.bottom + 4, right: window.innerWidth - btnRect.right });
-    }
+    setGuideLoading(true);
 
     try {
-      // Check if this itinerary already has a share token
+      // Ensure the active itinerary has a share_token; the Pocket Guide URL depends on it.
       const activeItin = itineraries.find((i) => i.id === activeItineraryId);
-      if (activeItin?.share_token) {
-        setShareUrl(`${window.location.origin}${guideUrl(trip, activeItin.share_token)}`);
-        setShareLoading(false);
-        return;
-      }
+      let token = activeItin?.share_token;
 
-      // Generate a new share token
-      const token = crypto.randomUUID().replace(/-/g, "").slice(0, 16);
-      const { data: updatedRow, error } = await supabase
-        .from("itineraries")
-        .update({ share_token: token })
-        .eq("id", activeItineraryId)
-        .select("id, share_token")
-        .single();
+      if (!token) {
+        token = crypto.randomUUID().replace(/-/g, "").slice(0, 16);
+        const { data: updatedRow, error } = await supabase
+          .from("itineraries")
+          .update({ share_token: token })
+          .eq("id", activeItineraryId)
+          .select("id, share_token")
+          .single();
 
-      console.log("[share] update result:", { updatedRow, error: error?.message });
+        if (error || !updatedRow) {
+          console.error("[pocket-guide] Failed to save share token:", error?.message || "no row returned");
+          alert("Could not open Pocket Guide. Check the browser console for details.");
+          setGuideLoading(false);
+          return;
+        }
 
-      if (error || !updatedRow) {
-        console.error("[share] Failed to save share token:", error?.message || "no row returned");
-        alert("Could not generate share link. Check the browser console for details.");
-        setShareLoading(false);
-        setShareDropdownPos(null);
-        return;
+        setItineraries((prev) =>
+          prev.map((i) => (i.id === activeItineraryId ? { ...i, share_token: token } : i))
+        );
       }
 
       const url = `${window.location.origin}${guideUrl(trip, token)}`;
-      setShareUrl(url);
-      setItineraries((prev) =>
-        prev.map((i) => (i.id === activeItineraryId ? { ...i, share_token: token } : i))
-      );
+      window.open(url, "_blank", "noopener,noreferrer");
     } catch (err) {
-      console.error("[share] Unexpected error:", err);
-      setShareDropdownPos(null);
+      console.error("[pocket-guide] Unexpected error:", err);
     }
-    setShareLoading(false);
+    setGuideLoading(false);
   }
 
   async function toggleSelection(optionType, optionId) {
@@ -763,51 +744,6 @@ export default function TripDetailPage() {
       className="min-h-screen relative"
       onMouseUp={handleMouseUp}
     >
-      {/* ─── Share dropdown (rendered outside overflow-hidden banner) ─── */}
-      {shareUrl && shareDropdownPos && (
-        <>
-          <div className="fixed inset-0 z-[100]" onClick={() => { setShareUrl(null); setShareCopied(false); setShareDropdownPos(null); }} />
-          <div
-            className="fixed z-[101] bg-white rounded-xl shadow-xl border border-stone-200 px-4 py-3"
-            style={{ top: shareDropdownPos.top, right: shareDropdownPos.right, width: 320 }}
-          >
-            <p className="text-xs font-medium text-stone-600 mb-2">Pocket Guide link</p>
-            <div className="flex items-center gap-2">
-              <input
-                type="text"
-                readOnly
-                value={shareUrl}
-                className="flex-1 text-xs text-stone-700 bg-stone-50 rounded-lg px-3 py-2 border border-stone-200 truncate"
-                onClick={(e) => e.target.select()}
-              />
-              <button
-                onClick={async () => {
-                  await navigator.clipboard.writeText(shareUrl);
-                  setShareCopied(true);
-                  setTimeout(() => setShareCopied(false), 2000);
-                }}
-                className="text-xs px-3 py-2 rounded-lg font-semibold transition-colors flex-shrink-0"
-                style={{ background: shareCopied ? "#4a965a" : "#da7b4a", color: "white" }}
-              >
-                {shareCopied ? "Copied!" : "Copy"}
-              </button>
-            </div>
-            <div className="flex items-center justify-between mt-2">
-              <p className="text-[10px] text-stone-400">Mobile-friendly travel view. Anyone with the link can open it — no login.</p>
-              <a
-                href={shareUrl}
-                target="_blank"
-                rel="noopener noreferrer"
-                className="text-[10px] font-semibold flex-shrink-0 ml-2 hover:underline"
-                style={{ color: "#da7b4a" }}
-              >
-                Open &rarr;
-              </a>
-            </div>
-          </div>
-        </>
-      )}
-
       {/* Parchment gradient base */}
       <div className="fixed inset-0" style={{ background: "linear-gradient(to bottom, rgba(210,195,172,0.7) 0%, rgba(222,210,190,0.6) 50%, rgba(210,195,172,0.7) 100%)" }} />
       <MapPatternBg tileSize={280} opacity={1} />
@@ -1020,28 +956,28 @@ export default function TripDetailPage() {
               <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 16 16" fill="currentColor" className="w-3 h-3"><path d="M8.75 3.75a.75.75 0 0 0-1.5 0v3.5h-3.5a.75.75 0 0 0 0 1.5h3.5v3.5a.75.75 0 0 0 1.5 0v-3.5h3.5a.75.75 0 0 0 0-1.5h-3.5v-3.5Z" /></svg>
               New
             </button>
-            {/* Share button */}
+            {/* Pocket Guide button — opens the traveler-facing view in a new tab */}
             <div className="ml-auto">
               <button
-                ref={shareBtnRef}
-                onClick={shareItinerary}
-                disabled={shareLoading}
+                ref={guideBtnRef}
+                onClick={openPocketGuide}
+                disabled={guideLoading}
                 className="flex items-center gap-1 px-3 py-2 mb-px rounded-t-lg text-xs font-semibold transition-all"
                 style={{
-                  background: shareUrl ? "rgba(30,22,12,0.75)" : "rgba(30,22,12,0.55)",
+                  background: "rgba(30,22,12,0.55)",
                   backdropFilter: "blur(6px)",
                   border: "1px solid rgba(212,165,116,0.3)",
                   borderBottom: "none",
                   color: "rgba(255,255,255,0.85)",
                 }}
-                title="Share this itinerary"
+                title="Open the Pocket Guide (traveler view)"
               >
-                {shareLoading ? (
+                {guideLoading ? (
                   <div className="w-3 h-3 border border-white/40 border-t-white rounded-full animate-spin" />
                 ) : (
-                  <svg className="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24" strokeWidth={2}><path strokeLinecap="round" strokeLinejoin="round" d="M7.217 10.907a2.25 2.25 0 100 2.186m0-2.186c.18.324.283.696.283 1.093s-.103.77-.283 1.093m0-2.186l9.566-5.314m-9.566 7.5l9.566 5.314m0 0a2.25 2.25 0 103.935 2.186 2.25 2.25 0 00-3.935-2.186zm0-12.814a2.25 2.25 0 103.933-2.185 2.25 2.25 0 00-3.933 2.185z" /></svg>
+                  <svg className="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24" strokeWidth={2}><path strokeLinecap="round" strokeLinejoin="round" d="M12 6.253v13m0-13C10.832 5.477 9.246 5 7.5 5S4.168 5.477 3 6.253v13C4.168 18.477 5.754 18 7.5 18s3.332.477 4.5 1.253m0-13C13.168 5.477 14.754 5 16.5 5c1.747 0 3.332.477 4.5 1.253v13C19.832 18.477 18.247 18 16.5 18c-1.746 0-3.332.477-4.5 1.253" /></svg>
                 )}
-                Share
+                Pocket Guide
               </button>
             </div>
             </div>
