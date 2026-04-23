@@ -171,7 +171,7 @@ export default function TripDetailPage() {
 
     setCurrentUser(user);
 
-    const { data: tripData, error: tripError } = await buildTripLookup(supabase, tripData.id);
+    const { data: tripData, error: tripError } = await buildTripLookup(supabase, params.id);
 
     if (tripError || !tripData) {
       router.push("/trips");
