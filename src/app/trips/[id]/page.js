@@ -884,7 +884,7 @@ export default function TripDetailPage() {
               return (
                 <div
                   key={itin.id}
-                  className={`relative flex flex-col items-center px-5 rounded-t-xl text-sm font-semibold cursor-pointer transition-all ${isActive ? "pt-1.5 pb-1" : "py-2.5"} ${
+                  className={`relative flex flex-col items-center px-4 pt-1.5 pb-1 rounded-t-xl text-sm font-semibold cursor-pointer transition-all ${
                     isActive ? "text-white" : trip?.banner_image ? "text-white/80 hover:text-white" : "text-stone-600 hover:text-stone-800"
                   }`}
                   style={{
@@ -895,8 +895,7 @@ export default function TripDetailPage() {
                     borderRight: isActive ? "1px solid #b5552a" : trip?.banner_image ? "1px solid rgba(255,255,255,0.15)" : "1px solid rgba(180,165,140,0.3)",
                     borderBottom: isActive ? "2px solid transparent" : "2px solid rgba(180,165,140,0.3)",
                     marginBottom: -2,
-                    minWidth: "140px",
-                    maxWidth: "220px",
+                    width: "240px",
                   }}
                   onClick={() => switchItinerary(itin.id)}
                 >
@@ -951,43 +950,46 @@ export default function TripDetailPage() {
                     />
                   </div>
 
-                  {/* Row 2: Pocket Guide / Print PDF — shown only on the active tab. */}
-                  {isActive && (
-                    <div
-                      onClick={(e) => e.stopPropagation()}
-                      className="flex items-center justify-center gap-1 mt-0.5 pt-0.5 border-t border-white/20 w-full"
+                  {/* Row 2: Pocket Guide / Print PDF — always rendered to
+                      preserve height; hidden on inactive tabs so switching
+                      doesn't cause vertical shift. */}
+                  <div
+                    onClick={(e) => e.stopPropagation()}
+                    className={`flex items-center justify-center gap-1 mt-0.5 pt-0.5 border-t border-white/20 w-full whitespace-nowrap ${isActive ? "" : "invisible"}`}
+                    aria-hidden={!isActive}
+                  >
+                    <button
+                      ref={guideBtnRef}
+                      onClick={(e) => { e.stopPropagation(); openPocketGuide(); }}
+                      disabled={!isActive || guideLoading}
+                      tabIndex={isActive ? 0 : -1}
+                      className="inline-flex items-center gap-1 px-1.5 py-0 rounded text-[10px] font-semibold uppercase tracking-wider text-white transition-colors hover:bg-white/15 disabled:opacity-60 disabled:cursor-not-allowed"
+                      title="Open the Pocket Guide (traveler view)"
                     >
-                      <button
-                        ref={guideBtnRef}
-                        onClick={(e) => { e.stopPropagation(); openPocketGuide(); }}
-                        disabled={guideLoading}
-                        className="inline-flex items-center gap-1 px-1.5 py-0 rounded text-[10px] font-semibold uppercase tracking-wider text-white transition-colors hover:bg-white/15 disabled:opacity-60 disabled:cursor-not-allowed"
-                        title="Open the Pocket Guide (traveler view)"
-                      >
-                        {guideLoading ? (
-                          <div className="w-2.5 h-2.5 border border-white/40 border-t-white rounded-full animate-spin" />
-                        ) : (
-                          <svg className="w-2.5 h-2.5" fill="none" stroke="currentColor" viewBox="0 0 24 24" strokeWidth={2.5}>
-                            <path strokeLinecap="round" strokeLinejoin="round" d="M12 6.253v13m0-13C10.832 5.477 9.246 5 7.5 5S4.168 5.477 3 6.253v13C4.168 18.477 5.754 18 7.5 18s3.332.477 4.5 1.253m0-13C13.168 5.477 14.754 5 16.5 5c1.747 0 3.332.477 4.5 1.253v13C19.832 18.477 18.247 18 16.5 18c-1.746 0-3.332.477-4.5 1.253" />
-                          </svg>
-                        )}
-                        Pocket Guide
-                      </button>
-                      <span className="text-white/30 text-[10px]">·</span>
-                      <button
-                        type="button"
-                        disabled
-                        onClick={(e) => e.stopPropagation()}
-                        className="inline-flex items-center gap-1 px-1.5 py-0 rounded text-[10px] font-semibold uppercase tracking-wider text-white/50 cursor-not-allowed"
-                        title="Coming soon — printable PDF"
-                      >
+                      {guideLoading ? (
+                        <div className="w-2.5 h-2.5 border border-white/40 border-t-white rounded-full animate-spin" />
+                      ) : (
                         <svg className="w-2.5 h-2.5" fill="none" stroke="currentColor" viewBox="0 0 24 24" strokeWidth={2.5}>
-                          <path strokeLinecap="round" strokeLinejoin="round" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
+                          <path strokeLinecap="round" strokeLinejoin="round" d="M12 6.253v13m0-13C10.832 5.477 9.246 5 7.5 5S4.168 5.477 3 6.253v13C4.168 18.477 5.754 18 7.5 18s3.332.477 4.5 1.253m0-13C13.168 5.477 14.754 5 16.5 5c1.747 0 3.332.477 4.5 1.253v13C19.832 18.477 18.247 18 16.5 18c-1.746 0-3.332.477-4.5 1.253" />
                         </svg>
-                        Print PDF
-                      </button>
-                    </div>
-                  )}
+                      )}
+                      Pocket Guide
+                    </button>
+                    <span className="text-white/30 text-[10px]">·</span>
+                    <button
+                      type="button"
+                      disabled
+                      tabIndex={isActive ? 0 : -1}
+                      onClick={(e) => e.stopPropagation()}
+                      className="inline-flex items-center gap-1 px-1.5 py-0 rounded text-[10px] font-semibold uppercase tracking-wider text-white/50 cursor-not-allowed"
+                      title="Coming soon — printable PDF"
+                    >
+                      <svg className="w-2.5 h-2.5" fill="none" stroke="currentColor" viewBox="0 0 24 24" strokeWidth={2.5}>
+                        <path strokeLinecap="round" strokeLinejoin="round" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
+                      </svg>
+                      Print PDF
+                    </button>
+                  </div>
                 </div>
               );
             })}
