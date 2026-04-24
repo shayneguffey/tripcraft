@@ -54,6 +54,19 @@ function formatCurrency(amount, currency = "USD") {
   return new Intl.NumberFormat("en-US", { style: "currency", currency }).format(amount);
 }
 
+/* ─── Google Maps URL helpers ─── */
+function mapsSearchUrl(query) {
+  if (!query) return null;
+  return `https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(query)}`;
+}
+
+function mapsDirectionsUrl(from, to) {
+  if (!from && !to) return null;
+  if (!from) return mapsSearchUrl(to);
+  if (!to) return mapsSearchUrl(from);
+  return `https://www.google.com/maps/dir/?api=1&origin=${encodeURIComponent(from)}&destination=${encodeURIComponent(to)}`;
+}
+
 function getDaysBetween(start, end) {
   if (!start || !end) return [];
   const days = [];
@@ -75,6 +88,36 @@ export default function GuidePage({ params }) {
   const [error, setError] = useState(null);
   const [loading, setLoading] = useState(true);
   const [canEdit, setCanEdit] = useState(false);
+
+  // ─── Day title inline edit (owners/collaborators only) ───
+  const [editingDayId, setEditingDayId] = useState(null);
+  const [dayTitleDraft, setDayTitleDraft] = useState("");
+
+  // Save a day title. Creates the days row if one doesn't exist yet for this date+itinerary.
+  async function saveDayTitle(dayRow, date, title) {
+    const val = (title || "").trim() || null;
+    if (dayRow?.id) {
+      await supabase.from("days").update({ title: val }).eq("id", dayRow.id);
+      setData((prev) => prev ? {
+        ...prev,
+        days: prev.days.map((d) => d.id === dayRow.id ? { ...d, title: val } : d),
+      } : prev);
+    } else if (val) {
+      // No days row yet — insert one scoped to this trip + itinerary + date.
+      const { data: inserted } = await supabase
+        .from("days")
+        .insert({ trip_id: data.trip.id, itinerary_id: data.itinerary.id, date, title: val })
+        .select()
+        .single();
+      if (inserted) {
+        setData((prev) => prev ? {
+          ...prev,
+          days: [...prev.days, { ...inserted, activities: [] }],
+        } : prev);
+      }
+    }
+    setEditingDayId(null);
+  }
 
   // ─── Share: copy current URL (this page IS the share link) ───
   const [shareCopied, setShareCopied] = useState(false);
@@ -324,13 +367,13 @@ export default function GuidePage({ params }) {
       </header>
 
       <main className="px-4 pb-12 max-w-2xl mx-auto" style={{ marginTop: "-12px" }}>
-        {/* ─── Itinerary description (if any) ─── */}
-        {itinerary.description && (
+        {/* ─── Itinerary notes (if any) ─── */}
+        {itinerary.notes && (
           <div
             className="bg-white/80 rounded-xl px-5 py-4 mb-4 shadow-sm"
             style={{ backdropFilter: "blur(4px)" }}
           >
-            <p className="text-stone-700 text-sm leading-relaxed">{itinerary.description}</p>
+            <p className="text-stone-700 text-sm leading-relaxed whitespace-pre-wrap">{itinerary.notes}</p>
           </div>
         )}
 
@@ -340,7 +383,18 @@ export default function GuidePage({ params }) {
             <SectionHeader>Day by Day</SectionHeader>
             <div className="space-y-4">
               {daySchedule.map((day) => (
-                <DayCard key={day.date} day={day} startDate={startDate} />
+                <DayCard
+                  key={day.date}
+                  day={day}
+                  startDate={startDate}
+                  canEdit={canEdit}
+                  editingDayId={editingDayId}
+                  setEditingDayId={setEditingDayId}
+                  dayTitleDraft={dayTitleDraft}
+                  setDayTitleDraft={setDayTitleDraft}
+                  saveDayTitle={saveDayTitle}
+                  allDays={data.days}
+                />
               ))}
             </div>
           </section>
@@ -352,10 +406,10 @@ export default function GuidePage({ params }) {
             <SectionHeader>Not Yet Scheduled</SectionHeader>
             <div className="bg-white rounded-xl overflow-hidden shadow-sm border border-stone-200 px-3 py-2 space-y-1.5">
               {unscheduledActivities.map((a) => (
-                <PlainEventPill key={`u-a-${a.id}`} type="activity" name={a.name} detail={a.location_name} />
+                <PlainEventPill key={`u-a-${a.id}`} type="activity" name={a.name} detail="" address={a.location_name} />
               ))}
               {unscheduledDining.map((d) => (
-                <PlainEventPill key={`u-d-${d.id}`} type="dining" name={d.name} detail={d.cuisine_type || d.location_name} />
+                <PlainEventPill key={`u-d-${d.id}`} type="dining" name={d.name} detail={[d.cuisine_type, d.meal_type].filter(Boolean).join(" · ")} address={d.location_name} />
               ))}
               {unscheduledTransport.map((t) => (
                 <PlainEventPill key={`u-t-${t.id}`} type="transportation" name={t.name} detail={`${t.pickup_location || ""} → ${t.dropoff_location || ""}`} />
@@ -483,8 +537,9 @@ function SectionHeader({ children }) {
   );
 }
 
-/* ── DayCard: read-only replica of the calendar's DayPopout ── */
-function DayCard({ day }) {
+/* ── DayCard: replica of the calendar's DayPopout. Day title is
+   inline-editable for the owner / accepted collaborators. ── */
+function DayCard({ day, canEdit, editingDayId, setEditingDayId, dayTitleDraft, setDayTitleDraft, saveDayTitle, allDays }) {
   // Unified, sorted event list (flights + transport + activities + dining + check-ins + check-outs + user events)
   const events = buildDayEvents(day);
 
@@ -494,6 +549,17 @@ function DayCard({ day }) {
 
   const dateFormatted = formatDateLong(day.date);
   const dayOfWeek = formatDayOfWeek(day.date);
+
+  // Days row for THIS date (may not exist yet — saveDayTitle will insert).
+  const dayRow = (allDays || []).find((d) => d.date === day.date) || null;
+  const isEditingTitle = editingDayId === day.date;
+
+  function beginEditTitle(e) {
+    if (!canEdit) return;
+    e?.stopPropagation();
+    setDayTitleDraft(day.title || "");
+    setEditingDayId(day.date);
+  }
 
   return (
     <div className="bg-white rounded-2xl shadow-sm border border-stone-200 overflow-hidden">
@@ -513,11 +579,37 @@ function DayCard({ day }) {
             <div className="text-[11px] text-stone-400 leading-tight">{dateFormatted}</div>
           </div>
         </div>
-        {day.title && (
-          <div className="mt-1.5 text-2xl font-bold text-stone-700 uppercase leading-tight">
+        {isEditingTitle ? (
+          <input
+            type="text"
+            value={dayTitleDraft}
+            onChange={(e) => setDayTitleDraft(e.target.value)}
+            onBlur={() => saveDayTitle(dayRow, day.date, dayTitleDraft)}
+            onKeyDown={(e) => {
+              if (e.key === "Enter") saveDayTitle(dayRow, day.date, dayTitleDraft);
+              if (e.key === "Escape") setEditingDayId(null);
+            }}
+            autoFocus
+            placeholder="Day title"
+            className="mt-1.5 w-full text-2xl font-bold text-stone-700 uppercase leading-tight bg-white border border-[#da7b4a]/60 rounded px-2 py-0.5 focus:outline-none focus:ring-2 focus:ring-[#da7b4a]/40"
+          />
+        ) : day.title ? (
+          <div
+            className={`mt-1.5 text-2xl font-bold text-stone-700 uppercase leading-tight ${canEdit ? "cursor-text hover:text-[#da7b4a] transition-colors" : ""}`}
+            onClick={beginEditTitle}
+            title={canEdit ? "Click to edit day title" : ""}
+          >
             {day.title}
           </div>
-        )}
+        ) : canEdit ? (
+          <div
+            className="mt-1.5 text-sm italic text-stone-400 hover:text-[#da7b4a] cursor-text transition-colors"
+            onClick={beginEditTitle}
+            title="Click to add a day title"
+          >
+            + Add day title
+          </div>
+        ) : null}
       </div>
 
       {/* Body */}
@@ -583,7 +675,16 @@ function DayCard({ day }) {
                     <div className="flex-1 min-w-0">
                       <span className={`text-sm font-medium ${c.text}`}>{a.name}</span>
                       {a.location_name && (
-                        <span className="text-xs text-stone-400 ml-2">{a.location_name}</span>
+                        <a
+                          href={mapsSearchUrl(a.location_name)}
+                          target="_blank"
+                          rel="noopener noreferrer"
+                          onClick={(e) => e.stopPropagation()}
+                          className="block text-xs text-stone-500 hover:text-[#da7b4a] hover:underline transition-colors mt-0.5"
+                          title="Open in Google Maps"
+                        >
+                          <span className="inline-block mr-1">📍</span>{a.location_name}
+                        </a>
                       )}
                     </div>
                   </div>
@@ -604,7 +705,11 @@ function DayCard({ day }) {
   );
 }
 
-/* ── Build a unified, sorted list of events for one day ── */
+/* ── Build a unified, sorted list of events for one day ──
+   Each event has:
+     detail     — small non-address sublabel (airline, cuisine, etc.)
+     address    — optional single location → maps search link
+     directions — optional {from, to} → maps directions link        */
 function buildDayEvents(day) {
   const events = [];
 
@@ -627,7 +732,8 @@ function buildDayEvents(day) {
       type: "accommodation",
       time: null,
       name: `Check in: ${a.name}`,
-      detail: a.location_name || "",
+      detail: "",
+      address: a.location_name || null,
     });
   });
 
@@ -638,11 +744,12 @@ function buildDayEvents(day) {
       type: "accommodation",
       time: null,
       name: `Check out: ${a.name}`,
-      detail: a.location_name || "",
+      detail: "",
+      address: a.location_name || null,
     });
   });
 
-  // Transportation
+  // Transportation — two endpoints, render as maps directions link.
   day.transportation.forEach((t) => {
     events.push({
       key: `t-${t.id}`,
@@ -650,7 +757,10 @@ function buildDayEvents(day) {
       time: t.departure_time?.slice(0, 5) || null,
       endTime: t.arrival_time?.slice(0, 5) || null,
       name: t.name,
-      detail: [t.pickup_location, t.dropoff_location].filter(Boolean).join(" → "),
+      detail: "",
+      directions: (t.pickup_location || t.dropoff_location)
+        ? { from: t.pickup_location || "", to: t.dropoff_location || "" }
+        : null,
     });
   });
 
@@ -662,19 +772,22 @@ function buildDayEvents(day) {
       time: a.start_time?.slice(0, 5) || null,
       endTime: a.end_time?.slice(0, 5) || null,
       name: a.name,
-      detail: a.location_name || "",
+      detail: "",
+      address: a.location_name || null,
     });
   });
 
-  // Dining options
+  // Dining options — cuisine/meal as non-address subtitle, location as map link.
   day.dining.forEach((d) => {
+    const subtitle = [d.cuisine_type, d.meal_type].filter(Boolean).join(" · ");
     events.push({
       key: `d-${d.id}`,
       type: "dining",
       time: d.start_time?.slice(0, 5) || null,
       endTime: d.end_time?.slice(0, 5) || null,
       name: d.name,
-      detail: d.cuisine_type || d.meal_type || d.location_name || "",
+      detail: subtitle,
+      address: d.location_name || null,
     });
   });
 
@@ -686,7 +799,8 @@ function buildDayEvents(day) {
       time: a.start_time?.slice(0, 5) || null,
       endTime: a.end_time?.slice(0, 5) || null,
       name: a.title,
-      detail: a.location || "",
+      detail: "",
+      address: a.location || null,
     });
   });
 
@@ -696,9 +810,17 @@ function buildDayEvents(day) {
   return [...untimed, ...timed];
 }
 
-/* ── EventPill: colored event row matching DayPopout's OptionEventCard look ── */
+/* ── EventPill: colored event row matching DayPopout's OptionEventCard look ──
+   Renders the address (or pickup→dropoff for transportation) as a
+   tappable Google Maps link so travelers can open directions in one tap. */
 function EventPill({ event }) {
   const c = CATEGORY_COLORS[event.type] || CATEGORY_COLORS.dayEvent;
+
+  const addressUrl = event.address ? mapsSearchUrl(event.address) : null;
+  const directionsUrl = event.directions ? mapsDirectionsUrl(event.directions.from, event.directions.to) : null;
+  const directionsLabel = event.directions
+    ? [event.directions.from, event.directions.to].filter(Boolean).join(" → ")
+    : "";
 
   return (
     <div className={`flex items-start gap-2.5 ${c.bg} border ${c.border} rounded-lg px-3 py-2`}>
@@ -720,26 +842,63 @@ function EventPill({ event }) {
       </div>
       {/* Dot */}
       <div className={`w-2 h-2 rounded-full ${c.dot} flex-shrink-0 mt-[5px]`} />
-      {/* Name + detail */}
+      {/* Name + detail + address link */}
       <div className="flex-1 min-w-0">
         <span className={`text-sm font-medium ${c.text} uppercase`}>{event.name}</span>
         {event.detail && (
           <span className="text-xs text-stone-400 ml-2 uppercase">{event.detail}</span>
+        )}
+        {addressUrl && (
+          <a
+            href={addressUrl}
+            target="_blank"
+            rel="noopener noreferrer"
+            onClick={(e) => e.stopPropagation()}
+            className="block text-xs text-stone-500 hover:text-[#da7b4a] hover:underline transition-colors mt-0.5"
+            title="Open in Google Maps"
+          >
+            <span className="inline-block mr-1">📍</span>{event.address}
+          </a>
+        )}
+        {directionsUrl && (
+          <a
+            href={directionsUrl}
+            target="_blank"
+            rel="noopener noreferrer"
+            onClick={(e) => e.stopPropagation()}
+            className="block text-xs text-stone-500 hover:text-[#da7b4a] hover:underline transition-colors mt-0.5"
+            title="Open directions in Google Maps"
+          >
+            <span className="inline-block mr-1">📍</span>{directionsLabel}
+          </a>
         )}
       </div>
     </div>
   );
 }
 
-/* ── Compact pill for unscheduled items (no time column) ── */
-function PlainEventPill({ type, name, detail }) {
+/* ── Compact pill for unscheduled items (no time column). If an
+   address is provided, it renders as a tappable maps link. ── */
+function PlainEventPill({ type, name, detail, address }) {
   const c = CATEGORY_COLORS[type] || CATEGORY_COLORS.dayEvent;
+  const addressUrl = address ? mapsSearchUrl(address) : null;
   return (
     <div className={`flex items-center gap-2.5 ${c.bg} border ${c.border} rounded-lg px-3 py-2`}>
       <div className={`w-2 h-2 rounded-full ${c.dot} flex-shrink-0`} />
       <div className="flex-1 min-w-0">
         <span className={`text-sm font-medium ${c.text}`}>{name}</span>
         {detail && <span className="text-xs text-stone-400 ml-2">{detail}</span>}
+        {addressUrl && (
+          <a
+            href={addressUrl}
+            target="_blank"
+            rel="noopener noreferrer"
+            className="block text-xs text-stone-500 hover:text-[#da7b4a] hover:underline transition-colors mt-0.5"
+            title="Open in Google Maps"
+          >
+            <span className="inline-block mr-1">📍</span>{address}
+          </a>
+        )}
       </div>
     </div>
   );

@@ -142,8 +142,8 @@ export default function TripDetailPage() {
   const [activeItineraryId, setActiveItineraryId] = useState(null);
   const [editingItineraryTitle, setEditingItineraryTitle] = useState(null);
   const [itineraryTitleValue, setItineraryTitleValue] = useState("");
-  const [editingItineraryDesc, setEditingItineraryDesc] = useState(false);
-  const [itineraryDescValue, setItineraryDescValue] = useState("");
+  const [editingItineraryNotes, setEditingItineraryNotes] = useState(false);
+  const [itineraryNotesValue, setItineraryNotesValue] = useState("");
   const [editingCalendarTitle, setEditingCalendarTitle] = useState(false);
   const [calendarTitleValue, setCalendarTitleValue] = useState("");
   const [itinerarySelections, setItinerarySelections] = useState([]);
@@ -445,12 +445,12 @@ export default function TripDetailPage() {
     setEditingCalendarTitle(false);
   }
 
-  async function saveItineraryDescription() {
+  async function saveItineraryNotes() {
     if (!activeItineraryId) return;
-    const val = itineraryDescValue.trim();
-    await supabase.from("itineraries").update({ description: val || null }).eq("id", activeItineraryId);
-    setItineraries((prev) => prev.map((i) => i.id === activeItineraryId ? { ...i, description: val || null } : i));
-    setEditingItineraryDesc(false);
+    const val = itineraryNotesValue.trim();
+    await supabase.from("itineraries").update({ notes: val || null }).eq("id", activeItineraryId);
+    setItineraries((prev) => prev.map((i) => i.id === activeItineraryId ? { ...i, notes: val || null } : i));
+    setEditingItineraryNotes(false);
   }
 
   async function saveItineraryTravelers() {
@@ -884,7 +884,7 @@ export default function TripDetailPage() {
               return (
                 <div
                   key={itin.id}
-                  className={`relative flex flex-col items-center px-4 pt-1.5 pb-1 rounded-t-xl text-sm font-semibold cursor-pointer transition-all ${
+                  className={`relative flex flex-col items-stretch px-4 pt-1.5 pb-1 rounded-t-xl text-base font-semibold cursor-pointer transition-all ${isActive ? "justify-start" : "justify-center"} ${
                     isActive ? "text-white" : trip?.banner_image ? "text-white/80 hover:text-white" : "text-stone-600 hover:text-stone-800"
                   }`}
                   style={{
@@ -896,11 +896,12 @@ export default function TripDetailPage() {
                     borderBottom: isActive ? "2px solid transparent" : "2px solid rgba(180,165,140,0.3)",
                     marginBottom: -2,
                     width: "240px",
+                    minHeight: "56px",
                   }}
                   onClick={() => switchItinerary(itin.id)}
                 >
                   {/* Row 1: itinerary title (+ delete X when active) */}
-                  <div className="flex items-center gap-1.5">
+                  <div className="flex items-center gap-1.5 w-full">
                     {editingItineraryTitle === itin.id ? (
                       <input
                         type="text"
@@ -924,7 +925,7 @@ export default function TripDetailPage() {
                             setItineraryTitleValue(itin.title);
                           }
                         }}
-                        className={`uppercase line-clamp-2 text-center ${isActive ? "cursor-text" : ""}`}
+                        className={`uppercase line-clamp-1 text-left flex-1 min-w-0 ${isActive ? "cursor-text" : ""}`}
                         title={isActive ? "Click to rename" : ""}
                       >
                         {itin.title}
@@ -934,7 +935,7 @@ export default function TripDetailPage() {
                     {itineraries.length > 1 && isActive && editingItineraryTitle !== itin.id && (
                       <button
                         onClick={(e) => { e.stopPropagation(); setConfirmDeleteItinerary(itin.id); }}
-                        className="w-4 h-4 flex items-center justify-center rounded-full text-white/60 hover:text-white hover:bg-white/20 transition-colors"
+                        className="w-4 h-4 flex-shrink-0 flex items-center justify-center rounded-full text-white/60 hover:text-white hover:bg-white/20 transition-colors"
                         title="Delete itinerary"
                       >
                         <svg className="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24" strokeWidth={2}>
@@ -950,19 +951,18 @@ export default function TripDetailPage() {
                     />
                   </div>
 
-                  {/* Row 2: Pocket Guide / Print PDF — always rendered to
-                      preserve height; hidden on inactive tabs so switching
-                      doesn't cause vertical shift. */}
+                  {/* Row 2: Pocket Guide / Print PDF — only on active tab.
+                      Tab minHeight keeps all tabs the same height so
+                      switching doesn't cause vertical shift. */}
+                  {isActive && (
                   <div
                     onClick={(e) => e.stopPropagation()}
-                    className={`flex items-center justify-center gap-1 mt-0.5 pt-0.5 border-t border-white/20 w-full whitespace-nowrap ${isActive ? "" : "invisible"}`}
-                    aria-hidden={!isActive}
+                    className="flex items-center justify-center gap-1 mt-0.5 pt-0.5 border-t border-white/20 w-full whitespace-nowrap"
                   >
                     <button
                       ref={guideBtnRef}
                       onClick={(e) => { e.stopPropagation(); openPocketGuide(); }}
-                      disabled={!isActive || guideLoading}
-                      tabIndex={isActive ? 0 : -1}
+                      disabled={guideLoading}
                       className="inline-flex items-center gap-1 px-1.5 py-0 rounded text-[10px] font-semibold uppercase tracking-wider text-white transition-colors hover:bg-white/15 disabled:opacity-60 disabled:cursor-not-allowed"
                       title="Open the Pocket Guide (traveler view)"
                     >
@@ -979,7 +979,6 @@ export default function TripDetailPage() {
                     <button
                       type="button"
                       disabled
-                      tabIndex={isActive ? 0 : -1}
                       onClick={(e) => e.stopPropagation()}
                       className="inline-flex items-center gap-1 px-1.5 py-0 rounded text-[10px] font-semibold uppercase tracking-wider text-white/50 cursor-not-allowed"
                       title="Coming soon — printable PDF"
@@ -990,6 +989,7 @@ export default function TripDetailPage() {
                       Print PDF
                     </button>
                   </div>
+                  )}
                 </div>
               );
             })}
@@ -1078,30 +1078,30 @@ export default function TripDetailPage() {
 
               {/* Description (left) + Calendar range (right) */}
               <div className="flex items-end justify-between mt-2">
-                {/* Itinerary description */}
+                {/* Itinerary notes — also appears in the Pocket Guide. */}
                 <div className="w-full max-w-md">
-                  {editingItineraryDesc ? (
+                  {editingItineraryNotes ? (
                     <textarea
-                      value={itineraryDescValue}
-                      onChange={(e) => setItineraryDescValue(e.target.value)}
-                      onBlur={() => saveItineraryDescription()}
-                      onKeyDown={(e) => { if (e.key === "Escape") setEditingItineraryDesc(false); }}
+                      value={itineraryNotesValue}
+                      onChange={(e) => setItineraryNotesValue(e.target.value)}
+                      onBlur={() => saveItineraryNotes()}
+                      onKeyDown={(e) => { if (e.key === "Escape") setEditingItineraryNotes(false); }}
                       autoFocus
-                      rows={1}
-                      placeholder="Add itinerary description..."
-                      className="w-full text-sm text-stone-600 bg-white border border-stone-300 rounded-lg px-2 py-1 focus:outline-none focus:ring-2 focus:ring-inset focus:ring-[#da7b4a]/50 resize-none min-h-[32px] max-h-[32px] overflow-y-auto"
+                      rows={2}
+                      placeholder="Add notes for this itinerary..."
+                      className="w-full text-sm text-stone-600 bg-white border border-stone-300 rounded-lg px-2 py-1 focus:outline-none focus:ring-2 focus:ring-inset focus:ring-[#da7b4a]/50 resize-none min-h-[32px] max-h-[96px] overflow-y-auto"
                     />
                   ) : (
                     <div
-                      onClick={() => { setEditingItineraryDesc(true); setItineraryDescValue(activeItinerary?.description || ""); }}
+                      onClick={() => { setEditingItineraryNotes(true); setItineraryNotesValue(activeItinerary?.notes || ""); }}
                       className={`text-sm px-2 py-1 rounded-lg cursor-text whitespace-pre-wrap transition-colors border border-stone-300 ${
-                        activeItinerary?.description
+                        activeItinerary?.notes
                           ? "text-stone-600"
                           : "text-stone-300 italic hover:bg-stone-50"
                       }`}
-                      title="Click to edit description"
+                      title="Click to edit itinerary notes (shown in the Pocket Guide)"
                     >
-                      {activeItinerary?.description || "Add itinerary description..."}
+                      {activeItinerary?.notes || "Add notes for this itinerary..."}
                     </div>
                   )}
                 </div>
