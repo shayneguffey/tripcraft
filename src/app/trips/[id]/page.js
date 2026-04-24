@@ -1080,6 +1080,7 @@ export default function TripDetailPage() {
               <div className="flex items-end justify-between mt-2">
                 {/* Itinerary notes — also appears in the Pocket Guide. */}
                 <div className="w-full max-w-md">
+                  <div className="text-[10px] font-semibold text-stone-400 uppercase tracking-wide mb-1">Itinerary notes</div>
                   {editingItineraryNotes ? (
                     <textarea
                       value={itineraryNotesValue}

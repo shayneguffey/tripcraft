@@ -373,6 +373,7 @@ export default function GuidePage({ params }) {
             className="bg-white/80 rounded-xl px-5 py-4 mb-4 shadow-sm"
             style={{ backdropFilter: "blur(4px)" }}
           >
+            <div className="text-[10px] uppercase tracking-wider text-stone-500 font-semibold mb-1.5">Itinerary notes</div>
             <p className="text-stone-700 text-sm leading-relaxed whitespace-pre-wrap">{itinerary.notes}</p>
           </div>
         )}
