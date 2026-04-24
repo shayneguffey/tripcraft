@@ -20,6 +20,7 @@ import { supabase } from "@/lib/supabase";
 import CATEGORY_COLORS from "@/lib/categoryColors";
 import FlightPathLoader from "@/components/FlightPathLoader";
 import { tripPlanningUrl } from "@/lib/tripUrl";
+import DayCardView from "@/components/DayCardView";
 
 /* ─── Date / time / money helpers ─── */
 function formatDate(dateStr) {
@@ -89,36 +90,6 @@ export default function GuidePage({ params }) {
   const [loading, setLoading] = useState(true);
   const [canEdit, setCanEdit] = useState(false);
 
-  // ─── Day title inline edit (owners/collaborators only) ───
-  const [editingDayId, setEditingDayId] = useState(null);
-  const [dayTitleDraft, setDayTitleDraft] = useState("");
-
-  // Save a day title. Creates the days row if one doesn't exist yet for this date+itinerary.
-  async function saveDayTitle(dayRow, date, title) {
-    const val = (title || "").trim() || null;
-    if (dayRow?.id) {
-      await supabase.from("days").update({ title: val }).eq("id", dayRow.id);
-      setData((prev) => prev ? {
-        ...prev,
-        days: prev.days.map((d) => d.id === dayRow.id ? { ...d, title: val } : d),
-      } : prev);
-    } else if (val) {
-      // No days row yet — insert one scoped to this trip + itinerary + date.
-      const { data: inserted } = await supabase
-        .from("days")
-        .insert({ trip_id: data.trip.id, itinerary_id: data.itinerary.id, date, title: val })
-        .select()
-        .single();
-      if (inserted) {
-        setData((prev) => prev ? {
-          ...prev,
-          days: [...prev.days, { ...inserted, activities: [] }],
-        } : prev);
-      }
-    }
-    setEditingDayId(null);
-  }
-
   // ─── Itinerary notes inline edit (owners/collaborators only) ───
   const [editingNotes, setEditingNotes] = useState(false);
   const [notesDraft, setNotesDraft] = useState("");
@@ -160,8 +131,8 @@ export default function GuidePage({ params }) {
     }
   }
 
-  // ─ Load itinerary ─
-  useEffect(() => {
+  // ─ Load itinerary (also called after DayCardView mutations) ─
+  function refreshData() {
     fetch(`/api/itinerary/${token}`)
       .then((res) => {
         if (!res.ok) throw new Error("Not found");
@@ -170,7 +141,9 @@ export default function GuidePage({ params }) {
       .then(setData)
       .catch(() => setError("This Pocket Guide link is invalid or has expired."))
       .finally(() => setLoading(false));
-  }, [token]);
+  }
+
+  useEffect(() => { refreshData(); }, [token]);
 
   // ─ Check viewer identity: owner or accepted collaborator → can edit ─
   useEffect(() => {
@@ -435,14 +408,12 @@ export default function GuidePage({ params }) {
                 <DayCard
                   key={day.date}
                   day={day}
-                  startDate={startDate}
+                  tripStart={startDate}
                   canEdit={canEdit}
-                  editingDayId={editingDayId}
-                  setEditingDayId={setEditingDayId}
-                  dayTitleDraft={dayTitleDraft}
-                  setDayTitleDraft={setDayTitleDraft}
-                  saveDayTitle={saveDayTitle}
+                  tripId={trip.id}
+                  itineraryId={itinerary.id}
                   allDays={data.days}
+                  onRefresh={refreshData}
                 />
               ))}
             </div>
@@ -586,342 +557,45 @@ function SectionHeader({ children }) {
   );
 }
 
-/* ── DayCard: replica of the calendar's DayPopout. Day title is
-   inline-editable for the owner / accepted collaborators. ── */
-function DayCard({ day, canEdit, editingDayId, setEditingDayId, dayTitleDraft, setDayTitleDraft, saveDayTitle, allDays }) {
-  // Unified, sorted event list (flights + transport + activities + dining + check-ins + check-outs + user events)
-  const events = buildDayEvents(day);
-
-  const hasEvents = events.length > 0;
-  const hasStays = day.stays.length > 0;
-  const hasContent = hasEvents || hasStays || day.notes || day.title;
-
-  const dateFormatted = formatDateLong(day.date);
-  const dayOfWeek = formatDayOfWeek(day.date);
-
-  // Days row for THIS date (may not exist yet — saveDayTitle will insert).
+/* ── DayCard: wraps the shared <DayCardView> inline so design changes
+   made for the calendar popup automatically reach the Pocket Guide. ── */
+function DayCard({ day, tripStart, canEdit, tripId, itineraryId, allDays, onRefresh }) {
+  // Find the persisted days row for this date (may be null if none saved yet).
   const dayRow = (allDays || []).find((d) => d.date === day.date) || null;
-  const isEditingTitle = editingDayId === day.date;
 
-  function beginEditTitle(e) {
-    if (!canEdit) return;
-    e?.stopPropagation();
-    setDayTitleDraft(day.title || "");
-    setEditingDayId(day.date);
-  }
+  // Translate the guide's per-day payload into the unified calendarEvents
+  // shape DayCardView consumes.
+  const calendarEvents = {
+    flights: day.flightLegs || [],
+    activities: (day.scheduledActivities || []).map((a) => ({
+      ...a,
+      location: a.location || a.location_name || null,
+    })),
+    dining: (day.dining || []).map((d) => ({
+      ...d,
+      location: d.location || d.location_name || null,
+    })),
+    transport: day.transportation || [],
+    accommodations: (day.stays || []).map((a) => ({
+      ...a,
+      location: a.location || a.location_name || null,
+    })),
+  };
 
   return (
     <div className="bg-white rounded-2xl shadow-sm border border-stone-200 overflow-hidden">
-      {/* Header — parchment bar with Day N + date */}
-      <div
-        className="px-5 pt-4 pb-3 border-b border-stone-200/60"
-        style={{ background: "rgba(222,210,190,0.5)" }}
-      >
-        <div className="flex items-center gap-2.5">
-          <div className="text-2xl font-bold text-[#da7b4a] whitespace-nowrap leading-none">
-            DAY {day.dayNumber}
-          </div>
-          <div>
-            <div className="text-[11px] font-semibold text-stone-500 uppercase tracking-wide leading-tight">
-              {dayOfWeek}
-            </div>
-            <div className="text-[11px] text-stone-400 leading-tight">{dateFormatted}</div>
-          </div>
-        </div>
-        {isEditingTitle ? (
-          <input
-            type="text"
-            value={dayTitleDraft}
-            onChange={(e) => setDayTitleDraft(e.target.value)}
-            onBlur={() => saveDayTitle(dayRow, day.date, dayTitleDraft)}
-            onKeyDown={(e) => {
-              if (e.key === "Enter") saveDayTitle(dayRow, day.date, dayTitleDraft);
-              if (e.key === "Escape") setEditingDayId(null);
-            }}
-            autoFocus
-            placeholder="Day title"
-            className="mt-1.5 w-full text-2xl font-bold text-stone-700 uppercase leading-tight bg-white border border-[#da7b4a]/60 rounded px-2 py-0.5 focus:outline-none focus:ring-2 focus:ring-[#da7b4a]/40"
-          />
-        ) : day.title ? (
-          <div
-            className={`mt-1.5 text-2xl font-bold text-stone-700 uppercase leading-tight ${canEdit ? "cursor-text hover:text-[#da7b4a] transition-colors" : ""}`}
-            onClick={beginEditTitle}
-            title={canEdit ? "Click to edit day title" : ""}
-          >
-            {day.title}
-          </div>
-        ) : canEdit ? (
-          <div
-            className="mt-1.5 text-sm italic text-stone-400 hover:text-[#da7b4a] cursor-text transition-colors"
-            onClick={beginEditTitle}
-            title="Click to add a day title"
-          >
-            + Add day title
-          </div>
-        ) : null}
-      </div>
-
-      {/* Body */}
-      <div className="px-5 py-4 space-y-4">
-        {/* Events */}
-        {hasEvents ? (
-          <div>
-            <div className="flex items-center gap-1.5 mb-2">
-              <svg
-                className="w-3.5 h-3.5 text-stone-400"
-                fill="none"
-                stroke="currentColor"
-                viewBox="0 0 24 24"
-                strokeWidth={2}
-              >
-                <path
-                  strokeLinecap="round"
-                  strokeLinejoin="round"
-                  d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z"
-                />
-              </svg>
-              <span className="text-xs font-medium text-stone-400 uppercase tracking-wide">
-                Day Itinerary
-              </span>
-            </div>
-            <div className="space-y-1.5">
-              {events.map((e) => (
-                <EventPill key={e.key} event={e} />
-              ))}
-            </div>
-          </div>
-        ) : (
-          !hasStays && !day.notes && (
-            <p className="text-sm text-stone-400 italic">Free day</p>
-          )
-        )}
-
-        {/* Current stay(s) — appears for every day covered by the stay */}
-        {hasStays && (
-          <div>
-            <div className="flex items-center gap-1.5 mb-2">
-              <svg
-                xmlns="http://www.w3.org/2000/svg"
-                viewBox="0 0 20 20"
-                fill="currentColor"
-                className="w-3.5 h-3.5 text-stone-400"
-              >
-                <path d="M.75 15.5a.75.75 0 0 0 1.5 0V13h16v2.5a.75.75 0 0 0 1.5 0v-6a.75.75 0 0 0-1.5 0V11H16V4.5A2.5 2.5 0 0 0 13.5 2h-7A2.5 2.5 0 0 0 4 4.5V11H2.25V9.5a.75.75 0 0 0-1.5 0v6ZM5.5 4.5a1 1 0 0 1 1-1h7a1 1 0 0 1 1 1V11h-9V4.5Z" />
-              </svg>
-              <span className="text-xs font-medium text-stone-400 uppercase tracking-wide">
-                Staying
-              </span>
-            </div>
-            <div className="space-y-1.5">
-              {day.stays.map((a) => {
-                const c = CATEGORY_COLORS.accommodation;
-                return (
-                  <div
-                    key={`stay-${a.id}`}
-                    className={`flex items-center gap-2.5 ${c.bg} border ${c.border} rounded-lg px-3 py-2`}
-                  >
-                    <div className={`w-2 h-2 rounded-full ${c.dot} flex-shrink-0`} />
-                    <div className="flex-1 min-w-0">
-                      <span className={`text-sm font-medium ${c.text}`}>{a.name}</span>
-                      {a.location_name && (
-                        <a
-                          href={mapsSearchUrl(a.location_name)}
-                          target="_blank"
-                          rel="noopener noreferrer"
-                          onClick={(e) => e.stopPropagation()}
-                          className="block text-xs text-stone-500 hover:text-[#da7b4a] hover:underline transition-colors mt-0.5"
-                          title="Open in Google Maps"
-                        >
-                          <span className="inline-block mr-1">📍</span>{a.location_name}
-                        </a>
-                      )}
-                    </div>
-                  </div>
-                );
-              })}
-            </div>
-          </div>
-        )}
-
-        {/* Notes */}
-        {day.notes && (
-          <div className="pt-2 border-t border-stone-100">
-            <div className="text-sm text-stone-600 italic whitespace-pre-wrap">{day.notes}</div>
-          </div>
-        )}
-      </div>
-    </div>
-  );
-}
-
-/* ── Build a unified, sorted list of events for one day ──
-   Each event has:
-     detail     — small non-address sublabel (airline, cuisine, etc.)
-     address    — optional single location → maps search link
-     directions — optional {from, to} → maps directions link        */
-function buildDayEvents(day) {
-  const events = [];
-
-  // Flights (one entry per leg departing today)
-  day.flightLegs.forEach((leg) => {
-    events.push({
-      key: `f-${leg.id}`,
-      type: "flight",
-      time: leg.departure_time?.slice(0, 5) || null,
-      endTime: leg.arrival_time?.slice(0, 5) || null,
-      name: `${leg.departure_airport || ""} → ${leg.arrival_airport || ""}`,
-      detail: leg.airline_name || leg.airline_code || (leg.flight_number ? `Flight ${leg.flight_number}` : ""),
-    });
-  });
-
-  // Check-ins (on check_in_date)
-  day.checkIns.forEach((a) => {
-    events.push({
-      key: `ci-${a.id}`,
-      type: "accommodation",
-      time: null,
-      name: `Check in: ${a.name}`,
-      detail: "",
-      address: a.location_name || null,
-    });
-  });
-
-  // Check-outs (on check_out_date)
-  day.checkOuts.forEach((a) => {
-    events.push({
-      key: `co-${a.id}`,
-      type: "accommodation",
-      time: null,
-      name: `Check out: ${a.name}`,
-      detail: "",
-      address: a.location_name || null,
-    });
-  });
-
-  // Transportation — two endpoints, render as maps directions link.
-  day.transportation.forEach((t) => {
-    events.push({
-      key: `t-${t.id}`,
-      type: "transportation",
-      time: t.departure_time?.slice(0, 5) || null,
-      endTime: t.arrival_time?.slice(0, 5) || null,
-      name: t.name,
-      detail: "",
-      directions: (t.pickup_location || t.dropoff_location)
-        ? { from: t.pickup_location || "", to: t.dropoff_location || "" }
-        : null,
-    });
-  });
-
-  // Scheduled activity options
-  day.scheduledActivities.forEach((a) => {
-    events.push({
-      key: `a-${a.id}`,
-      type: "activity",
-      time: a.start_time?.slice(0, 5) || null,
-      endTime: a.end_time?.slice(0, 5) || null,
-      name: a.name,
-      detail: "",
-      address: a.location_name || null,
-    });
-  });
-
-  // Dining options — cuisine/meal as non-address subtitle, location as map link.
-  day.dining.forEach((d) => {
-    const subtitle = [d.cuisine_type, d.meal_type].filter(Boolean).join(" · ");
-    events.push({
-      key: `d-${d.id}`,
-      type: "dining",
-      time: d.start_time?.slice(0, 5) || null,
-      endTime: d.end_time?.slice(0, 5) || null,
-      name: d.name,
-      detail: subtitle,
-      address: d.location_name || null,
-    });
-  });
-
-  // User-created day events (calendar quick adds)
-  day.userActivities.forEach((a) => {
-    events.push({
-      key: `ua-${a.id}`,
-      type: a.category || "dayEvent",
-      time: a.start_time?.slice(0, 5) || null,
-      endTime: a.end_time?.slice(0, 5) || null,
-      name: a.title,
-      detail: "",
-      address: a.location || null,
-    });
-  });
-
-  // Sort: untimed first (preserves insertion order), then timed chronologically
-  const untimed = events.filter((e) => !e.time);
-  const timed = events.filter((e) => e.time).sort((a, b) => a.time.localeCompare(b.time));
-  return [...untimed, ...timed];
-}
-
-/* ── EventPill: colored event row matching DayPopout's OptionEventCard look ──
-   Renders the address (or pickup→dropoff for transportation) as a
-   tappable Google Maps link so travelers can open directions in one tap. */
-function EventPill({ event }) {
-  const c = CATEGORY_COLORS[event.type] || CATEGORY_COLORS.dayEvent;
-
-  const addressUrl = event.address ? mapsSearchUrl(event.address) : null;
-  const directionsUrl = event.directions ? mapsDirectionsUrl(event.directions.from, event.directions.to) : null;
-  const directionsLabel = event.directions
-    ? [event.directions.from, event.directions.to].filter(Boolean).join(" → ")
-    : "";
-
-  return (
-    <div className={`flex items-start gap-2.5 ${c.bg} border ${c.border} rounded-lg px-3 py-2`}>
-      {/* Time column (matches OptionEventCard width) */}
-      <div className="flex-shrink-0 w-16 mt-0.5">
-        {event.time ? (
-          <span className="text-xs text-stone-500 leading-tight block">
-            {formatTime12h(event.time)}
-            {event.endTime && (
-              <>
-                <br />
-                <span className="text-stone-400">– {formatTime12h(event.endTime)}</span>
-              </>
-            )}
-          </span>
-        ) : (
-          <span className="block" />
-        )}
-      </div>
-      {/* Dot */}
-      <div className={`w-2 h-2 rounded-full ${c.dot} flex-shrink-0 mt-[5px]`} />
-      {/* Name + detail + address link */}
-      <div className="flex-1 min-w-0">
-        <span className={`text-sm font-medium ${c.text} uppercase`}>{event.name}</span>
-        {event.detail && (
-          <span className="text-xs text-stone-400 ml-2 uppercase">{event.detail}</span>
-        )}
-        {addressUrl && (
-          <a
-            href={addressUrl}
-            target="_blank"
-            rel="noopener noreferrer"
-            onClick={(e) => e.stopPropagation()}
-            className="block text-xs text-stone-500 hover:text-[#da7b4a] hover:underline transition-colors mt-0.5"
-            title="Open in Google Maps"
-          >
-            <span className="inline-block mr-1">📍</span>{event.address}
-          </a>
-        )}
-        {directionsUrl && (
-          <a
-            href={directionsUrl}
-            target="_blank"
-            rel="noopener noreferrer"
-            onClick={(e) => e.stopPropagation()}
-            className="block text-xs text-stone-500 hover:text-[#da7b4a] hover:underline transition-colors mt-0.5"
-            title="Open directions in Google Maps"
-          >
-            <span className="inline-block mr-1">📍</span>{directionsLabel}
-          </a>
-        )}
-      </div>
+      <DayCardView
+        dateKey={day.date}
+        tripStart={tripStart}
+        inRange={true}
+        dayData={dayRow}
+        userActivities={day.userActivities || []}
+        calendarEvents={calendarEvents}
+        canEdit={canEdit}
+        tripId={tripId}
+        itineraryId={itineraryId}
+        onRefresh={onRefresh}
+      />
     </div>
   );
 }
