@@ -119,6 +119,22 @@ export default function GuidePage({ params }) {
     setEditingDayId(null);
   }
 
+  // ─── Itinerary notes inline edit (owners/collaborators only) ───
+  const [editingNotes, setEditingNotes] = useState(false);
+  const [notesDraft, setNotesDraft] = useState("");
+
+  async function saveItineraryNotes() {
+    const val = (notesDraft || "").trim() || null;
+    setEditingNotes(false);
+    if (val === (data?.itinerary?.notes || null)) return;
+    if (!data?.itinerary?.id) return;
+    await supabase.from("itineraries").update({ notes: val }).eq("id", data.itinerary.id);
+    setData((prev) => prev ? {
+      ...prev,
+      itinerary: { ...prev.itinerary, notes: val },
+    } : prev);
+  }
+
   // ─── Share: copy current URL (this page IS the share link) ───
   const [shareCopied, setShareCopied] = useState(false);
   const [shareOpen, setShareOpen] = useState(false);
@@ -367,15 +383,46 @@ export default function GuidePage({ params }) {
       </header>
 
       <main className="px-4 pb-12 max-w-2xl mx-auto" style={{ marginTop: "-12px" }}>
-        {/* ─── Itinerary notes (if any) — mt-6 so it clears the hero
-            banner (the <main> has a -12px pull that we compensate for). ─── */}
-        {itinerary.notes && (
+        {/* ─── Itinerary notes — inline-editable for owners/collaborators,
+            read-only for public viewers. mt-6 so it clears the hero banner
+            (the <main> has a -12px pull that we compensate for). ─── */}
+        {(itinerary.notes || canEdit) && (
           <div
             className="bg-white/80 rounded-xl px-5 py-4 mt-6 mb-4 shadow-sm"
             style={{ backdropFilter: "blur(4px)" }}
           >
             <div className="text-[10px] uppercase tracking-wider text-stone-500 font-semibold mb-1.5">Itinerary notes</div>
-            <p className="text-stone-700 text-sm leading-relaxed whitespace-pre-wrap">{itinerary.notes}</p>
+            {editingNotes ? (
+              <textarea
+                value={notesDraft}
+                onChange={(e) => setNotesDraft(e.target.value)}
+                onBlur={saveItineraryNotes}
+                onKeyDown={(e) => {
+                  if (e.key === "Escape") { setEditingNotes(false); setNotesDraft(itinerary.notes || ""); }
+                  if (e.key === "Enter" && (e.metaKey || e.ctrlKey)) { e.preventDefault(); saveItineraryNotes(); }
+                }}
+                autoFocus
+                rows={3}
+                placeholder="Add notes for this itinerary..."
+                className="w-full text-sm text-stone-700 leading-relaxed bg-white border border-stone-300 rounded-lg px-3 py-2 focus:outline-none focus:ring-2 focus:ring-inset focus:ring-[#da7b4a]/50 resize-none min-h-[72px]"
+              />
+            ) : itinerary.notes ? (
+              <p
+                onClick={canEdit ? () => { setNotesDraft(itinerary.notes || ""); setEditingNotes(true); } : undefined}
+                className={`text-stone-700 text-sm leading-relaxed whitespace-pre-wrap ${canEdit ? "cursor-text hover:bg-white/40 rounded-md -mx-1 px-1 transition-colors" : ""}`}
+                title={canEdit ? "Click to edit" : undefined}
+              >
+                {itinerary.notes}
+              </p>
+            ) : (
+              <p
+                onClick={() => { setNotesDraft(""); setEditingNotes(true); }}
+                className="text-stone-400 italic text-sm cursor-text hover:text-stone-600 transition-colors"
+                title="Click to add notes"
+              >
+                Add notes for this itinerary...
+              </p>
+            )}
           </div>
         )}
 
