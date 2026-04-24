@@ -367,10 +367,11 @@ export default function GuidePage({ params }) {
       </header>
 
       <main className="px-4 pb-12 max-w-2xl mx-auto" style={{ marginTop: "-12px" }}>
-        {/* ─── Itinerary notes (if any) ─── */}
+        {/* ─── Itinerary notes (if any) — mt-6 so it clears the hero
+            banner (the <main> has a -12px pull that we compensate for). ─── */}
         {itinerary.notes && (
           <div
-            className="bg-white/80 rounded-xl px-5 py-4 mb-4 shadow-sm"
+            className="bg-white/80 rounded-xl px-5 py-4 mt-6 mb-4 shadow-sm"
             style={{ backdropFilter: "blur(4px)" }}
           >
             <div className="text-[10px] uppercase tracking-wider text-stone-500 font-semibold mb-1.5">Itinerary notes</div>
