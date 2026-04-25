@@ -252,7 +252,7 @@ export default function DayCardView({
         time: d.start_time?.slice(0, 5),
         endTime: d.end_time?.slice(0, 5),
         name: d.name,
-        detail: d.cuisine_type || "",
+        detail: (d.cuisine_type && d.cuisine_type.toLowerCase() !== "other") ? d.cuisine_type : "",
         address: d.address || d.location || d.location_name || null,
         _record: d,
         _table: "dining_options",
