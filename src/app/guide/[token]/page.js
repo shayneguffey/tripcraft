@@ -340,7 +340,7 @@ export default function GuidePage({ params }) {
           </h1>
           {itinerary?.title && (
             <p className="text-white/70 text-xs font-semibold uppercase tracking-[0.15em] mb-1">
-              {itinerary.title}
+              ITINERARY: {itinerary.title}
             </p>
           )}
           {trip.destination && (
