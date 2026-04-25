@@ -171,6 +171,14 @@ export default function EventDetailPanel({ record, type, canEdit, onChange, isDr
     <div className="px-3 pt-2.5 pb-2.5 border-t border-stone-300/40 flex gap-2.5">
       {Spacers}
       <div className="flex-1 min-w-0 space-y-2">
+      {type === "flight" && record?.flight_number && (
+        <div className="flex items-baseline gap-2 text-xs">
+          <span className="text-[10px] font-semibold text-stone-400 uppercase tracking-wide">Flight #</span>
+          <span className="text-stone-600 font-medium">
+            {record.airline_code ? `${record.airline_code} ` : ""}{record.flight_number}
+          </span>
+        </div>
+      )}
       {(record?.start_time && record?.end_time) || (record?.departure_time && record?.arrival_time && type !== "flight") ? (
         <div className="flex items-baseline gap-2 text-xs">
           <span className="text-[10px] font-semibold text-stone-400 uppercase tracking-wide">Time</span>
