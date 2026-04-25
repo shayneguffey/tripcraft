@@ -55,7 +55,7 @@ function formatRange(record) {
   return `${formatTime12h(start)} – ${formatTime12h(end)}`;
 }
 
-export default function EventDetailPanel({ record, type, canEdit, onChange, isDraggable }) {
+export default function EventDetailPanel({ record, type, canEdit, onChange, isDraggable, align = "event" }) {
   const [editingNotes, setEditingNotes] = useState(false);
   const [notesValue, setNotesValue] = useState(record?.notes || "");
 
@@ -82,9 +82,13 @@ export default function EventDetailPanel({ record, type, canEdit, onChange, isDr
 
   // Nothing to render and viewer can't edit — show a quiet placeholder.
   const hasAnyContent = hasNotes || hasPrice || hasStayDates || hasSource;
-  // Empty spacers that mirror the OptionEventCard row layout, so the panel
-  // content lines up with the event title column.
-  const Spacers = (
+  // Empty spacers that mirror the row's left columns, so the panel
+  // content lines up with the title column.
+  //   "event"         → drag (optional) + time + dot
+  //   "accommodation" → just dot (no drag, no time column)
+  const Spacers = align === "accommodation" ? (
+    <div className="w-2 flex-shrink-0" />
+  ) : (
     <>
       {isDraggable && <div className="flex-shrink-0 w-3" />}
       <div className="flex-shrink-0 w-16" />

@@ -280,6 +280,7 @@ export default function DayCardView({
         name: a.name,
         detail: "",
         address: a.address || a.location || a.location_name || null,
+        _record: a,
       });
     });
   }
@@ -465,26 +466,56 @@ export default function DayCardView({
               {accommodationEvents.map((evt, i) => {
                 const c = COLOR_MAP.accommodation;
                 const addressUrl = evt.address ? mapsSearchUrl(evt.address) : null;
+                const accomKey = evt._record?.id ? `accom-${evt._record.id}` : `accom-${i}`;
+                const isExpanded = expandedKey === accomKey;
+                const onToggle = () => setExpandedKey(isExpanded ? null : accomKey);
                 return (
-                  <div key={`accom-${i}`} className={`flex items-start gap-2.5 ${c.bg} border ${c.border} rounded-lg px-3 py-2`}>
-                    <div className={`w-2 h-2 rounded-full ${c.dot} flex-shrink-0 mt-[5px]`} />
-                    <div className="flex-1 min-w-0">
-                      <span className={`text-sm font-medium ${c.text}`}>{evt.name}</span>
-                      {addressUrl ? (
-                        <a
-                          href={addressUrl}
-                          target="_blank"
-                          rel="noopener noreferrer"
-                          onClick={(e) => e.stopPropagation()}
-                          className="block text-xs text-stone-500 hover:text-[#da7b4a] hover:underline transition-colors mt-0.5"
-                          title="Open in Google Maps"
-                        >
-                          <span className="inline-block mr-1">{"\u{1F4CD}"}</span>{evt.address}
-                        </a>
-                      ) : evt.detail ? (
-                        <span className="text-xs text-stone-400 ml-2">{evt.detail}</span>
-                      ) : null}
+                  <div key={accomKey} className={`${c.bg} border ${c.border} rounded-lg overflow-hidden`}>
+                    <div
+                      className="flex items-start gap-2.5 px-3 py-2 cursor-pointer"
+                      onClick={onToggle}
+                      title={isExpanded ? "Click to collapse" : "Click to expand for more details"}
+                    >
+                      <div className={`w-2 h-2 rounded-full ${c.dot} flex-shrink-0 mt-[5px]`} />
+                      <div className="flex-1 min-w-0">
+                        <span className={`text-sm font-medium ${c.text}`}>{evt.name}</span>
+                        {addressUrl ? (
+                          <a
+                            href={addressUrl}
+                            target="_blank"
+                            rel="noopener noreferrer"
+                            onClick={(e) => e.stopPropagation()}
+                            className="block text-xs text-stone-500 hover:text-[#da7b4a] hover:underline transition-colors mt-0.5"
+                            title="Open in Google Maps"
+                          >
+                            <span className="inline-block mr-1">{"\u{1F4CD}"}</span>{evt.address}
+                          </a>
+                        ) : evt.detail ? (
+                          <span className="text-xs text-stone-400 ml-2">{evt.detail}</span>
+                        ) : null}
+                      </div>
+                      <button
+                        type="button"
+                        onClick={(e) => { e.stopPropagation(); onToggle(); }}
+                        className={`flex-shrink-0 mt-0.5 text-stone-400 hover:text-stone-600 transition-all ${isExpanded ? "rotate-180" : ""}`}
+                        title={isExpanded ? "Collapse" : "Expand for more details"}
+                        aria-label={isExpanded ? "Collapse details" : "Expand details"}
+                        aria-expanded={isExpanded}
+                      >
+                        <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24" strokeWidth={2}>
+                          <path strokeLinecap="round" strokeLinejoin="round" d="M19 9l-7 7-7-7" />
+                        </svg>
+                      </button>
                     </div>
+                    {isExpanded && (
+                      <EventDetailPanel
+                        record={evt._record}
+                        type="accommodation"
+                        canEdit={!!canEdit}
+                        onChange={onRefresh}
+                        align="accommodation"
+                      />
+                    )}
                   </div>
                 );
               })}
