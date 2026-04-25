@@ -36,6 +36,7 @@ import TimeSelectPopup, {
 } from "@/components/TimeSelectPopup";
 import EventDetailPanel from "@/components/EventDetailPanel";
 import BookedBadge from "@/components/BookedBadge";
+import OptionPicker from "@/components/OptionPicker";
 
 /* ── Helpers ───────────────────────────────────────────────────────── */
 
@@ -92,7 +93,7 @@ export default function DayCardView({
   const [editingTitle, setEditingTitle] = useState(false);
   const [notes, setNotes] = useState(dayData?.notes || "");
   const [editingNotes, setEditingNotes] = useState(false);
-  const [addingEvent, setAddingEvent] = useState(false);
+  const [addingEvent, setAddingEvent] = useState(null); // null | "custom" | "option"
   const [dragIndex, setDragIndex] = useState(null);
   const [expandedKey, setExpandedKey] = useState(null);
 
@@ -155,11 +156,11 @@ export default function DayCardView({
 
   async function saveNewEvent(data) {
     if (!data || !data.title.trim()) {
-      setAddingEvent(false);
+      setAddingEvent(null);
       return;
     }
     const dayId = await ensureDayExists();
-    if (!dayId) { setAddingEvent(false); return; }
+    if (!dayId) { setAddingEvent(null); return; }
     await supabase.from("activities").insert({
       day_id: dayId,
       title: data.title.trim(),
@@ -170,7 +171,7 @@ export default function DayCardView({
       notes: data.notes || null,
       sort_order: userActivities.length,
     });
-    setAddingEvent(false);
+    setAddingEvent(null);
     onRefresh?.();
   }
 
@@ -435,8 +436,18 @@ export default function DayCardView({
               }
             })}
 
-            {addingEvent && canEdit && (
-              <NewEventCard onSave={(data) => saveNewEvent(data)} onCancel={() => setAddingEvent(false)} />
+            {addingEvent === "custom" && canEdit && (
+              <NewEventCard onSave={(data) => saveNewEvent(data)} onCancel={() => setAddingEvent(null)} />
+            )}
+
+            {addingEvent === "option" && canEdit && (
+              <OptionPicker
+                tripId={tripId}
+                dateKey={dateKey}
+                itineraryId={itineraryId}
+                onPicked={() => { setAddingEvent(null); onRefresh?.(); }}
+                onCancel={() => setAddingEvent(null)}
+              />
             )}
 
             {allDayEventsSorted.length === 0 && !addingEvent && accommodationEvents.length === 0 && (
@@ -444,12 +455,22 @@ export default function DayCardView({
             )}
 
             {canEdit && !addingEvent && (
-              <button
-                onClick={() => setAddingEvent(true)}
-                className="w-full border-2 border-dashed border-stone-300 text-stone-400 text-sm font-medium rounded-lg py-2.5 hover:border-[#da7b4a]/50 hover:text-[#da7b4a] transition-colors"
-              >
-                + Add Event
-              </button>
+              <div className="flex gap-2">
+                <button
+                  onClick={() => setAddingEvent("custom")}
+                  className="flex-1 border-2 border-dashed border-stone-300 text-stone-400 text-sm font-medium rounded-lg py-2.5 hover:border-[#da7b4a]/50 hover:text-[#da7b4a] transition-colors"
+                  title="Add a one-off event for this day"
+                >
+                  + Custom Event
+                </button>
+                <button
+                  onClick={() => setAddingEvent("option")}
+                  className="flex-1 border-2 border-dashed border-stone-300 text-stone-400 text-sm font-medium rounded-lg py-2.5 hover:border-[#da7b4a]/50 hover:text-[#da7b4a] transition-colors"
+                  title="Schedule an existing activity, dining, or transport option"
+                >
+                  + Itinerary Option
+                </button>
+              </div>
             )}
           </div>
         </div>
