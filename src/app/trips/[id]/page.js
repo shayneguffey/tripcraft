@@ -1160,6 +1160,8 @@ export default function TripDetailPage() {
                           onMouseEnter={() => { setHoveredDay(dateKey); handleMouseEnter(dateKey); }}
                           onMouseLeave={() => setHoveredDay(null)}
                           onMouseDown={(e) => handleMouseDown(dateKey, e)}
+                          onClick={() => { if (inRange) setSelectedDay(dateKey); }}
+                          style={inRange ? { cursor: "pointer" } : undefined}
                         >
                           {/* Date number + hover add button — entire row clickable to open day detail */}
                           <div
