@@ -79,11 +79,19 @@ export default function EventDetailPanel({ record, type, canEdit, onChange, isDr
   const hasPrice = type !== "accommodation" && record?.total_price != null && record.total_price !== "";
   const hasStayDates = type === "accommodation" && record?.check_in_date && record?.check_out_date;
   const hasSource = record?.source_url || record?.screenshot_url;
-  const address = record?.address || record?.location || record?.location_name || null;
+  const isTransport = type === "transportation";
+  const pickup = record?.pickup_location || null;
+  const dropoff = record?.dropoff_location || null;
+  const hasTransportAddrs = isTransport && (pickup || dropoff);
+  // Hide the generic Address line for transportation — it has its own
+  // pickup/drop-off lines instead.
+  const address = !isTransport
+    ? (record?.address || record?.location || record?.location_name || null)
+    : null;
   const hasAddress = !!address;
 
   // Nothing to render and viewer can't edit — show a quiet placeholder.
-  const hasAnyContent = hasNotes || hasPrice || hasStayDates || hasSource || hasAddress;
+  const hasAnyContent = hasNotes || hasPrice || hasStayDates || hasSource || hasAddress || hasTransportAddrs;
   // Empty spacers that mirror the row's left columns, so the panel
   // content lines up with the title column.
   //   "event"         → drag (optional) + time + dot
@@ -149,6 +157,41 @@ export default function EventDetailPanel({ record, type, canEdit, onChange, isDr
             <span className="inline-block mr-1">{"\u{1F4CD}"}</span>{address}
           </a>
         </div>
+      )}
+
+      {hasTransportAddrs && (
+        <>
+          {pickup && (
+            <div className="flex items-baseline gap-2 text-xs">
+              <span className="text-[10px] font-semibold text-stone-400 uppercase tracking-wide flex-shrink-0">Pick-up</span>
+              <a
+                href={`https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(pickup)}`}
+                target="_blank"
+                rel="noopener noreferrer"
+                onClick={(e) => e.stopPropagation()}
+                className="text-stone-600 hover:text-[#da7b4a] hover:underline transition-colors truncate"
+                title="Open in Google Maps"
+              >
+                <span className="inline-block mr-1">{"\u{1F4CD}"}</span>{pickup}
+              </a>
+            </div>
+          )}
+          {dropoff && (
+            <div className="flex items-baseline gap-2 text-xs">
+              <span className="text-[10px] font-semibold text-stone-400 uppercase tracking-wide flex-shrink-0">Drop-off</span>
+              <a
+                href={`https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(dropoff)}`}
+                target="_blank"
+                rel="noopener noreferrer"
+                onClick={(e) => e.stopPropagation()}
+                className="text-stone-600 hover:text-[#da7b4a] hover:underline transition-colors truncate"
+                title="Open in Google Maps"
+              >
+                <span className="inline-block mr-1">{"\u{1F4CD}"}</span>{dropoff}
+              </a>
+            </div>
+          )}
+        </>
       )}
 
       {/* Notes — editable when canEdit, read-only when not. Hidden when empty AND not canEdit. */}
