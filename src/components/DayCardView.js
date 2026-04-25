@@ -239,7 +239,7 @@ export default function DayCardView({
         endTime: a.end_time?.slice(0, 5),
         name: a.name,
         detail: "",
-        address: a.location || a.location_name || null,
+        address: a.address || a.location || a.location_name || null,
         _record: a,
         _table: "activity_options",
         _timeField: "start_time",
@@ -253,7 +253,7 @@ export default function DayCardView({
         endTime: d.end_time?.slice(0, 5),
         name: d.name,
         detail: d.cuisine_type || "",
-        address: d.location || d.location_name || null,
+        address: d.address || d.location || d.location_name || null,
         _record: d,
         _table: "dining_options",
         _timeField: "start_time",
@@ -279,7 +279,7 @@ export default function DayCardView({
         type: "accommodation",
         name: a.name,
         detail: "",
-        address: a.location || a.location_name || null,
+        address: a.address || a.location || a.location_name || null,
       });
     });
   }
@@ -583,8 +583,7 @@ export function OptionEventCard({
                   title="Click to edit time"
                 >
                   {formatTime12hShared(item.time)}
-                  {item.endTime && <><br /><span className="text-stone-400">– {formatTime12hShared(item.endTime)}</span></>}
-                </span>
+                      </span>
               ) : (
                 <span
                   onClick={(e) => { e.stopPropagation(); setShowPopup(true); }}
@@ -610,8 +609,7 @@ export function OptionEventCard({
           ) : item.time ? (
             <span className="text-xs text-stone-500">
               {formatTime12hShared(item.time)}
-              {item.endTime && <><br /><span className="text-stone-400">– {formatTime12hShared(item.endTime)}</span></>}
-            </span>
+              </span>
           ) : <span />}
         </div>
 
@@ -657,6 +655,7 @@ export function OptionEventCard({
           type={item.type}
           canEdit={!!canEdit}
           onChange={onRefresh}
+          isDraggable={!!isDraggable}
         />
       )}
     </div>

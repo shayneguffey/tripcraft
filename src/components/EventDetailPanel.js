@@ -39,7 +39,23 @@ function formatShortDate(dateStr) {
   });
 }
 
-export default function EventDetailPanel({ record, type, canEdit, onChange }) {
+function formatTime12h(t) {
+  if (!t) return "";
+  const [h, m] = t.slice(0, 5).split(":").map(Number);
+  const hh = ((h + 11) % 12) + 1;
+  const ampm = h < 12 ? "AM" : "PM";
+  return `${hh}:${String(m).padStart(2, "0")} ${ampm}`;
+}
+
+function formatRange(record) {
+  const start = record?.start_time || record?.departure_time;
+  const end = record?.end_time || record?.arrival_time;
+  if (!start) return "";
+  if (!end) return formatTime12h(start);
+  return `${formatTime12h(start)} – ${formatTime12h(end)}`;
+}
+
+export default function EventDetailPanel({ record, type, canEdit, onChange, isDraggable }) {
   const [editingNotes, setEditingNotes] = useState(false);
   const [notesValue, setNotesValue] = useState(record?.notes || "");
 
@@ -66,16 +82,37 @@ export default function EventDetailPanel({ record, type, canEdit, onChange }) {
 
   // Nothing to render and viewer can't edit — show a quiet placeholder.
   const hasAnyContent = hasNotes || hasPrice || hasStayDates || hasSource;
+  // Empty spacers that mirror the OptionEventCard row layout, so the panel
+  // content lines up with the event title column.
+  const Spacers = (
+    <>
+      {isDraggable && <div className="flex-shrink-0 w-3" />}
+      <div className="flex-shrink-0 w-16" />
+      <div className="w-2 flex-shrink-0" />
+    </>
+  );
+
   if (!canEdit && !hasAnyContent) {
     return (
-      <div className="px-3 pt-2 pb-2 border-t border-stone-300/40 text-xs text-stone-400 italic">
-        No additional details
+      <div className="px-3 pt-2 pb-2 border-t border-stone-300/40 flex gap-2.5">
+        {Spacers}
+        <div className="flex-1 text-xs text-stone-400 italic">No additional details</div>
       </div>
     );
   }
 
   return (
-    <div className="px-3 pt-2.5 pb-2.5 border-t border-stone-300/40 space-y-2">
+    <div className="px-3 pt-2.5 pb-2.5 border-t border-stone-300/40 flex gap-2.5">
+      {Spacers}
+      <div className="flex-1 min-w-0 space-y-2">
+      {(record?.start_time && record?.end_time) || (record?.departure_time && record?.arrival_time && type !== "flight") ? (
+        <div className="flex items-baseline gap-2 text-xs">
+          <span className="text-[10px] font-semibold text-stone-400 uppercase tracking-wide">Time</span>
+          <span className="text-stone-600">
+            {formatRange(record)}
+          </span>
+        </div>
+      ) : null}
       {hasStayDates && (
         <div className="flex items-baseline gap-2 text-xs">
           <span className="text-[10px] font-semibold text-stone-400 uppercase tracking-wide">Stay</span>
@@ -170,6 +207,7 @@ export default function EventDetailPanel({ record, type, canEdit, onChange }) {
           </div>
         </div>
       )}
+      </div>
     </div>
   );
 }
