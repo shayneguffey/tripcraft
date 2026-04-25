@@ -34,6 +34,7 @@ import TimeSelectPopup, {
   to24h,
   formatTime12h as formatTime12hShared,
 } from "@/components/TimeSelectPopup";
+import EventDetailPanel from "@/components/EventDetailPanel";
 
 /* ── Helpers ───────────────────────────────────────────────────────── */
 
@@ -92,6 +93,7 @@ export default function DayCardView({
   const [editingNotes, setEditingNotes] = useState(false);
   const [addingEvent, setAddingEvent] = useState(false);
   const [dragIndex, setDragIndex] = useState(null);
+  const [expandedKey, setExpandedKey] = useState(null);
 
   // Keep local state in sync when the underlying dayData reloads.
   useEffect(() => { setTitle(dayData?.title || ""); }, [dayData?.title, dayData?.id]);
@@ -400,6 +402,7 @@ export default function DayCardView({
               if (item.kind === "option") {
                 const c = COLOR_MAP[item.type] || COLOR_MAP.activity;
                 const canEditTime = canEdit && item.type !== "flight" && item._record && item._table && item._timeField;
+                const isExpanded = expandedKey === item.sortKey;
                 return (
                   <div key={item.sortKey} {...dragProps} className={dragClass}>
                     <OptionEventCard
@@ -408,6 +411,10 @@ export default function DayCardView({
                       canEditTime={canEditTime}
                       onTimeChange={canEditTime ? (newTime, newEndTime) => handleOptionTimeChange(item._table, item._record.id, item._timeField, newTime, item._endTimeField, newEndTime) : undefined}
                       isDraggable={canEdit}
+                      expanded={isExpanded}
+                      onToggleExpand={() => setExpandedKey(isExpanded ? null : item.sortKey)}
+                      canEdit={canEdit}
+                      onRefresh={onRefresh}
                     />
                   </div>
                 );
@@ -519,9 +526,24 @@ export default function DayCardView({
 
 /* ══════════════════════════════════════════════════════════════════
    OptionEventCard — option-module event row (with optional time edit)
+
+   Wraps a clickable row + optional <EventDetailPanel> in a single colored
+   card. Clicking the body (anywhere not on a control) or the chevron
+   toggles the inline expand. Quick controls (time, address, drag handle)
+   keep their own click handlers via stopPropagation.
    ══════════════════════════════════════════════════════════════════ */
 
-export function OptionEventCard({ item, colors: c, canEditTime, onTimeChange, isDraggable }) {
+export function OptionEventCard({
+  item,
+  colors: c,
+  canEditTime,
+  onTimeChange,
+  isDraggable,
+  expanded,
+  onToggleExpand,
+  canEdit,
+  onRefresh,
+}) {
   const [showPopup, setShowPopup] = useState(false);
 
   const isTransport = item.type === "transportation";
@@ -531,78 +553,112 @@ export function OptionEventCard({ item, colors: c, canEditTime, onTimeChange, is
   const addressUrl = item.address ? mapsSearchUrl(item.address) : null;
 
   return (
-    <div className={`flex items-start gap-2.5 ${c.bg} border ${c.border} rounded-lg px-3 py-2 group`}>
-      {isDraggable && (
-        <div className="flex-shrink-0 mt-1 text-stone-300 cursor-grab active:cursor-grabbing">
-          <svg className="w-3 h-3" viewBox="0 0 10 10" fill="currentColor">
-            <circle cx="3" cy="2" r="1" /><circle cx="7" cy="2" r="1" />
-            <circle cx="3" cy="5" r="1" /><circle cx="7" cy="5" r="1" />
-            <circle cx="3" cy="8" r="1" /><circle cx="7" cy="8" r="1" />
-          </svg>
-        </div>
-      )}
-
-      {/* Time */}
-      <div className="relative flex-shrink-0 w-16 mt-0.5">
-        {canEditTime ? (
-          <>
-            {item.time ? (
-              <span
-                onClick={() => setShowPopup(true)}
-                className="text-xs text-stone-500 cursor-pointer hover:text-[#da7b4a] transition-colors"
-                title="Click to edit time"
-              >
-                {formatTime12hShared(item.time)}
-                {item.endTime && <><br /><span className="text-stone-400">– {formatTime12hShared(item.endTime)}</span></>}
-              </span>
-            ) : (
-              <span
-                onClick={() => setShowPopup(true)}
-                className="text-xs text-stone-400 cursor-pointer opacity-0 group-hover:opacity-100 hover:text-[#da7b4a] transition-all"
-              >
-                + time
-              </span>
-            )}
-            {showPopup && (
-              <TimeSelectPopup
-                startTime={to12h(item.time)}
-                endTime={to12h(item.endTime)}
-                startLabel={startLabel}
-                endLabel={endLabel}
-                showEndTime={true}
-                useFixed={true}
-                onSave={(start24, end24) => { setShowPopup(false); if (onTimeChange) onTimeChange(start24, end24); }}
-                onClear={() => { setShowPopup(false); if (onTimeChange) onTimeChange(null, null); }}
-                onClose={() => setShowPopup(false)}
-              />
-            )}
-          </>
-        ) : item.time ? (
-          <span className="text-xs text-stone-500">
-            {formatTime12hShared(item.time)}
-            {item.endTime && <><br /><span className="text-stone-400">– {formatTime12hShared(item.endTime)}</span></>}
-          </span>
-        ) : <span />}
-      </div>
-
-      <div className={`w-2 h-2 rounded-full ${c.dot} flex-shrink-0 mt-[5px]`} />
-
-      <div className="flex-1 min-w-0">
-        <span className={`text-sm font-medium ${c.text} uppercase`}>{item.name}</span>
-        {item.detail && <span className="text-xs text-stone-400 ml-2 uppercase">{item.detail}</span>}
-        {addressUrl && (
-          <a
-            href={addressUrl}
-            target="_blank"
-            rel="noopener noreferrer"
+    <div className={`${c.bg} border ${c.border} rounded-lg group overflow-hidden`}>
+      <div
+        className={`flex items-start gap-2.5 px-3 py-2 ${onToggleExpand ? "cursor-pointer" : ""}`}
+        onClick={onToggleExpand}
+        title={onToggleExpand ? (expanded ? "Click to collapse" : "Click to expand for more details") : undefined}
+      >
+        {isDraggable && (
+          <div
+            className="flex-shrink-0 mt-1 text-stone-300 cursor-grab active:cursor-grabbing"
             onClick={(e) => e.stopPropagation()}
-            className="block text-xs text-stone-500 hover:text-[#da7b4a] hover:underline transition-colors mt-0.5"
-            title="Open in Google Maps"
           >
-            <span className="inline-block mr-1">{"\u{1F4CD}"}</span>{item.address}
-          </a>
+            <svg className="w-3 h-3" viewBox="0 0 10 10" fill="currentColor">
+              <circle cx="3" cy="2" r="1" /><circle cx="7" cy="2" r="1" />
+              <circle cx="3" cy="5" r="1" /><circle cx="7" cy="5" r="1" />
+              <circle cx="3" cy="8" r="1" /><circle cx="7" cy="8" r="1" />
+            </svg>
+          </div>
+        )}
+
+        {/* Time */}
+        <div className="relative flex-shrink-0 w-16 mt-0.5">
+          {canEditTime ? (
+            <>
+              {item.time ? (
+                <span
+                  onClick={(e) => { e.stopPropagation(); setShowPopup(true); }}
+                  className="text-xs text-stone-500 cursor-pointer hover:text-[#da7b4a] transition-colors"
+                  title="Click to edit time"
+                >
+                  {formatTime12hShared(item.time)}
+                  {item.endTime && <><br /><span className="text-stone-400">– {formatTime12hShared(item.endTime)}</span></>}
+                </span>
+              ) : (
+                <span
+                  onClick={(e) => { e.stopPropagation(); setShowPopup(true); }}
+                  className="text-xs text-stone-400 cursor-pointer opacity-0 group-hover:opacity-100 hover:text-[#da7b4a] transition-all"
+                >
+                  + time
+                </span>
+              )}
+              {showPopup && (
+                <TimeSelectPopup
+                  startTime={to12h(item.time)}
+                  endTime={to12h(item.endTime)}
+                  startLabel={startLabel}
+                  endLabel={endLabel}
+                  showEndTime={true}
+                  useFixed={true}
+                  onSave={(start24, end24) => { setShowPopup(false); if (onTimeChange) onTimeChange(start24, end24); }}
+                  onClear={() => { setShowPopup(false); if (onTimeChange) onTimeChange(null, null); }}
+                  onClose={() => setShowPopup(false)}
+                />
+              )}
+            </>
+          ) : item.time ? (
+            <span className="text-xs text-stone-500">
+              {formatTime12hShared(item.time)}
+              {item.endTime && <><br /><span className="text-stone-400">– {formatTime12hShared(item.endTime)}</span></>}
+            </span>
+          ) : <span />}
+        </div>
+
+        <div className={`w-2 h-2 rounded-full ${c.dot} flex-shrink-0 mt-[5px]`} />
+
+        <div className="flex-1 min-w-0">
+          <span className={`text-sm font-medium ${c.text} uppercase`}>{item.name}</span>
+          {item.detail && <span className="text-xs text-stone-400 ml-2 uppercase">{item.detail}</span>}
+          {addressUrl && (
+            <a
+              href={addressUrl}
+              target="_blank"
+              rel="noopener noreferrer"
+              onClick={(e) => e.stopPropagation()}
+              className="block text-xs text-stone-500 hover:text-[#da7b4a] hover:underline transition-colors mt-0.5"
+              title="Open in Google Maps"
+            >
+              <span className="inline-block mr-1">{"\u{1F4CD}"}</span>{item.address}
+            </a>
+          )}
+        </div>
+
+        {/* Chevron — visual cue that the row is expandable */}
+        {onToggleExpand && (
+          <button
+            type="button"
+            onClick={(e) => { e.stopPropagation(); onToggleExpand(); }}
+            className={`flex-shrink-0 mt-0.5 text-stone-400 hover:text-stone-600 transition-all ${expanded ? "rotate-180" : ""}`}
+            title={expanded ? "Collapse" : "Expand for more details"}
+            aria-label={expanded ? "Collapse details" : "Expand details"}
+            aria-expanded={!!expanded}
+          >
+            <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24" strokeWidth={2}>
+              <path strokeLinecap="round" strokeLinejoin="round" d="M19 9l-7 7-7-7" />
+            </svg>
+          </button>
         )}
       </div>
+
+      {expanded && (
+        <EventDetailPanel
+          record={item._record}
+          type={item.type}
+          canEdit={!!canEdit}
+          onChange={onRefresh}
+        />
+      )}
     </div>
   );
 }
