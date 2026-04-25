@@ -35,6 +35,7 @@ import TimeSelectPopup, {
   formatTime12h as formatTime12hShared,
 } from "@/components/TimeSelectPopup";
 import EventDetailPanel from "@/components/EventDetailPanel";
+import BookedBadge from "@/components/BookedBadge";
 
 /* ── Helpers ───────────────────────────────────────────────────────── */
 
@@ -478,6 +479,7 @@ export default function DayCardView({
                       <div className={`w-2 h-2 rounded-full ${c.dot} flex-shrink-0 mt-[5px]`} />
                       <div className="flex-1 min-w-0">
                         <span className={`text-sm font-medium ${c.text}`}>{evt.name}</span>
+                        {evt._record?.booked && <span className="inline-flex align-middle ml-1.5"><BookedBadge variant="icon" /></span>}
                         {evt.detail && (
                           <span className="text-xs text-stone-400 ml-2">{evt.detail}</span>
                         )}
@@ -634,6 +636,7 @@ export function OptionEventCard({
 
         <div className="flex-1 min-w-0">
           <span className={`text-sm font-medium ${c.text} uppercase`}>{item.name}</span>
+          {item._record?.booked && <span className="inline-flex align-middle ml-1.5"><BookedBadge variant="icon" /></span>}
           {item.detail && <span className="text-xs text-stone-400 ml-2 uppercase">{item.detail}</span>}
         </div>
 

@@ -7,6 +7,7 @@ import SourceThumbnails from "@/components/SourceThumbnails";
 import MiniWeekCalendar from "@/components/MiniWeekCalendar";
 import EditableNotes from "@/components/EditableNotes";
 import { LABEL, LABEL_MB1 } from "@/lib/detailPaneStyles";
+import BookedBadge from "@/components/BookedBadge";
 
 // ── Cuisine type metadata ──
 const CUISINES = {
@@ -116,6 +117,21 @@ export default function DiningOptions({ tripId, tripStart, tripEnd, onDiningOpti
     loadOptions();
   }
 
+  async function handleToggleBooked(id) {
+    const opt = options.find((o) => o.id === id);
+    if (!opt) return;
+    const newBooked = !opt.booked;
+    await supabase.from("dining_options").update({ booked: newBooked }).eq("id", id);
+    // When booking is turned ON, ensure the option is in the itinerary too.
+    if (newBooked && onToggleSelection && activeItineraryId) {
+      const isInItinerary = (itinerarySelections || []).some(
+        (s) => s.option_type === "dining" && s.option_id === id
+      );
+      if (!isInItinerary) onToggleSelection("dining", id);
+    }
+    loadOptions();
+  }
+
   async function handleToggleSelected(id) {
     if (onToggleSelection && activeItineraryId) {
       onToggleSelection("dining", id);
@@ -176,6 +192,7 @@ export default function DiningOptions({ tripId, tripStart, tripEnd, onDiningOpti
             {selected ? (
               <OptionDetail opt={{...selected, is_selected: (itinerarySelections || []).some(s => s.option_type === "dining" && s.option_id === selected.id)}} tripStart={tripStart} tripEnd={tripEnd}
                 onToggleSelected={() => handleToggleSelected(selected.id)}
+                onToggleBooked={() => handleToggleBooked(selected.id)}
                 onSchedule={(date) => handleSchedule(selected.id, date)}
                 onTimeChange={(time, endTime) => handleTimeChange(selected.id, time, endTime)}
                 onNotesChange={(notes) => handleNotesChange(selected.id, notes)} />
@@ -223,8 +240,12 @@ function OptionTab({ opt, index, isSelected, onClick, onDelete, confirmDelete, o
         isSelected ? "border-orange-500 bg-orange-50 shadow-sm" : "border-slate-200 bg-white hover:border-orange-300"
       }`}
     >
-      {/* Itinerary check icon — upper right */}
-      {opt.is_selected && (
+      {/* Booked indicator — takes precedence over plain itinerary check */}
+      {opt.booked && (
+        <div className="absolute top-2 right-2"><BookedBadge variant="icon" /></div>
+      )}
+      {/* Itinerary check icon — upper right (hidden when booked, since booked implies in-itinerary) */}
+      {!opt.booked && opt.is_selected && (
         <svg className="absolute top-2 right-2 w-3.5 h-3.5 text-orange-500" fill="currentColor" viewBox="0 0 20 20">
           <path fillRule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clipRule="evenodd" />
         </svg>
@@ -247,12 +268,12 @@ function OptionTab({ opt, index, isSelected, onClick, onDelete, confirmDelete, o
 }
 
 // ─── OPTION DETAIL ───
-function OptionDetail({ opt, tripStart, tripEnd, onToggleSelected, onSchedule, onTimeChange, onNotesChange }) {
+function OptionDetail({ opt, tripStart, tripEnd, onToggleSelected, onToggleBooked, onSchedule, onTimeChange, onNotesChange }) {
   const [showCalendar, setShowCalendar] = useState(false);
   const isScheduled = !!opt.scheduled_date;
   return (
     <div className="flex gap-4">
-      {/* Itinerary button — fixed left column */}
+      {/* Itinerary buttons — Add + Booked, stacked in fixed left column */}
       <div className="flex flex-col items-center flex-shrink-0 w-9 pt-0.5">
         <button
           type="button"
@@ -270,6 +291,27 @@ function OptionDetail({ opt, tripStart, tripEnd, onToggleSelected, onSchedule, o
         </button>
         <span className={`text-[9px] font-semibold uppercase tracking-wide mt-0.5 ${isScheduled ? "text-orange-600" : "text-slate-400"}`}>
           {isScheduled ? "Added" : "Add"}
+        </span>
+        <button
+          type="button"
+          onClick={onToggleBooked}
+          className={`mt-3 w-9 h-9 rounded-lg flex items-center justify-center transition-colors ${
+            opt.booked ? "bg-emerald-600 text-white hover:bg-emerald-700" : "bg-slate-100 text-slate-400 hover:bg-emerald-50 hover:text-emerald-600"
+          }`}
+          title={opt.booked ? "Mark as not booked" : "Mark as booked"}
+        >
+          {opt.booked ? (
+            <svg className="w-4.5 h-4.5" fill="currentColor" viewBox="0 0 20 20">
+              <path fillRule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clipRule="evenodd" />
+            </svg>
+          ) : (
+            <svg className="w-4.5 h-4.5" fill="none" stroke="currentColor" viewBox="0 0 24 24" strokeWidth={2}>
+              <path strokeLinecap="round" strokeLinejoin="round" d="M17.593 3.322c1.1.128 1.907 1.077 1.907 2.185V21L12 17.25 4.5 21V5.507c0-1.108.806-2.057 1.907-2.185a48.507 48.507 0 0111.186 0z" />
+            </svg>
+          )}
+        </button>
+        <span className={`text-[9px] font-semibold uppercase tracking-wide mt-0.5 ${opt.booked ? "text-emerald-600" : "text-slate-400"}`}>
+          {opt.booked ? "Booked" : "Book"}
         </span>
       </div>
 

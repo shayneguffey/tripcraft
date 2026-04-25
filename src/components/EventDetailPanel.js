@@ -22,6 +22,7 @@
 
 import { useEffect, useState } from "react";
 import { supabase } from "@/lib/supabase";
+import BookedBadge from "@/components/BookedBadge";
 
 const TABLE_MAP = {
   flight: "flight_options",
@@ -143,7 +144,7 @@ export default function EventDetailPanel({ record, type, canEdit, onChange, isDr
   const hasAddress = !!address;
 
   // Nothing to render and viewer can't edit — show a quiet placeholder.
-  const hasAnyContent = hasNotes || hasPrice || hasStayDates || hasSource || hasAddress || hasTransportAddrs;
+  const hasAnyContent = hasNotes || hasPrice || hasStayDates || hasSource || hasAddress || hasTransportAddrs || record?.booked;
   // Empty spacers that mirror the row's left columns, so the panel
   // content lines up with the title column.
   //   "event"         → drag (optional) + time + dot
@@ -171,6 +172,12 @@ export default function EventDetailPanel({ record, type, canEdit, onChange, isDr
     <div className="px-3 pt-2.5 pb-2.5 border-t border-stone-300/40 flex gap-2.5">
       {Spacers}
       <div className="flex-1 min-w-0 space-y-2">
+      {record?.booked && (
+        <div className="flex items-baseline gap-2 text-xs">
+          <span className="text-[10px] font-semibold text-stone-400 uppercase tracking-wide">Status</span>
+          <BookedBadge variant="pill" />
+        </div>
+      )}
       {type === "flight" && record?.flight_number && (
         <div className="flex items-baseline gap-2 text-xs">
           <span className="text-[10px] font-semibold text-stone-400 uppercase tracking-wide">Flight #</span>

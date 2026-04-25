@@ -6,6 +6,7 @@ import { parseFlightInput, parseFlightText, parseOcrText, getCityName, getAirlin
 import InlineConfirm from "@/components/InlineConfirm";
 import SourceThumbnails from "@/components/SourceThumbnails";
 import EditableNotes from "@/components/EditableNotes";
+import BookedBadge from "@/components/BookedBadge";
 
 // Send screenshot to Gemini Vision API via our server-side route
 async function extractFlightsFromImage(imageDataUrl) {
@@ -94,6 +95,20 @@ export default function FlightOptions({ tripId, tripStart, tripEnd, onFlightOpti
     loadOptions();
   }
 
+  async function handleToggleBooked(optionId) {
+    const opt = options.find((o) => o.id === optionId);
+    if (!opt) return;
+    const newBooked = !opt.booked;
+    await supabase.from("flight_options").update({ booked: newBooked }).eq("id", optionId);
+    if (newBooked && onToggleSelection && activeItineraryId) {
+      const isInItinerary = (itinerarySelections || []).some(
+        (s) => s.option_type === "flight" && s.option_id === optionId
+      );
+      if (!isInItinerary) onToggleSelection("flight", optionId);
+    }
+    loadOptions();
+  }
+
   async function handleSelectOption(optionId) {
     if (onToggleSelection && activeItineraryId) {
       // Use itinerary-based selection (supports multiple flights)
@@ -166,6 +181,7 @@ export default function FlightOptions({ tripId, tripStart, tripEnd, onFlightOpti
               <OptionDetail option={selectedOpt}
                 isItinerarySelected={(itinerarySelections || []).some(s => s.option_type === "flight" && s.option_id === selectedOpt.id)}
                 onToggleSelected={() => handleSelectOption(selectedOpt.id)}
+                onToggleBooked={() => handleToggleBooked(selectedOpt.id)}
                 onNotesChange={(notes) => handleNotesChange(selectedOpt.id, notes)} />
             ) : (
               <p className="text-slate-400 text-sm italic">Select a flight option to view details</p>
@@ -212,8 +228,12 @@ function OptionTab({ option, isActive, isItinerarySelected, onSelect, onDelete, 
         isActive ? "border-emerald-500 bg-emerald-50 shadow-sm" : "border-slate-200 bg-white hover:border-emerald-300"
       }`}
     >
-      {/* Itinerary check icon — upper right */}
-      {(isItinerarySelected !== undefined ? isItinerarySelected : option.is_selected) && (
+      {/* Booked indicator — takes precedence over plain itinerary check */}
+      {option.booked && (
+        <div className="absolute top-2 right-2"><BookedBadge variant="icon" /></div>
+      )}
+      {/* Itinerary check icon — upper right (hidden when booked) */}
+      {!option.booked && (isItinerarySelected !== undefined ? isItinerarySelected : option.is_selected) && (
         <svg className="absolute top-2 right-2 w-3.5 h-3.5 text-emerald-500" fill="currentColor" viewBox="0 0 20 20">
           <path fillRule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clipRule="evenodd" />
         </svg>
@@ -249,7 +269,7 @@ function OptionTab({ option, isActive, isItinerarySelected, onSelect, onDelete, 
 }
 
 // ─── OPTION DETAIL PANEL ───
-function OptionDetail({ option, isItinerarySelected, onToggleSelected, onNotesChange }) {
+function OptionDetail({ option, isItinerarySelected, onToggleSelected, onToggleBooked, onNotesChange }) {
   const legs = option.flight_legs || [];
   const outbound = legs.filter((l) => l.direction === "outbound");
   const returnLegs = legs.filter((l) => l.direction === "return");
@@ -273,6 +293,27 @@ function OptionDetail({ option, isItinerarySelected, onToggleSelected, onNotesCh
         </button>
         <span className={`text-[9px] font-semibold uppercase tracking-wide mt-0.5 ${isItinerarySelected ? "text-emerald-600" : "text-slate-400"}`}>
           {isItinerarySelected ? "Added" : "Add"}
+        </span>
+        <button
+          type="button"
+          onClick={onToggleBooked}
+          className={`mt-3 w-9 h-9 rounded-lg flex items-center justify-center transition-colors ${
+            option.booked ? "bg-emerald-600 text-white hover:bg-emerald-700" : "bg-slate-100 text-slate-400 hover:bg-emerald-50 hover:text-emerald-600"
+          }`}
+          title={option.booked ? "Mark as not booked" : "Mark as booked"}
+        >
+          {option.booked ? (
+            <svg className="w-4.5 h-4.5" fill="currentColor" viewBox="0 0 20 20">
+              <path fillRule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clipRule="evenodd" />
+            </svg>
+          ) : (
+            <svg className="w-4.5 h-4.5" fill="none" stroke="currentColor" viewBox="0 0 24 24" strokeWidth={2}>
+              <path strokeLinecap="round" strokeLinejoin="round" d="M17.593 3.322c1.1.128 1.907 1.077 1.907 2.185V21L12 17.25 4.5 21V5.507c0-1.108.806-2.057 1.907-2.185a48.507 48.507 0 0111.186 0z" />
+            </svg>
+          )}
+        </button>
+        <span className={`text-[9px] font-semibold uppercase tracking-wide mt-0.5 ${option.booked ? "text-emerald-600" : "text-slate-400"}`}>
+          {option.booked ? "Booked" : "Book"}
         </span>
       </div>
 
