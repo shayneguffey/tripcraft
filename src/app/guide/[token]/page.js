@@ -213,7 +213,16 @@ export default function GuidePage({ params }) {
     const dayFlightLegs = flights.flatMap((f) =>
       (f.legs || [])
         .filter((l) => l.departure_date === date)
-        .map((leg) => ({ ...leg, _flight: f }))
+        .map((leg) => ({
+          ...leg,
+          _flight: f,
+          _optionId: f.id,
+          total_price: f.total_price,
+          currency: f.currency,
+          notes: leg.notes || f.notes,
+          source_url: f.source_url,
+          screenshot_url: f.screenshot_url,
+        }))
     );
 
     // Accommodations active this day (inclusive check-in, exclusive check-out)

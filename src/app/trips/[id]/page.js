@@ -579,7 +579,7 @@ export default function TripDetailPage() {
     const selectedOpts = flightOptions.filter((o) => selectedFlightIds.includes(o.id));
     if (selectedOpts.length === 0) return [];
     return selectedOpts.flatMap((opt) =>
-      (opt.flight_legs || []).filter((leg) => leg.departure_date === dateKey).map((leg) => ({ ...leg, _optionId: opt.id, notes: leg.notes || opt.notes, source_url: opt.source_url, screenshot_url: opt.screenshot_url }))
+      (opt.flight_legs || []).filter((leg) => leg.departure_date === dateKey).map((leg) => ({ ...leg, _optionId: opt.id, notes: leg.notes || opt.notes, source_url: opt.source_url, screenshot_url: opt.screenshot_url, total_price: opt.total_price, currency: opt.currency }))
     );
   }
 

@@ -55,6 +55,57 @@ function formatRange(record) {
   return `${formatTime12h(start)} – ${formatTime12h(end)}`;
 }
 
+function currencySymbol(c) {
+  if (c === "EUR") return "€";
+  if (c === "GBP") return "£";
+  if (c === "JPY") return "¥";
+  return "$";
+}
+
+function formatMoney(amount, currency) {
+  if (amount == null || amount === "") return "";
+  return `${currencySymbol(currency)}${Number(amount).toLocaleString(undefined, { maximumFractionDigits: 2 })}`;
+}
+
+// Build a list of price lines for the given record/type.
+// Returns [{ amount, currency, suffix }] — usually 0 or 1 entries, but
+// accommodation can return both per-night AND total when both are set.
+function priceLines(record, type) {
+  if (!record) return [];
+  const cur = record.currency;
+  const lines = [];
+  if (type === "flight") {
+    if (record.total_price != null && record.total_price !== "") {
+      lines.push({ amount: record.total_price, currency: cur, suffix: "" });
+    }
+  } else if (type === "activity") {
+    if (record.price != null && record.price !== "") {
+      const suffix = record.price_per === "group" ? "per group" : "per person";
+      lines.push({ amount: record.price, currency: cur, suffix });
+    }
+  } else if (type === "dining") {
+    if (record.avg_meal_cost != null && record.avg_meal_cost !== "") {
+      lines.push({ amount: record.avg_meal_cost, currency: cur, suffix: "avg/meal" });
+    }
+  } else if (type === "transportation") {
+    if (record.price != null && record.price !== "") {
+      lines.push({ amount: record.price, currency: cur, suffix: record.price_per || "total" });
+    }
+  } else if (type === "accommodation") {
+    if (record.price_per_night != null && record.price_per_night !== "") {
+      lines.push({ amount: record.price_per_night, currency: cur, suffix: "per night" });
+    }
+    if (record.total_price != null && record.total_price !== "") {
+      lines.push({ amount: record.total_price, currency: cur, suffix: "total" });
+    }
+  } else if (type === "dayEvent") {
+    if (record.price != null && record.price !== "") {
+      lines.push({ amount: record.price, currency: cur, suffix: "" });
+    }
+  }
+  return lines;
+}
+
 export default function EventDetailPanel({ record, type, canEdit, onChange, isDraggable, align = "event" }) {
   const [editingNotes, setEditingNotes] = useState(false);
   const [notesValue, setNotesValue] = useState(record?.notes || "");
@@ -76,7 +127,8 @@ export default function EventDetailPanel({ record, type, canEdit, onChange, isDr
   }
 
   const hasNotes = !!record?.notes;
-  const hasPrice = type !== "accommodation" && record?.total_price != null && record.total_price !== "";
+  const prices = priceLines(record, type);
+  const hasPrice = prices.length > 0;
   const hasStayDates = type === "accommodation" && record?.check_in_date && record?.check_out_date;
   const hasSource = record?.source_url || record?.screenshot_url;
   const isTransport = type === "transportation";
@@ -139,7 +191,15 @@ export default function EventDetailPanel({ record, type, canEdit, onChange, isDr
       {hasPrice && (
         <div className="flex items-baseline gap-2 text-xs">
           <span className="text-[10px] font-semibold text-stone-400 uppercase tracking-wide">Price</span>
-          <span className="text-stone-600">${Number(record.total_price).toLocaleString()}</span>
+          <span className="text-stone-600">
+            {prices.map((p, i) => (
+              <span key={i}>
+                {i > 0 && <span className="text-stone-300 mx-1.5">·</span>}
+                {formatMoney(p.amount, p.currency)}
+                {p.suffix && <span className="text-stone-400"> {p.suffix}</span>}
+              </span>
+            ))}
+          </span>
         </div>
       )}
 
