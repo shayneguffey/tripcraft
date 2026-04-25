@@ -7,6 +7,7 @@ import Link from "next/link";
 import GlobeCanvas from "@/components/GlobeCanvas";
 import MapPatternBg from "@/components/MapPatternBg";
 import FlightPathLoader from "@/components/FlightPathLoader";
+import AccountMenu from "@/components/AccountMenu";
 import { tripPlanningUrl, guideUrl } from "@/lib/tripUrl";
 
 // Format trip dates: "Jun 5-12, 2026" or "Jun 5 - Jul 3, 2026"
@@ -369,7 +370,6 @@ export default function DashboardPage() {
   const [allTripsForGlobe, setAllTripsForGlobe] = useState([]);
   const [flightLegsForGlobe, setFlightLegsForGlobe] = useState([]);
   const [loading, setLoading] = useState(true);
-  const [showAccount, setShowAccount] = useState(false);
   const [view, setView] = useState("cards"); // "cards" or "globe"
   const [creating, setCreating] = useState(false);
   const [newTitle, setNewTitle] = useState("");
@@ -820,42 +820,7 @@ export default function DashboardPage() {
           <img src="/TRIPCRAFTLOGO.png" alt="TripCraft" style={{ height: 265, width: "auto" }} />
         </div>
 
-        {/* Account dropdown */}
-        <div className="relative">
-          <button
-            onClick={() => setShowAccount(!showAccount)}
-            className="w-12 h-12 rounded-full bg-stone-800/20 text-stone-700 flex items-center justify-center backdrop-blur-sm hover:bg-[#da7b4a]/30 hover:text-[#b5552a] transition-colors"
-            title="Account"
-          >
-            <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 16 16" fill="currentColor" className="w-6 h-6">
-              <path d="M8 8a3 3 0 1 0 0-6 3 3 0 0 0 0 6ZM12.735 14c.618 0 1.093-.561.872-1.139a6.002 6.002 0 0 0-11.215 0c-.22.578.255 1.139.872 1.139h9.47Z" />
-            </svg>
-          </button>
-          {showAccount && (
-            <>
-              <div className="fixed inset-0 z-30" onClick={() => setShowAccount(false)} />
-              <div className="absolute right-0 top-10 z-40 w-56 bg-white rounded-xl shadow-xl border border-stone-200 py-2 overflow-hidden">
-                <div className="px-4 py-2 border-b border-stone-100">
-                  <p className="text-xs text-stone-400">Signed in as</p>
-                  <p className="text-sm text-stone-700 font-medium truncate">{user?.email}</p>
-                </div>
-                <Link
-                  href="/archived"
-                  className="block px-4 py-2.5 text-sm text-stone-600 hover:bg-stone-50 transition-colors"
-                  onClick={() => setShowAccount(false)}
-                >
-                  Archived Trips
-                </Link>
-                <button
-                  onClick={handleSignOut}
-                  className="w-full text-left px-4 py-2.5 text-sm text-stone-600 hover:bg-stone-50 transition-colors"
-                >
-                  Sign Out
-                </button>
-              </div>
-            </>
-          )}
-        </div>
+        <AccountMenu variant="light" />
       </div>
       </div>{/* end header layer */}
 

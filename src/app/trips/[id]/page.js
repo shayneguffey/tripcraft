@@ -22,6 +22,7 @@ import CATEGORY_COLORS from "@/lib/categoryColors";
 import DateRangePicker from "@/components/DateRangePicker";
 import DayCardView from "@/components/DayCardView";
 import FlightPathLoader from "@/components/FlightPathLoader";
+import AccountMenu from "@/components/AccountMenu";
 import { tripPlanningUrl, guideUrl } from "@/lib/tripUrl";
 
 // Helper: generate array of dates for calendar display
@@ -795,22 +796,25 @@ export default function TripDetailPage() {
                   }}
                 />
               </div>
-              <Link
-                href="/trips"
-                className={`flex items-center gap-2 px-4 py-1.5 mr-4 mt-4 rounded-lg text-sm font-semibold transition-all hover:ring-2 hover:ring-[#da7b4a]/40 ${
-                  trip?.banner_image ? "text-white/90" : "text-stone-600"
-                }`}
-                style={{
-                  background: trip?.banner_image ? "rgba(30, 22, 12, 0.5)" : "rgba(255,255,255,0.45)",
-                  border: trip?.banner_image ? "1px solid rgba(212, 165, 116, 0.3)" : "1px solid rgba(180, 165, 140, 0.4)",
-                  backdropFilter: trip?.banner_image ? "blur(8px)" : "none",
-                }}
-              >
-                <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 16 16" fill="currentColor" className="w-3.5 h-3.5">
-                  <path fillRule="evenodd" d="M9.78 4.22a.75.75 0 0 1 0 1.06L7.06 8l2.72 2.72a.75.75 0 1 1-1.06 1.06L5.47 8.53a.75.75 0 0 1 0-1.06l3.25-3.25a.75.75 0 0 1 1.06 0Z" clipRule="evenodd" />
-                </svg>
-                Back to Trips
-              </Link>
+              <div className="flex items-center gap-2 mr-4 mt-4">
+                <Link
+                  href="/trips"
+                  className={`flex items-center gap-2 px-4 py-1.5 rounded-lg text-sm font-semibold transition-all hover:ring-2 hover:ring-[#da7b4a]/40 ${
+                    trip?.banner_image ? "text-white/90" : "text-stone-600"
+                  }`}
+                  style={{
+                    background: trip?.banner_image ? "rgba(30, 22, 12, 0.5)" : "rgba(255,255,255,0.45)",
+                    border: trip?.banner_image ? "1px solid rgba(212, 165, 116, 0.3)" : "1px solid rgba(180, 165, 140, 0.4)",
+                    backdropFilter: trip?.banner_image ? "blur(8px)" : "none",
+                  }}
+                >
+                  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 16 16" fill="currentColor" className="w-3.5 h-3.5">
+                    <path fillRule="evenodd" d="M9.78 4.22a.75.75 0 0 1 0 1.06L7.06 8l2.72 2.72a.75.75 0 1 1-1.06 1.06L5.47 8.53a.75.75 0 0 1 0-1.06l3.25-3.25a.75.75 0 0 1 1.06 0Z" clipRule="evenodd" />
+                  </svg>
+                  Back to Trips
+                </Link>
+                <AccountMenu variant={trip?.banner_image ? "dark" : "light"} />
+              </div>
             </div>
 
             {/* Trip Header with inline editing */}
