@@ -79,9 +79,11 @@ export default function EventDetailPanel({ record, type, canEdit, onChange, isDr
   const hasPrice = type !== "accommodation" && record?.total_price != null && record.total_price !== "";
   const hasStayDates = type === "accommodation" && record?.check_in_date && record?.check_out_date;
   const hasSource = record?.source_url || record?.screenshot_url;
+  const address = record?.address || record?.location || record?.location_name || null;
+  const hasAddress = !!address;
 
   // Nothing to render and viewer can't edit — show a quiet placeholder.
-  const hasAnyContent = hasNotes || hasPrice || hasStayDates || hasSource;
+  const hasAnyContent = hasNotes || hasPrice || hasStayDates || hasSource || hasAddress;
   // Empty spacers that mirror the row's left columns, so the panel
   // content lines up with the title column.
   //   "event"         → drag (optional) + time + dot
@@ -130,6 +132,22 @@ export default function EventDetailPanel({ record, type, canEdit, onChange, isDr
         <div className="flex items-baseline gap-2 text-xs">
           <span className="text-[10px] font-semibold text-stone-400 uppercase tracking-wide">Price</span>
           <span className="text-stone-600">${Number(record.total_price).toLocaleString()}</span>
+        </div>
+      )}
+
+      {hasAddress && (
+        <div className="flex items-baseline gap-2 text-xs">
+          <span className="text-[10px] font-semibold text-stone-400 uppercase tracking-wide flex-shrink-0">Address</span>
+          <a
+            href={`https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(address)}`}
+            target="_blank"
+            rel="noopener noreferrer"
+            onClick={(e) => e.stopPropagation()}
+            className="text-stone-600 hover:text-[#da7b4a] hover:underline transition-colors truncate"
+            title="Open in Google Maps"
+          >
+            <span className="inline-block mr-1">{"\u{1F4CD}"}</span>{address}
+          </a>
         </div>
       )}
 

@@ -465,7 +465,6 @@ export default function DayCardView({
             <div className="space-y-1.5">
               {accommodationEvents.map((evt, i) => {
                 const c = COLOR_MAP.accommodation;
-                const addressUrl = evt.address ? mapsSearchUrl(evt.address) : null;
                 const accomKey = evt._record?.id ? `accom-${evt._record.id}` : `accom-${i}`;
                 const isExpanded = expandedKey === accomKey;
                 const onToggle = () => setExpandedKey(isExpanded ? null : accomKey);
@@ -479,20 +478,9 @@ export default function DayCardView({
                       <div className={`w-2 h-2 rounded-full ${c.dot} flex-shrink-0 mt-[5px]`} />
                       <div className="flex-1 min-w-0">
                         <span className={`text-sm font-medium ${c.text}`}>{evt.name}</span>
-                        {addressUrl ? (
-                          <a
-                            href={addressUrl}
-                            target="_blank"
-                            rel="noopener noreferrer"
-                            onClick={(e) => e.stopPropagation()}
-                            className="block text-xs text-stone-500 hover:text-[#da7b4a] hover:underline transition-colors mt-0.5"
-                            title="Open in Google Maps"
-                          >
-                            <span className="inline-block mr-1">{"\u{1F4CD}"}</span>{evt.address}
-                          </a>
-                        ) : evt.detail ? (
+                        {evt.detail && (
                           <span className="text-xs text-stone-400 ml-2">{evt.detail}</span>
-                        ) : null}
+                        )}
                       </div>
                       <button
                         type="button"
@@ -581,8 +569,6 @@ export function OptionEventCard({
   const startLabel = isTransport ? "Depart" : "Start";
   const endLabel = isTransport ? "Arrive" : "End";
 
-  const addressUrl = item.address ? mapsSearchUrl(item.address) : null;
-
   return (
     <div className={`${c.bg} border ${c.border} rounded-lg group overflow-hidden`}>
       <div
@@ -649,18 +635,6 @@ export function OptionEventCard({
         <div className="flex-1 min-w-0">
           <span className={`text-sm font-medium ${c.text} uppercase`}>{item.name}</span>
           {item.detail && <span className="text-xs text-stone-400 ml-2 uppercase">{item.detail}</span>}
-          {addressUrl && (
-            <a
-              href={addressUrl}
-              target="_blank"
-              rel="noopener noreferrer"
-              onClick={(e) => e.stopPropagation()}
-              className="block text-xs text-stone-500 hover:text-[#da7b4a] hover:underline transition-colors mt-0.5"
-              title="Open in Google Maps"
-            >
-              <span className="inline-block mr-1">{"\u{1F4CD}"}</span>{item.address}
-            </a>
-          )}
         </div>
 
         {/* Chevron — visual cue that the row is expandable */}
