@@ -1,18 +1,24 @@
 "use client";
 
 /**
- * OptionPicker — inline picker that lets the user schedule an existing
- * itinerary option (activity, dining, or transportation) onto a day.
+ * OptionPicker — inline picker that adds an existing itinerary option to a day.
  *
  * Rendered below the events list inside DayCardView when the user taps
  * "+ Itinerary Option". Two-step UI:
- *   1. Pick a category (Activities / Dining / Transport)
- *   2. Pick an option from that category. Tapping the option:
- *      • sets its scheduled date to `dateKey` (overwrites if already set)
- *      • inserts an itinerary_selections row if needed
+ *   1. Pick a category (Activities / Dining / Transport / Stays)
+ *   2. Pick an option from that category.
  *
- * Excludes flights and accommodations by design — flights are leg-anchored
- * and stays are date-range, both handled in their respective option modules.
+ * Two scheduling modes per category — see CATEGORIES below for details.
+ *   • Activities / Dining are FLEXIBLE: picker shows every option for the trip
+ *     and updates the option’s date when picked (re-schedule).
+ *   • Transportation / Stays are FIXED: their dates live with the option
+ *     itself. Picker only shows options whose date already matches THIS day,
+ *     and picking just adds them to the itinerary (no date update).
+ *     Transportation with a return date will appear automatically on the
+ *     return day too — the calendar/day-card already renders both ends.
+ *
+ * Flights are excluded — leg-anchored multi-date scheduling is handled
+ * in the Flights module.
  *
  * Props:
  *   tripId      number   — required to scope the option list
@@ -25,12 +31,22 @@
 import { useEffect, useState } from "react";
 import { supabase } from "@/lib/supabase";
 
+// Two scheduling modes:
+//   flexible: true  → activity / dining. Picker can re-schedule to any day,
+//                     so we show all options for the trip (minus those already
+//                     on this day) and update the date on pick.
+//   flexible: false → transportation / accommodation. Dates are anchored to the
+//                     option itself (a car rental knows its own start day, a
+//                     stay knows its own check-in). The picker only shows
+//                     options whose date already matches THIS day, and picking
+//                     just adds them to the itinerary.
 const CATEGORIES = [
   {
     key: "activity",
     label: "Activities",
     table: "activity_options",
     dateField: "scheduled_date",
+    flexible: true,
     accentBg: "bg-yellow-100",
     accentText: "text-yellow-700",
   },
@@ -39,6 +55,7 @@ const CATEGORIES = [
     label: "Dining",
     table: "dining_options",
     dateField: "scheduled_date",
+    flexible: true,
     accentBg: "bg-rose-100",
     accentText: "text-rose-700",
   },
@@ -47,8 +64,18 @@ const CATEGORIES = [
     label: "Transport",
     table: "transportation_options",
     dateField: "departure_date",
+    flexible: false,
     accentBg: "bg-purple-100",
     accentText: "text-purple-700",
+  },
+  {
+    key: "accommodation",
+    label: "Stays",
+    table: "accommodation_options",
+    dateField: "check_in_date",
+    flexible: false,
+    accentBg: "bg-sky-100",
+    accentText: "text-sky-700",
   },
 ];
 
@@ -79,26 +106,50 @@ export default function OptionPicker({ tripId, dateKey, itineraryId, onPicked, o
     setError(null);
 
     (async () => {
-      const { data, error } = await supabase
+      const { data: opts, error: optsErr } = await supabase
         .from(cat.table)
         .select("*")
         .eq("trip_id", tripId)
         .order("name", { ascending: true, nullsFirst: false });
 
       if (cancelled) return;
-      if (error) {
-        setError(error.message);
+      if (optsErr) {
+        setError(optsErr.message);
         setOptions([]);
-      } else {
-        // Hide options already scheduled on THIS day — they're already on the card.
-        const filtered = (data || []).filter((o) => o[cat.dateField] !== dateKey);
-        setOptions(filtered);
+        setLoading(false);
+        return;
       }
+
+      let filtered = opts || [];
+
+      if (cat.flexible) {
+        // Activities / dining: show all, except ones already on THIS day.
+        filtered = filtered.filter((o) => o[cat.dateField] !== dateKey);
+      } else {
+        // Transportation / accommodation: only options whose date is already
+        // pinned to this day (set in the option module's own UI).
+        filtered = filtered.filter((o) => o[cat.dateField] === dateKey);
+
+        // Hide options already in the active itinerary — they’re already
+        // visible on the day card.
+        if (itineraryId) {
+          const { data: sels } = await supabase
+            .from("itinerary_selections")
+            .select("option_id")
+            .eq("itinerary_id", itineraryId)
+            .eq("option_type", category);
+          if (cancelled) return;
+          const selectedIds = new Set((sels || []).map((s) => s.option_id));
+          filtered = filtered.filter((o) => !selectedIds.has(o.id));
+        }
+      }
+
+      setOptions(filtered);
       setLoading(false);
     })();
 
     return () => { cancelled = true; };
-  }, [category, tripId, dateKey]);
+  }, [category, tripId, dateKey, itineraryId]);
 
   async function pickOption(opt) {
     if (busyId) return;
@@ -106,14 +157,18 @@ export default function OptionPicker({ tripId, dateKey, itineraryId, onPicked, o
     try {
       const cat = CATEGORIES.find((c) => c.key === category);
 
-      // 1. Set the date field on the option row.
-      const { error: updErr } = await supabase
-        .from(cat.table)
-        .update({ [cat.dateField]: dateKey })
-        .eq("id", opt.id);
-      if (updErr) {
-        setError(updErr.message);
-        return;
+      // 1. Flexible categories: set the date so the option moves to this day.
+      //    Fixed categories (transportation/accommodation): the option already
+      //    has its own date — do not overwrite it.
+      if (cat.flexible) {
+        const { error: updErr } = await supabase
+          .from(cat.table)
+          .update({ [cat.dateField]: dateKey })
+          .eq("id", opt.id);
+        if (updErr) {
+          setError(updErr.message);
+          return;
+        }
       }
 
       // 2. Ensure the option is selected in the active itinerary.
@@ -186,7 +241,9 @@ export default function OptionPicker({ tripId, dateKey, itineraryId, onPicked, o
         <p className="text-xs text-red-600">{error}</p>
       ) : options.length === 0 ? (
         <p className="text-xs text-stone-400 italic py-2">
-          No {cat.label.toLowerCase()} options to schedule on this day. Add some in the {cat.label} section first.
+          {cat.flexible
+            ? `No ${cat.label.toLowerCase()} options to schedule on this day. Add some in the ${cat.label} section first.`
+            : `No ${cat.label.toLowerCase()} options are dated for this day. Set ${cat.key === "accommodation" ? "check-in" : "departure"} dates in the ${cat.label} section first.`}
         </p>
       ) : (
         <div className="space-y-1 max-h-60 overflow-y-auto">
@@ -204,13 +261,13 @@ export default function OptionPicker({ tripId, dateKey, itineraryId, onPicked, o
                   <span className="text-sm font-medium text-stone-700 block truncate">
                     {opt.name || "Untitled"}
                   </span>
-                  {existingDate ? (
+                  {cat.flexible && existingDate ? (
                     <span className="text-[10px] text-amber-600">
-                      Currently on {formatShort(existingDate)} \u2014 picking moves it
+                      Currently on {formatShort(existingDate)} — picking moves it
                     </span>
-                  ) : opt.location_name || opt.address ? (
+                  ) : opt.location_name || opt.address || opt.pickup_location ? (
                     <span className="text-[10px] text-stone-400 truncate block">
-                      {opt.location_name || opt.address}
+                      {opt.location_name || opt.address || opt.pickup_location}
                     </span>
                   ) : null}
                 </div>
