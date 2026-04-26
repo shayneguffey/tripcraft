@@ -363,6 +363,17 @@ export default function GuidePage({ params }) {
           )}
         </div>
         <Link
+          href={`/guide/${token}/plan`}
+          className="absolute bottom-3 right-[150px] z-20 inline-flex items-center gap-1.5 text-white/95 text-xs font-semibold tracking-wide px-3 py-1.5 rounded-full backdrop-blur-sm hover:brightness-110 transition-all"
+          style={{ background: "rgba(30,22,12,0.55)", border: "1px solid rgba(212,165,116,0.25)" }}
+          title="View trip plan (printable PDF)"
+        >
+          <svg className="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24" strokeWidth={2.5}>
+            <path strokeLinecap="round" strokeLinejoin="round" d="M9 12h6m-6 4h6m2 5H7a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h5.586a1 1 0 0 1 .707.293l5.414 5.414a1 1 0 0 1 .293.707V19a2 2 0 0 1-2 2Z" />
+          </svg>
+          Trip Plan
+        </Link>
+        <Link
           href={`/guide/${token}/history`}
           className="absolute bottom-3 right-3 z-20 inline-flex items-center gap-1.5 text-white/95 text-xs font-semibold tracking-wide px-3 py-1.5 rounded-full backdrop-blur-sm hover:brightness-110 transition-all"
           style={{ background: "rgba(30,22,12,0.55)", border: "1px solid rgba(212,165,116,0.25)" }}

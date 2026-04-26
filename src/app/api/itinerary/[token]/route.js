@@ -151,6 +151,7 @@ export async function GET(request, { params }) {
         id: itinerary.id,
         title: itinerary.title,
         notes: itinerary.notes || null,
+        pitch: itinerary.pitch || null,
         num_travelers: itinerary.num_travelers,
         start_date: itinerary.start_date,
         end_date: itinerary.end_date,
