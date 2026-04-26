@@ -263,12 +263,19 @@ export default function DayCardView({
       });
     });
     (calendarEvents.transport || []).forEach((t) => {
+      // Mode-aware secondary detail in the collapsed row.
+      // Trains / buses / ferries: prefer the vehicle identifier (train number,
+      // vessel name) since that’s how travelers refer to them. Otherwise
+      // fall back to the broad vehicle_type ("SUV", "Sedan").
+      const detailBits = [];
+      if (t.vehicle_id) detailBits.push(t.vehicle_id);
+      if (detailBits.length === 0 && t.vehicle_type) detailBits.push(t.vehicle_type);
       itineraryEvents.push({
         type: "transportation",
         time: t.departure_time?.slice(0, 5),
         endTime: t.arrival_time?.slice(0, 5),
         name: t.name,
-        detail: "",
+        detail: detailBits.join(" · "),
         address: null,
         _record: t,
         _table: "transportation_options",

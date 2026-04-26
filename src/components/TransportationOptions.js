@@ -413,6 +413,9 @@ function OptionDetail({ opt, tripStart, tripEnd, onToggleSelected, onToggleBooke
           </div>
         )}
 
+        {/* Mode-specific details — trains, ferries, buses, transfers. */}
+        <ModeSpecificDetails opt={opt} />
+
         {/* Notes */}
         <EditableNotes notes={opt.notes} onSave={onNotesChange} />
 
@@ -434,6 +437,48 @@ function OptionDetail({ opt, tripStart, tripEnd, onToggleSelected, onToggleBooke
 }
 
 // ─── ADD TRANSPORTATION MODAL ───
+function ModeSpecificDetails({ opt }) {
+  const rows = [];
+  // Trains / buses / ferries: vehicle id, platform/dock, seat
+  if (opt.vehicle_id || opt.platform_terminal || opt.seat_number) {
+    const bits = [];
+    if (opt.vehicle_id) bits.push(opt.vehicle_id);
+    if (opt.platform_terminal) bits.push(`Platform ${opt.platform_terminal}`);
+    if (opt.seat_number) bits.push(`Seat ${opt.seat_number}`);
+    rows.push({ label: "Service", value: bits.join(" · ") });
+  }
+  // Ferries: boarding deadline
+  if (opt.boarding_deadline) {
+    rows.push({ label: "Boarding", value: formatTime(opt.boarding_deadline) });
+  }
+  // Transfers: driver, meeting instructions
+  if (opt.driver_name || opt.driver_phone) {
+    const bits = [opt.driver_name, opt.driver_phone].filter(Boolean);
+    rows.push({ label: "Driver", value: bits.join(" · ") });
+  }
+  if (opt.meeting_instructions) {
+    rows.push({ label: "Meet", value: opt.meeting_instructions });
+  }
+  // Car rentals: fuel policy + additional drivers (mileage already shown above)
+  if (opt.fuel_policy) rows.push({ label: "Fuel", value: opt.fuel_policy });
+  if (opt.additional_drivers) rows.push({ label: "Drivers", value: opt.additional_drivers });
+  // Universal: booking reference, cancellation policy
+  if (opt.booking_reference) rows.push({ label: "Conf", value: opt.booking_reference });
+  if (opt.cancellation_policy) rows.push({ label: "Cancel", value: opt.cancellation_policy });
+
+  if (rows.length === 0) return null;
+  return (
+    <div className="mb-4 pt-2 border-t border-slate-100 space-y-1.5">
+      {rows.map((r, i) => (
+        <div key={i} className="flex items-baseline gap-2 text-sm">
+          <span className="text-[10px] font-bold text-slate-400 uppercase tracking-wide flex-shrink-0 w-16">{r.label}</span>
+          <span className="text-slate-700">{r.value}</span>
+        </div>
+      ))}
+    </div>
+  );
+}
+
 function AddTransportationModal({ tripId, tripStart, tripEnd, onClose, onSave }) {
   const [name, setName] = useState("");
   const [pasteInput, setPasteInput] = useState("");
@@ -551,6 +596,18 @@ function AddTransportationModal({ tripId, tripStart, tripEnd, onClose, onSave })
         is_private: ai.is_private || false,
         insurance_included: ai.insurance_included || false,
         mileage_policy: ai.mileage_policy || null,
+        // Mode-specific fields populated by AI extraction.
+        seat_number: ai.seat_number || null,
+        vehicle_id: ai.vehicle_id || null,
+        platform_terminal: ai.platform_terminal || null,
+        driver_name: ai.driver_name || null,
+        driver_phone: ai.driver_phone || null,
+        meeting_instructions: ai.meeting_instructions || null,
+        fuel_policy: ai.fuel_policy || null,
+        additional_drivers: ai.additional_drivers || null,
+        cancellation_policy: ai.cancellation_policy || null,
+        boarding_deadline: ai.boarding_deadline || null,
+        booking_reference: ai.booking_reference || null,
         provider: ai.provider || null,
         rating: ai.rating || null,
         review_count: ai.review_count || null,

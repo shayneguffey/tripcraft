@@ -144,7 +144,13 @@ export default function EventDetailPanel({ record, type, canEdit, onChange, isDr
   const hasAddress = !!address;
 
   // Nothing to render and viewer can't edit — show a quiet placeholder.
-  const hasAnyContent = hasNotes || hasPrice || hasStayDates || hasSource || hasAddress || hasTransportAddrs || record?.booked;
+  const hasTransportExtras = isTransport && !!(
+    record?.vehicle_id || record?.platform_terminal || record?.seat_number ||
+    record?.boarding_deadline || record?.driver_name || record?.meeting_instructions ||
+    record?.fuel_policy || record?.mileage_policy || record?.additional_drivers ||
+    record?.cancellation_policy || record?.booking_reference
+  );
+  const hasAnyContent = hasNotes || hasPrice || hasStayDates || hasSource || hasAddress || hasTransportAddrs || hasTransportExtras || record?.booked;
   // Empty spacers that mirror the row's left columns, so the panel
   // content lines up with the title column.
   //   "event"         → drag (optional) + time + dot
@@ -264,6 +270,66 @@ export default function EventDetailPanel({ record, type, canEdit, onChange, isDr
               >
                 <span className="inline-block mr-1">{"\u{1F4CD}"}</span>{dropoff}
               </a>
+            </div>
+          )}
+        </>
+      )}
+
+      {isTransport && (
+        <>
+          {(record?.vehicle_id || record?.platform_terminal || record?.seat_number) && (
+            <div className="flex items-baseline gap-2 text-xs">
+              <span className="text-[10px] font-semibold text-stone-400 uppercase tracking-wide flex-shrink-0">Service</span>
+              <span className="text-stone-600 truncate">
+                {[record.vehicle_id, record.platform_terminal && `Platform ${record.platform_terminal}`, record.seat_number && `Seat ${record.seat_number}`].filter(Boolean).join(" · ")}
+              </span>
+            </div>
+          )}
+          {record?.boarding_deadline && (
+            <div className="flex items-baseline gap-2 text-xs">
+              <span className="text-[10px] font-semibold text-stone-400 uppercase tracking-wide flex-shrink-0">Boarding</span>
+              <span className="text-stone-600">{formatTime12h(record.boarding_deadline)}</span>
+            </div>
+          )}
+          {record?.driver_name && (
+            <div className="flex items-baseline gap-2 text-xs">
+              <span className="text-[10px] font-semibold text-stone-400 uppercase tracking-wide flex-shrink-0">Driver</span>
+              <span className="text-stone-600">
+                {record.driver_name}
+                {record.driver_phone && <span className="text-stone-400 ml-2">{record.driver_phone}</span>}
+              </span>
+            </div>
+          )}
+          {record?.meeting_instructions && (
+            <div className="flex items-baseline gap-2 text-xs">
+              <span className="text-[10px] font-semibold text-stone-400 uppercase tracking-wide flex-shrink-0">Meet</span>
+              <span className="text-stone-600">{record.meeting_instructions}</span>
+            </div>
+          )}
+          {(record?.fuel_policy || record?.mileage_policy) && (
+            <div className="flex items-baseline gap-2 text-xs">
+              <span className="text-[10px] font-semibold text-stone-400 uppercase tracking-wide flex-shrink-0">Policy</span>
+              <span className="text-stone-600">
+                {[record.fuel_policy, record.mileage_policy].filter(Boolean).join(" · ")}
+              </span>
+            </div>
+          )}
+          {record?.additional_drivers && (
+            <div className="flex items-baseline gap-2 text-xs">
+              <span className="text-[10px] font-semibold text-stone-400 uppercase tracking-wide flex-shrink-0">Drivers</span>
+              <span className="text-stone-600">{record.additional_drivers}</span>
+            </div>
+          )}
+          {record?.cancellation_policy && (
+            <div className="flex items-baseline gap-2 text-xs">
+              <span className="text-[10px] font-semibold text-stone-400 uppercase tracking-wide flex-shrink-0">Cancel</span>
+              <span className="text-stone-600">{record.cancellation_policy}</span>
+            </div>
+          )}
+          {record?.booking_reference && (
+            <div className="flex items-baseline gap-2 text-xs">
+              <span className="text-[10px] font-semibold text-stone-400 uppercase tracking-wide flex-shrink-0">Conf</span>
+              <span className="text-stone-600 font-medium">{record.booking_reference}</span>
             </div>
           )}
         </>

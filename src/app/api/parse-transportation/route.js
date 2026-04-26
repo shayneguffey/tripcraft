@@ -7,55 +7,100 @@ import { NextResponse } from "next/server";
 const GEMINI_API_URL = "https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash:generateContent";
 
 const SYSTEM_PROMPT = `You are a travel transportation data extraction expert. You will receive either:
-1. An image (screenshot) of a car rental, train booking, bus, ferry, or transfer service
-2. A URL (and possibly HTML content) from a transportation booking site
+1. An image (screenshot) of a car rental, train booking, bus, ferry, or transfer service, OR
+2. A URL (and possibly HTML content) from a transportation booking site.
 
-Extract ALL information about the transportation option.
+YOUR TASK has two steps:
 
-Common sources: Hertz, Sixt, Enterprise, Rentalcars.com, Kayak (car rental), Trainline, JR, Amtrak, SNCF, Deutsche Bahn (trains), FlixBus, Greyhound, BoltBus (buses), ferry operators, GetTransfer, Welcome Pickups, Grab, Klook (transfers/rideshare), Rome2Rio (multi-modal).
+STEP 1 \u2014 IDENTIFY THE MODE.
+Determine which transportation mode this is. Use these heuristics, then pick exactly ONE category value:
 
+  category = "car_rental"
+    Sources: Hertz, Sixt, Enterprise, Avis, Budget, National, Alamo, Rentalcars.com, AutoEurope.
+    Vocabulary: "Pick-up", "Drop-off", "Days", "Mileage", "Fuel policy", "Insurance", car classes (Economy, Compact, SUV, etc).
+
+  category = "private_transfer"
+    Sources: Blacklane, Welcome Pickups, GetTransfer, SunTransfers, Klook transfers, hotel-arranged transfers, chauffeur services.
+    Vocabulary: "Driver", "Meeting point", "Sign with your name", "Flight tracking", airport-to-hotel routes.
+
+  category = "ferry"
+    Sources: Stena Line, BC Ferries, Color Line, DirectFerries, Greek/Italian island operators.
+    Vocabulary: "Vessel", "Foot passenger", "Vehicle deck", "Boarding deadline", "Cabin", "Dock".
+
+  category = "train"
+    Sources: Trainline, Eurostar, SNCF Connect, Trenitalia, Renfe, Amtrak, JR, Deutsche Bahn, Eurail.
+    Vocabulary: "Coach", "Seat", "Platform", "Track", "Class" (1st/2nd), "Sleeper", "TGV", "ICE".
+
+  category = "bus"
+    Sources: FlixBus, Greyhound, Megabus, BoltBus, intercity coach operators.
+    Vocabulary: "Bus number", "Stop", "Boarding", "Coach class".
+
+  category = "rideshare"
+    Sources: Uber pre-bookings, Lyft pre-scheduled, Grab, local rideshare apps.
+
+  category = "shuttle"
+    Sources: Hotel airport shuttles, theme park shuttles, multi-passenger transit vans on a fixed route.
+
+  category = "taxi"
+    Pre-booked taxi reservations.
+
+  category = "other"
+    Anything that doesn't fit the above (e.g., bike rental, scooter, helicopter charter).
+
+STEP 2 \u2014 EXTRACT FIELDS.
 Return ONLY valid JSON (no markdown fences, no explanation):
 
 {
-  "name": "Service/option name",
-  "description": "Brief description (2-3 sentences max)",
-  "category": "car_rental" or "train" or "bus" or "ferry" or "transfer" or "rideshare" or "other",
-  "pickup_location": "Pickup location or station",
-  "dropoff_location": "Dropoff location or destination",
+  "name": "Human-friendly name. REQUIRED. If the source doesn\\'t state one, generate from the mode + provider + route, e.g. \\"Hertz \\u2014 SEA airport pickup\\", \\"Eurostar 9114 \\u2014 STP \\u2192 GDN\\", \\"Blacklane \\u2014 LHR \\u2192 hotel\\".",
+  "description": "Brief description (2-3 sentences max), or null",
+  "category": one of the values listed in STEP 1,
+  "provider": "The company name (Hertz, Eurostar, Blacklane, FlixBus, etc.)",
+  "service_name": "Route name, train name/number, ferry line, bus route, etc.",
+  "vehicle_type": "Mode-specific vehicle class. Examples: car rental \\u2192 \\"Economy\\", \\"SUV\\", \\"Luxury\\". Train \\u2192 same as class_type. Ferry \\u2192 \\"Foot passenger\\", \\"Car + driver\\", \\"RV\\". Transfer \\u2192 \\"Sedan\\", \\"SUV\\", \\"Van\\", \\"Limousine\\".",
+  "class_type": "Travel class if applicable: \\"first class\\", \\"second class\\", \\"sleeper\\", \\"business\\", \\"economy\\", \\"standard\\".",
+  "is_private": true | false,
+  "pickup_location": "Pickup point: car rental branch, train station, ferry port, transfer pickup address.",
+  "dropoff_location": "Drop-off point.",
   "departure_date": "YYYY-MM-DD" or null,
-  "departure_time": "HH:MM" or null,
+  "departure_time": "HH:MM in 24-hour format" or null,
   "arrival_date": "YYYY-MM-DD" or null,
-  "arrival_time": "HH:MM" or null,
-  "duration_minutes": integer (total journey time) or null,
-  "price": number (total price),
-  "currency": "USD",
-  "price_per": "total" or "person" or "day",
+  "arrival_time": "HH:MM in 24-hour format" or null,
+  "duration_minutes": integer total journey time, or null,
+  "price": number (total price as shown),
+  "currency": "USD" | "EUR" | "GBP" | "JPY" | etc.,
+  "price_per": "total" | "person" | "day",
   "passengers": integer or null,
-  "vehicle_type": "economy", "SUV", "van", "private car", "shared shuttle", "speedboat", or similar,
-  "class_type": "first class", "standard", "cabin", or similar,
-  "service_name": "Route number, train name, ferry line, etc." or null,
-  "is_private": boolean,
-  "insurance_included": boolean,
-  "mileage_policy": "unlimited", "limited", or policy description,
-  "provider": "Rental company or service provider name",
-  "rating": number like 4.7 (out of 5) or null,
-  "review_count": integer number of reviews or null
+  "booking_reference": "PNR / confirmation number when present, else null",
+  "cancellation_policy": "Free-text policy snippet when present (e.g. \\"Free cancellation up to 24h before\\").",
+  "notes": null,
+
+  // ── Train / Bus / Ferry-specific ──
+  "vehicle_id": "Train number (e.g. \\"Eurostar 9114\\"), bus number/route, ferry vessel name. null otherwise.",
+  "platform_terminal": "Track for trains, platform for buses, dock for ferries, terminal for airports. null otherwise.",
+  "seat_number": "Seat designation when assigned (e.g. \\"Coach 5 / Seat 32A\\", \\"Window seat 23A\\"). null otherwise.",
+  "boarding_deadline": "HH:MM in 24-hour format \\u2014 typically only for ferries (\\"Boarding closes 30 min before sail time\\"). null otherwise.",
+
+  // ── Private transfer / chauffeur-specific ──
+  "driver_name": "If pre-assigned and visible, else null.",
+  "driver_phone": "If provided, else null.",
+  "meeting_instructions": "Where to find the driver: \\"Driver will meet you at international arrivals with sign reading [name]\\", \\"Curb pickup at door 4\\". null otherwise.",
+
+  // ── Car rental-specific ──
+  "fuel_policy": "Examples: \\"Full to full\\", \\"Prepaid full tank\\", \\"Return as received\\". null otherwise.",
+  "mileage_policy": "Examples: \\"Unlimited\\", \\"100 mi/day\\". null otherwise.",
+  "insurance_included": true | false | null,
+  "additional_drivers": "Free-text list of additional approved drivers, e.g. \\"Jane Smith\\". null otherwise."
 }
 
 CRITICAL RULES:
-- NEVER return null if the data is visible/available
-- For category: "car_rental" = Hertz, Sixt, etc., "train" = Trainline, JR, etc., "bus" = FlixBus, Greyhound, etc., "ferry" = ferry services, "transfer" = GetTransfer, Klook, etc., "rideshare" = Grab, Uber, etc., "other" = anything else
-- For dates/times: extract in YYYY-MM-DD and HH:MM formats
-- For duration: calculate total journey time in minutes if available
-- For price: extract the main price shown
-- For price_per: determine if price is per total journey, per person, or per day
-- For vehicle_type: extract specific vehicle class (economy, SUV, van, private car, shared shuttle, speedboat, etc.)
-- For class_type: extract travel class (first class, business, standard, etc.)
-- For is_private: true if private car/transfer, false for shared/public transport
-- For insurance_included: only true if explicitly stated
-- For mileage_policy: extract rental car mileage terms if car rental
-- For rating: use a 5-point scale. If shown as percentage, convert (90% = 4.5)
-- Return raw JSON only`;
+- ALWAYS produce a non-empty "name" \u2014 generate one from provider + route if the source doesn\\'t supply it.
+- For dates/times: YYYY-MM-DD and HH:MM (24-hour). If no year shown, assume 2026.
+- For duration: calculate from departure/arrival times if not stated.
+- For price: extract the main displayed price.
+- For category: pick exactly one value from STEP 1. Never invent new categories.
+- For mode-specific fields: leave as null when the field doesn\\'t apply to the mode (e.g. fuel_policy is null for trains; seat_number is null for car rentals).
+- For booking_reference: only populate from a confirmation page; leave null on search results.
+- Return raw JSON only \u2014 no backticks, no markdown.`;
 
 export async function POST(request) {
   try {
