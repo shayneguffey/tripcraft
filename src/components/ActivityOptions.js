@@ -525,7 +525,7 @@ function AddActivityModal({ tripId, onClose, onSave }) {
           <div className="mb-4">
             <label className="block text-sm font-medium text-slate-700 mb-1">Paste URL</label>
             <p className="text-xs text-slate-400 mb-1">Paste a Viator, GetYourGuide, or any activity URL</p>
-            <textarea value={pasteInput} onChange={(e) => handlePasteChange(e.target.value)} rows={2}
+            <textarea value={pasteInput} onChange={(e) => handlePasteChange(e.target.value)} rows={2} autoFocus
               placeholder="https://www.viator.com/tours/..."
               className="w-full px-3 py-2 border border-slate-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-yellow-500 text-sm font-mono" />
             {urlStatus === "analyzing" && (

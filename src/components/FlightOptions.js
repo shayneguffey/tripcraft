@@ -957,7 +957,6 @@ function AddFlightModal({ tripId, onClose, onSave }) {
               onChange={(e) => setName(e.target.value)}
               placeholder='e.g. "Korean Air Direct" or "Delta via Tokyo"'
               className="w-full px-3 py-2 border border-slate-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-sky-500 focus:border-transparent text-sm"
-              autoFocus
             />
           </div>
 
@@ -975,6 +974,7 @@ function AddFlightModal({ tripId, onClose, onSave }) {
               rows={3}
               placeholder={"Paste a booking URL here, e.g.:\nhttps://www.delta.com/completepurchase/...\nhttps://www.skyscanner.com/transport/flights/..."}
               className="w-full px-3 py-2 border border-slate-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-sky-500 focus:border-transparent text-sm font-mono"
+              autoFocus
             />
 
             {/* Parse status */}
