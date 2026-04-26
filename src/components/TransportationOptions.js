@@ -363,45 +363,44 @@ function OptionDetail({ opt, tripStart, tripEnd, onToggleSelected, onToggleBooke
           </div>
         )}
 
-        {/* Car rental specific */}
-        {opt.category === "car_rental" && (
-          <div className="mb-4">
-            {/* Pickup & Dropoff */}
-            {(opt.pickup_location || opt.departure_date || opt.dropoff_location || opt.arrival_date) && (() => {
-              const stationStyle = ["train", "bus", "ferry"].includes(opt.category);
-              const pickupLabel = stationStyle ? "From" : "Pick Up";
-              const dropoffLabel = stationStyle ? "To" : "Drop Off";
-              return (
-              <div className="flex gap-6 mb-3">
-                {(opt.pickup_location || opt.departure_date) && (
-                  <div>
-                    <div className={LABEL_MB1}>{pickupLabel}</div>
-                    {opt.pickup_location && <div className="text-sm font-medium text-slate-700">{opt.pickup_location}</div>}
-                    {opt.departure_date && (
-                      <div className="text-sm text-slate-600">
-                        {formatDateNice(opt.departure_date)}
-                        {opt.departure_time && <span className="ml-1 text-slate-500">at {formatTime(opt.departure_time)}</span>}
-                      </div>
-                    )}
-                  </div>
-                )}
-                {(opt.dropoff_location || opt.arrival_date) && (
-                  <div>
-                    <div className={LABEL_MB1}>{dropoffLabel}</div>
-                    {opt.dropoff_location && <div className="text-sm font-medium text-slate-700">{opt.dropoff_location}</div>}
-                    {opt.arrival_date && (
-                      <div className="text-sm text-slate-600">
-                        {formatDateNice(opt.arrival_date)}
-                        {opt.arrival_time && <span className="ml-1 text-slate-500">at {formatTime(opt.arrival_time)}</span>}
-                      </div>
-                    )}
-                  </div>
-                )}
-              </div>
-              );
-            })()}
+        {/* Pickup / Drop-off (or From / To) — applies to every transport mode. */}
+        {(opt.pickup_location || opt.departure_date || opt.dropoff_location || opt.arrival_date) && (() => {
+          const stationStyle = ["train", "bus", "ferry"].includes(opt.category);
+          const pickupLabel = stationStyle ? "From" : "Pick Up";
+          const dropoffLabel = stationStyle ? "To" : "Drop Off";
+          return (
+            <div className="flex gap-6 mb-3">
+              {(opt.pickup_location || opt.departure_date) && (
+                <div>
+                  <div className={LABEL_MB1}>{pickupLabel}</div>
+                  {opt.pickup_location && <div className="text-sm font-medium text-slate-700">{opt.pickup_location}</div>}
+                  {opt.departure_date && (
+                    <div className="text-sm text-slate-600">
+                      {formatDateNice(opt.departure_date)}
+                      {opt.departure_time && <span className="ml-1 text-slate-500">at {formatTime(opt.departure_time)}</span>}
+                    </div>
+                  )}
+                </div>
+              )}
+              {(opt.dropoff_location || opt.arrival_date) && (
+                <div>
+                  <div className={LABEL_MB1}>{dropoffLabel}</div>
+                  {opt.dropoff_location && <div className="text-sm font-medium text-slate-700">{opt.dropoff_location}</div>}
+                  {opt.arrival_date && (
+                    <div className="text-sm text-slate-600">
+                      {formatDateNice(opt.arrival_date)}
+                      {opt.arrival_time && <span className="ml-1 text-slate-500">at {formatTime(opt.arrival_time)}</span>}
+                    </div>
+                  )}
+                </div>
+              )}
+            </div>
+          );
+        })()}
 
-            {/* Rental extras */}
+        {/* Rental-only chips (insurance / mileage). */}
+        {opt.category === "car_rental" && (opt.insurance_included || opt.mileage_policy) && (
+          <div className="mb-4">
             <div className={LABEL_MB2}>Rental Details</div>
             <div className="flex flex-wrap gap-2">
               {opt.insurance_included && (
