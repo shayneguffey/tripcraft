@@ -1,0 +1,51 @@
+▲ Next.js 16.2.3 (Turbopack)
+- Local:         http://localhost:3000
+- Network:       http://10.0.0.22:3000
+- Environments: .env.local
+✓ Ready in 421ms
+
+ GET /trips/01624469-a516-4633-a69d-e83743d1d44b 200 in 3.6s (next.js: 3.4s, application-code: 214ms)
+ POST /api/generate-banner 200 in 546ms (next.js: 273ms, application-code: 273ms)
+ GET /trips 200 in 380ms (next.js: 337ms, application-code: 42ms)
+ GET / 200 in 405ms (next.js: 372ms, application-code: 33ms)
+ GET /guide/nonexistent-token 200 in 830ms (next.js: 777ms, application-code: 53ms)
+ GET /trips/01624469-a516-4633-a69d-e83743d1d44b 200 in 153ms (next.js: 14ms, application-code: 139ms)
+ POST /api/generate-banner 200 in 573ms (next.js: 3ms, application-code: 570ms)
+ GET /trips 200 in 26ms (next.js: 5ms, application-code: 20ms)
+ GET /trips/01624469-a516-4633-a69d-e83743d1d44b 200 in 47ms (next.js: 14ms, application-code: 32ms)
+ POST /api/generate-banner 200 in 286ms (next.js: 3ms, application-code: 283ms)
+ POST /api/generate-banner 200 in 182ms (next.js: 4ms, application-code: 178ms)
+ GET /trips 200 in 167ms (next.js: 71ms, application-code: 96ms)
+✓ Compiled in 1114ms
+ GET /trips 200 in 384ms (next.js: 319ms, application-code: 65ms)
+✓ Compiled in 81ms
+ GET /trips 200 in 148ms (next.js: 66ms, application-code: 82ms)
+ GET /trips/01624469-a516-4633-a69d-e83743d1d44b 200 in 534ms (next.js: 407ms, application-code: 127ms)
+ POST /api/generate-banner 200 in 342ms (next.js: 76ms, application-code: 265ms)
+ POST /api/generate-banner 200 in 238ms (next.js: 3ms, application-code: 235ms)
+✓ Compiled in 197ms
+ GET /trips/01624469-a516-4633-a69d-e83743d1d44b 200 in 222ms (next.js: 89ms, application-code: 133ms)
+ GET /trips/01624469-a516-4633-a69d-e83743d1d44b 200 in 97ms (next.js: 54ms, application-code: 43ms)
+ GET /trips 200 in 32ms (next.js: 16ms, application-code: 17ms)
+ GET / 200 in 90ms (next.js: 63ms, application-code: 26ms)
+ GET / 200 in 180ms (next.js: 4ms, application-code: 176ms)
+ GET / 200 in 41ms (next.js: 4ms, application-code: 38ms)
+ GET / 200 in 140ms (next.js: 26ms, application-code: 114ms)
+○ Compiling /auth/callback ...
+ GET /auth/callback?popup=1 200 in 3.4s (next.js: 3.4s, application-code: 69ms)
+ GET /trips 200 in 44ms (next.js: 7ms, application-code: 36ms)
+ GET / 200 in 42ms (next.js: 11ms, application-code: 31ms)
+ GET /auth/callback?popup=1 200 in 63ms (next.js: 8ms, application-code: 56ms)
+ GET /trips 200 in 34ms (next.js: 5ms, application-code: 28ms)
+ GET / 200 in 264ms (next.js: 142ms, application-code: 123ms)
+✓ Compiled in 96ms
+✓ Compiled in 2.5s
+✓ Compiled in 503ms
+✓ Compiled in 1211ms
+✓ Compiled in 592ms
+✓ Compiled in 574ms
+✓ Compiled in 1184ms
+✓ Compiled in 1709ms
+✓ Compiled in 116ms
+✓ Compiled in 763ms
+✓ Compiled in 551ms

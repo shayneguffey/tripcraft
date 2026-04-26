@@ -363,7 +363,7 @@ export default function GuidePage({ params }) {
           )}
         </div>
         <Link
-          href={`/guide/${token}/plan`}
+          href={`/plan/${token}`}
           className="absolute bottom-3 right-[150px] z-20 inline-flex items-center gap-1.5 text-white/95 text-xs font-semibold tracking-wide px-3 py-1.5 rounded-full backdrop-blur-sm hover:brightness-110 transition-all"
           style={{ background: "rgba(30,22,12,0.55)", border: "1px solid rgba(212,165,116,0.25)" }}
           title="View trip plan (printable PDF)"

@@ -4678,3 +4678,4 @@ operable program or batch file.
  GET /trips/01624469-a516-4633-a69d-e83743d1d44b 200 in 241ms (next.js: 150ms, application-code: 91ms)
 Γ£ô Compiled in 144ms
  GET /trips/01624469-a516-4633-a69d-e83743d1d44b 200 in 204ms (next.js: 150ms, application-code: 54ms)
+ GET /trips/01624469-a516-4633-a69d-e83743d1d44b 200 in 910ms (next.js: 43ms, application-code: 867ms)

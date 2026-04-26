@@ -16,7 +16,7 @@ import PackingList from "@/components/PackingList";
 import TravelDocuments from "@/components/TravelDocuments";
 import MapPatternBg from "@/components/MapPatternBg";
 import TripMap from "@/components/TripMap";
-import TripCollaborators from "@/components/TripCollaborators";
+import TripTravelers from "@/components/TripTravelers";
 import InlineConfirm from "@/components/InlineConfirm";
 import CATEGORY_COLORS from "@/lib/categoryColors";
 import DateRangePicker from "@/components/DateRangePicker";
@@ -154,6 +154,7 @@ export default function TripDetailPage() {
   const [confirmDeleteItinerary, setConfirmDeleteItinerary] = useState(null);
   const [editingItineraryDates, setEditingItineraryDates] = useState(false);
   const [guideLoading, setGuideLoading] = useState(false);
+  const [planLoading, setPlanLoading] = useState(false);
   const guideBtnRef = useRef(null);
   const router = useRouter();
   const params = useParams();
@@ -509,6 +510,37 @@ export default function TripDetailPage() {
       console.error("[pocket-guide] Unexpected error:", err);
     }
     setGuideLoading(false);
+  }
+
+  async function openTripPlan() {
+    if (!activeItineraryId) return;
+    setPlanLoading(true);
+    try {
+      const activeItin = itineraries.find((i) => i.id === activeItineraryId);
+      let token = activeItin?.share_token;
+      if (!token) {
+        token = crypto.randomUUID().replace(/-/g, "").slice(0, 16);
+        const { data: updatedRow, error } = await supabase
+          .from("itineraries")
+          .update({ share_token: token })
+          .eq("id", activeItineraryId)
+          .select("id, share_token")
+          .single();
+        if (error || !updatedRow) {
+          console.error("[trip-plan] Failed to save share token:", error?.message);
+          alert("Could not open Trip Plan. Check the browser console for details.");
+          setPlanLoading(false);
+          return;
+        }
+        setItineraries((prev) =>
+          prev.map((i) => (i.id === activeItineraryId ? { ...i, share_token: token } : i))
+        );
+      }
+      router.push(`/plan/${token}`);
+    } catch (err) {
+      console.error("[trip-plan] Unexpected error:", err);
+    }
+    setPlanLoading(false);
   }
 
   async function toggleSelection(optionType, optionId) {
@@ -983,15 +1015,19 @@ export default function TripDetailPage() {
                     <span className="text-white/30 text-[10px]">·</span>
                     <button
                       type="button"
-                      disabled
-                      onClick={(e) => e.stopPropagation()}
-                      className="inline-flex items-center gap-1 px-1.5 py-0 rounded text-[10px] font-semibold uppercase tracking-wider text-white/50 cursor-not-allowed"
-                      title="Coming soon — printable PDF"
+                      onClick={(e) => { e.stopPropagation(); openTripPlan(); }}
+                      disabled={planLoading}
+                      className="inline-flex items-center gap-1 px-1.5 py-0 rounded text-[10px] font-semibold uppercase tracking-wider text-white transition-colors hover:bg-white/15 disabled:opacity-60 disabled:cursor-not-allowed"
+                      title="Open the Trip Plan (printable PDF)"
                     >
-                      <svg className="w-2.5 h-2.5" fill="none" stroke="currentColor" viewBox="0 0 24 24" strokeWidth={2.5}>
-                        <path strokeLinecap="round" strokeLinejoin="round" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
-                      </svg>
-                      Print PDF
+                      {planLoading ? (
+                        <div className="w-2.5 h-2.5 border border-white/40 border-t-white rounded-full animate-spin" />
+                      ) : (
+                        <svg className="w-2.5 h-2.5" fill="none" stroke="currentColor" viewBox="0 0 24 24" strokeWidth={2.5}>
+                          <path strokeLinecap="round" strokeLinejoin="round" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
+                        </svg>
+                      )}
+                      Trip Plan
                     </button>
                   </div>
                   )}
@@ -1529,7 +1565,7 @@ export default function TripDetailPage() {
               },
               {
                 key: "collaborators",
-                label: "Collaborators",
+                label: "Travelers",
                 color: "#8b5cf6",
                 icon: <svg className="w-4 h-4" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor"><path d="M7 8a3 3 0 1 0 0-6 3 3 0 0 0 0 6Zm7.5 1a2.5 2.5 0 1 0 0-5 2.5 2.5 0 0 0 0 5ZM1.615 16.428a1.224 1.224 0 0 1-.569-1.175 6.002 6.002 0 0 1 11.908 0c.058.467-.172.92-.57 1.174A9.953 9.953 0 0 1 7 18a9.953 9.953 0 0 1-5.385-1.572ZM14.5 16h-.106c.07-.297.088-.611.048-.933a7.47 7.47 0 0 0-1.588-3.755 4.502 4.502 0 0 1 5.874 2.636.818.818 0 0 1-.36.98A7.465 7.465 0 0 1 14.5 16Z" /></svg>,
               },
@@ -1606,7 +1642,7 @@ export default function TripDetailPage() {
               <TravelDocuments tripId={trip?.id} />
             </div>
             <div style={{ display: activeLowerTab === "collaborators" ? "block" : "none" }}>
-              <TripCollaborators
+              <TripTravelers
                 tripId={trip?.id}
                 tripTitle={trip?.title}
                 userId={currentUser?.id}

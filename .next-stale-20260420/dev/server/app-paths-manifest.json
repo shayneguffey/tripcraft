@@ -1,0 +1,4 @@
+{
+  "/api/generate-banner/route": "app/api/generate-banner/route.js",
+  "/trips/[id]/page": "app/trips/[id]/page.js"
+}
