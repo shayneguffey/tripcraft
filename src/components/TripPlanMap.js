@@ -9,15 +9,18 @@
    border, and destination wordmark on top.
 
    Geocoding via Nominatim (OSM's free API). Caches results in-memory
-   per session to avoid hammering the rate limiter.
+   per session.
 
    Props:
-     - destination     string            required, used to center the map
-     - days            [{ date, title, dayNumber }]   optional pin labels
-     - height          string|number     default "5.4in"
+     - destination     string             required, used to center the map
+     - pinQueries      [{ dayNumber, label, queries:[string,...] }]
+                       Each entry geocodes the first queries[] entry that
+                       resolves. Use queries: best-known location first
+                       (address > location_name > name).
+     - height          string|number      default "5.4in"
    ══════════════════════════════════════════════════════════════════ */
 
-import { useState, useEffect, useRef } from "react";
+import { useState, useEffect, useMemo } from "react";
 import dynamic from "next/dynamic";
 
 const MapContainer = dynamic(() => import("react-leaflet").then(m => m.MapContainer), { ssr: false });
@@ -74,12 +77,18 @@ function dayPinIcon(label) {
   });
 }
 
-export default function TripPlanMap({ destination, days = [], height = "5.4in" }) {
+export default function TripPlanMap({ destination, pinQueries = [], height = "5.4in" }) {
   const [center, setCenter] = useState(null);
   const [bounds, setBounds] = useState(null);
   const [pins, setPins] = useState([]);
   const [error, setError] = useState(null);
-  const cancelledRef = useRef(false);
+
+  // Stable serialization of pinQueries so identity churn in the parent
+  // doesn't cancel the geocoding mid-batch.
+  const pinKey = useMemo(
+    () => JSON.stringify(pinQueries.map((p) => `${p.dayNumber}|${(p.queries || []).join("|")}`)),
+    [pinQueries]
+  );
 
   // Inject Leaflet's CSS once (matches the pattern in TripMap.js).
   useEffect(() => {
@@ -92,56 +101,68 @@ export default function TripPlanMap({ destination, days = [], height = "5.4in" }
     }
   }, []);
 
-  // Geocode the destination on mount
+  // Geocode the destination on mount.
   useEffect(() => {
-    cancelledRef.current = false;
     if (!destination) return;
+    let cancelled = false;
     (async () => {
       const dest = await geocode(destination);
-      if (cancelledRef.current) return;
+      if (cancelled) return;
       if (!dest) {
         setError("Could not locate destination on map");
         return;
       }
       setCenter([dest.lat, dest.lng]);
       if (dest.bbox && dest.bbox.length === 4) {
-        // Nominatim bbox: [south, north, west, east]
+        // Nominatim bbox order: [south, north, west, east]
         const [south, north, west, east] = dest.bbox;
         setBounds([[south, west], [north, east]]);
       }
     })();
-    return () => { cancelledRef.current = true; };
+    return () => { cancelled = true; };
   }, [destination]);
 
-  // Optionally try to geocode day titles for pins (best-effort, throttled)
+  // Geocode pin queries — tries each candidate string per pin, falls
+  // through to the next on miss. Throttled at 400ms (Nominatim policy).
   useEffect(() => {
-    cancelledRef.current = false;
-    if (!destination || !days || days.length === 0) return;
-    if (!center) return;
+    if (!destination || !center || pinQueries.length === 0) {
+      setPins([]);
+      return;
+    }
     let cancelled = false;
     (async () => {
       const results = [];
-      for (const d of days) {
+      for (const p of pinQueries) {
         if (cancelled) return;
-        if (!d.title || d.title.trim().length < 3) continue;
-        // Bias query with the destination so "Forks" resolves in WA, not UK
-        const q = `${d.title}, ${destination}`;
-        const coords = await geocode(q);
+        const candidates = (p.queries || []).filter(Boolean);
+        let coords = null;
+        for (const q of candidates) {
+          coords = await geocode(q);
+          if (coords) break;
+          await new Promise(r => setTimeout(r, 400));
+        }
         if (coords) {
           results.push({
-            dayNumber: d.dayNumber,
-            date: d.date,
-            title: d.title,
+            dayNumber: p.dayNumber,
+            label: p.label || String(p.dayNumber),
             lat: coords.lat,
             lng: coords.lng,
           });
+          if (!cancelled) setPins([...results]); // progressive update
         }
-        await new Promise(r => setTimeout(r, 400)); // Nominatim rate limit
+        await new Promise(r => setTimeout(r, 400));
       }
-      if (!cancelled) setPins(results);
+      if (!cancelled) {
+        if (results.length === 0) {
+          console.warn("[TripPlanMap] No pin queries resolved. queries=", pinQueries);
+        } else {
+          console.log(`[TripPlanMap] Pinned ${results.length}/${pinQueries.length} days`);
+        }
+      }
     })();
     return () => { cancelled = true; };
-  }, [destination, days, center]);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [pinKey, center, destination]);
 
   return (
     <div style={{
@@ -219,9 +240,9 @@ export default function TripPlanMap({ destination, days = [], height = "5.4in" }
           {/* Day pins, if we resolved them */}
           {pins.map((p) => (
             <Marker
-              key={`${p.dayNumber}-${p.date}`}
+              key={`${p.dayNumber}-${p.lat}-${p.lng}`}
               position={[p.lat, p.lng]}
-              icon={dayPinIcon(String(p.dayNumber).padStart(2, "0"))}
+              icon={dayPinIcon(p.label)}
             />
           ))}
           {/* Connect pins with a dashed route */}

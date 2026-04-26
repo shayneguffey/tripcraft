@@ -377,6 +377,44 @@ export default function TripPlanPage({ params }) {
     };
   });
 
+  // Build map pin queries — one per day, picking the strongest available
+  // location signal so Nominatim can find it. Each entry has a list of
+  // candidate query strings (most specific first); the map component tries
+  // each in turn and stops at the first hit.
+  const pinQueries = (() => {
+    const out = [];
+    for (const d of daySchedule) {
+      const date = d.date;
+      const dayStays = accommodation.filter((a) => a.check_in_date && date >= a.check_in_date && date <= (a.check_out_date || a.check_in_date));
+      const dayActs = activities.filter((a) => a.scheduled_date === date);
+      const dayDining = dining.filter((x) => x.scheduled_date === date);
+      const dayTransport = transportation.filter((t) => t.departure_date === date || t.arrival_date === date);
+      const dayFlightLegs = flights.flatMap((f) => (f.legs || []).filter((l) => l.departure_date === date));
+
+      const cand = [];
+      const push = (...vals) => vals.filter((v) => v && String(v).trim().length >= 3).forEach((v) => cand.push(String(v).trim()));
+
+      // Priority: stay > activity > dining > transport > flight > day title.
+      if (dayStays[0]) push(dayStays[0].address, dayStays[0].location_name, dayStays[0].name);
+      if (dayActs[0]) push(dayActs[0].address, dayActs[0].location_name, dayActs[0].name);
+      if (dayDining[0]) push(dayDining[0].address, dayDining[0].location_name, dayDining[0].name);
+      if (dayTransport[0]) push(dayTransport[0].pickup_location, dayTransport[0].dropoff_location);
+      if (dayFlightLegs[0]) {
+        const arr = dayFlightLegs[0].arrival_airport;
+        if (arr && arr.length === 3) push(`${arr} airport`);
+      }
+      if (d.title) push(`${d.title}, ${trip.destination}`, d.title);
+
+      if (cand.length === 0) continue;
+      out.push({
+        dayNumber: d.dayNumber,
+        label: String(d.dayNumber).padStart(2, "0"),
+        queries: cand.slice(0, 3), // try top 3 candidates max
+      });
+    }
+    return out;
+  })();
+
   // Budget rollup
   const flightTotal = flights.reduce((s, f) => s + (f.total_price ? Number(f.total_price) : 0), 0);
   const stayTotal = accommodation.reduce((s, a) => s + (a.total_price ? Number(a.total_price) : 0), 0);
@@ -618,7 +656,7 @@ export default function TripPlanPage({ params }) {
           <div className="avoid-break" style={{ position: "sticky", top: 12 }}>
             <TripPlanMap
               destination={trip.destination}
-              days={daySchedule.map((d) => ({ date: d.date, title: d.title, dayNumber: d.dayNumber }))}
+              pinQueries={pinQueries}
               height="5.4in"
             />
           </div>
