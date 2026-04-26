@@ -3,19 +3,14 @@
 /* ══════════════════════════════════════════════════════════════════
    Trip Travelers — replaces the standalone Collaborators tab.
    ──────────────────────────────────────────────────────────────────
-   A traveler is anyone going on the trip. Each traveler may, optionally,
-   also be a collaborator (someone with edit access to the planning page).
+   A traveler is anyone going on the trip. Travelers are scoped per
+   itinerary (via the itinerary_travelers junction), so different
+   itinerary versions can include different groups of travelers
+   (e.g. "what if a friend joins?").
 
-   - Owner sees and manages travelers + collaborator promotions.
-   - Anonymous viewers and read-only collaborators see a static traveler list.
-   - Promoting a traveler to a collaborator triggers /api/invite
-     (the same flow as the old Collaborators tab) using the traveler's email.
-
-   Storage:
-   - travelers table:  id, trip_id, name, role, email, notes, is_primary,
-                       sort_order, created_at
-   - trip_collaborators: id, trip_id, invited_email, invited_by_user_id,
-                         status, invite_token, ...
+   Each traveler may also optionally be a collaborator (someone with
+   edit access). Promoting a traveler to a collaborator triggers
+   /api/invite using the traveler\'s email.
    ══════════════════════════════════════════════════════════════════ */
 
 import { useEffect, useState } from "react";
@@ -31,9 +26,14 @@ const ROLE_OPTIONS = [
   { value: "Guest", label: "Guest" },
 ];
 
-export default function TripTravelers({ tripId, tripTitle, userId, userEmail, tripOwnerId }) {
+export default function TripTravelers({
+  tripId, tripTitle, userId, userEmail, tripOwnerId,
+  itineraries = [], activeItineraryId, onTravelersChange,
+}) {
   const [travelers, setTravelers] = useState([]);
   const [collaborators, setCollaborators] = useState([]);
+  // links: { traveler_id: Set<itinerary_id> }
+  const [travelerItineraries, setTravelerItineraries] = useState({});
   const [adding, setAdding] = useState(false);
   const [editingId, setEditingId] = useState(null);
   const [draft, setDraft] = useState(emptyDraft());
@@ -55,12 +55,22 @@ export default function TripTravelers({ tripId, tripTitle, userId, userEmail, tr
   }, [tripId]);
 
   async function loadAll() {
-    const [tRes, cRes] = await Promise.all([
+    const [tRes, cRes, jRes] = await Promise.all([
       supabase.from("travelers").select("*").eq("trip_id", tripId).order("sort_order", { ascending: true }),
       supabase.from("trip_collaborators").select("*").eq("trip_id", tripId).order("created_at", { ascending: true }),
+      supabase.from("itinerary_travelers").select("*").in("itinerary_id", itineraries.map((i) => i.id)),
     ]);
     if (!tRes.error && tRes.data) setTravelers(tRes.data);
     if (!cRes.error && cRes.data) setCollaborators(cRes.data);
+    if (!jRes.error && jRes.data) {
+      const map = {};
+      jRes.data.forEach((row) => {
+        if (!map[row.traveler_id]) map[row.traveler_id] = new Set();
+        map[row.traveler_id].add(row.itinerary_id);
+      });
+      setTravelerItineraries(map);
+    }
+    if (onTravelersChange) onTravelersChange();
   }
 
   function findCollab(email) {
@@ -69,12 +79,32 @@ export default function TripTravelers({ tripId, tripTitle, userId, userEmail, tr
     return collaborators.find((c) => (c.invited_email || "").toLowerCase() === e) || null;
   }
 
+  // Toggle a traveler\'s inclusion in a specific itinerary
+  async function toggleItinerary(travelerId, itineraryId) {
+    const set = travelerItineraries[travelerId] || new Set();
+    if (set.has(itineraryId)) {
+      const { error } = await supabase
+        .from("itinerary_travelers")
+        .delete()
+        .eq("traveler_id", travelerId)
+        .eq("itinerary_id", itineraryId);
+      if (error) { setErr(error.message); return; }
+    } else {
+      const { error } = await supabase
+        .from("itinerary_travelers")
+        .insert({ traveler_id: travelerId, itinerary_id: itineraryId });
+      if (error) { setErr(error.message); return; }
+    }
+    await loadAll();
+  }
+
   async function saveTraveler(e) {
     e?.preventDefault?.();
     setErr(null);
     if (!draft.name.trim()) { setErr("Name is required"); return; }
     setBusy(true);
     try {
+      let newTravelerId = editingId;
       if (editingId) {
         const { error } = await supabase
           .from("travelers")
@@ -89,7 +119,7 @@ export default function TripTravelers({ tripId, tripTitle, userId, userEmail, tr
         if (error) { setErr(error.message); setBusy(false); return; }
       } else {
         const nextOrder = travelers.length;
-        const { error } = await supabase
+        const { data: inserted, error } = await supabase
           .from("travelers")
           .insert({
             trip_id: tripId,
@@ -99,8 +129,17 @@ export default function TripTravelers({ tripId, tripTitle, userId, userEmail, tr
             notes: draft.notes.trim() || null,
             is_primary: !!draft.is_primary,
             sort_order: nextOrder,
-          });
+          })
+          .select("id")
+          .single();
         if (error) { setErr(error.message); setBusy(false); return; }
+        newTravelerId = inserted.id;
+        // Default: include the new traveler in the active itinerary only.
+        if (activeItineraryId) {
+          await supabase.from("itinerary_travelers").insert({
+            traveler_id: newTravelerId, itinerary_id: activeItineraryId,
+          });
+        }
       }
       setDraft(emptyDraft());
       setAdding(false);
@@ -112,9 +151,9 @@ export default function TripTravelers({ tripId, tripTitle, userId, userEmail, tr
   }
 
   async function removeTraveler(id) {
-    if (!confirm("Remove this traveler?")) return;
+    if (!confirm("Remove this traveler from the trip?")) return;
     const { error } = await supabase.from("travelers").delete().eq("id", id);
-    if (!error) setTravelers((prev) => prev.filter((t) => t.id !== id));
+    if (!error) await loadAll();
   }
 
   function startEdit(t) {
@@ -176,8 +215,6 @@ export default function TripTravelers({ tripId, tripTitle, userId, userEmail, tr
     setTimeout(() => setCopiedToken(null), 2000);
   }
 
-  // Collaborators that don't match any traveler email — show as a separate
-  // "Other invites" section so we don't lose them.
   const travelerEmails = travelers.map((t) => (t.email || "").toLowerCase()).filter(Boolean);
   const orphanCollabs = collaborators.filter(
     (c) => !travelerEmails.includes((c.invited_email || "").toLowerCase())
@@ -191,10 +228,9 @@ export default function TripTravelers({ tripId, tripTitle, userId, userEmail, tr
 
   return (
     <div className="bg-white rounded-xl border border-violet-200 overflow-hidden">
-      {/* Header */}
       <div className="px-5 py-2.5 flex items-center justify-between border-b border-violet-100">
         <div className="text-xs uppercase tracking-wider font-semibold text-violet-700">
-          Travelers <span className="text-slate-400 font-normal normal-case ml-1">·  who's going on this trip</span>
+          Travelers <span className="text-slate-400 font-normal normal-case ml-1">· who’s going on this trip</span>
         </div>
         {isOwner && (
           <button
@@ -206,8 +242,8 @@ export default function TripTravelers({ tripId, tripTitle, userId, userEmail, tr
         )}
       </div>
 
-      {/* Owner row (always visible) */}
       <div className="px-5 py-4">
+        {/* Owner row */}
         <div className="flex items-center gap-3 py-2">
           <div className="w-8 h-8 rounded-full bg-violet-600 text-white flex items-center justify-center text-sm font-semibold">
             {userEmail?.[0]?.toUpperCase() || "?"}
@@ -242,9 +278,7 @@ export default function TripTravelers({ tripId, tripTitle, userId, userEmail, tr
                   onChange={(e) => setDraft({ ...draft, role: e.target.value })}
                   className="w-full px-3 py-2 border border-slate-300 rounded-md text-sm focus:outline-none focus:ring-2 focus:ring-violet-500 focus:border-transparent bg-white"
                 >
-                  {ROLE_OPTIONS.map((o) => (
-                    <option key={o.value} value={o.value}>{o.label}</option>
-                  ))}
+                  {ROLE_OPTIONS.map((o) => (<option key={o.value} value={o.value}>{o.label}</option>))}
                 </select>
               </div>
               <div className="sm:col-span-2">
@@ -270,13 +304,7 @@ export default function TripTravelers({ tripId, tripTitle, userId, userEmail, tr
                 />
               </div>
               <div className="sm:col-span-2 flex items-center gap-2">
-                <input
-                  id="is-primary"
-                  type="checkbox"
-                  checked={!!draft.is_primary}
-                  onChange={(e) => setDraft({ ...draft, is_primary: e.target.checked })}
-                  className="h-4 w-4 rounded border-slate-300 text-violet-600"
-                />
+                <input id="is-primary" type="checkbox" checked={!!draft.is_primary} onChange={(e) => setDraft({ ...draft, is_primary: e.target.checked })} className="h-4 w-4 rounded border-slate-300 text-violet-600" />
                 <label htmlFor="is-primary" className="text-sm text-slate-700">Primary traveler</label>
               </div>
             </div>
@@ -290,81 +318,132 @@ export default function TripTravelers({ tripId, tripTitle, userId, userEmail, tr
           </form>
         )}
 
-        {/* Travelers list */}
-        {travelers.map((t) => {
-          const collab = findCollab(t.email);
-          return (
-            <div key={t.id} className="flex items-center gap-3 py-2.5 border-t border-slate-100">
-              <div className="w-8 h-8 rounded-full bg-slate-200 text-slate-600 flex items-center justify-center text-sm font-semibold">
-                {t.name?.[0]?.toUpperCase() || "?"}
+        {/* Travelers grid: name | per-itinerary include checkboxes | actions */}
+        {travelers.length > 0 && (
+          <div className="mt-4 mb-2">
+            {/* Column header for per-itinerary chips */}
+            {itineraries.length > 0 && (
+              <div className="flex items-center justify-end gap-2 mb-1.5 pr-1">
+                <span className="text-[10px] uppercase tracking-wider font-semibold text-slate-400 mr-2">Include in:</span>
+                {itineraries.map((it) => (
+                  <span
+                    key={it.id}
+                    className={`text-[10px] uppercase tracking-wider font-semibold px-1.5 py-0.5 rounded ${
+                      it.id === activeItineraryId
+                        ? "bg-[#da7b4a]/15 text-[#da7b4a]"
+                        : "text-slate-400"
+                    }`}
+                    title={it.title}
+                  >
+                    {it.title}
+                  </span>
+                ))}
               </div>
-              <div className="flex-1 min-w-0">
-                <div className="flex items-center gap-2">
-                  <p className="text-sm font-medium text-slate-900 truncate">{t.name}</p>
-                  {t.is_primary && (
-                    <span className="text-[10px] px-1.5 py-0.5 rounded-full bg-amber-100 text-amber-700 font-medium uppercase tracking-wider">Primary</span>
-                  )}
-                </div>
-                <p className="text-[12px] text-slate-500 truncate">
-                  {[t.role, t.email].filter(Boolean).join(" · ")}
-                  {t.notes && <span className="text-slate-400"> · {t.notes}</span>}
-                </p>
-              </div>
-              <div className="flex items-center gap-2 shrink-0">
-                {collab ? (
-                  <>
-                    <span className={`text-[10px] px-2 py-0.5 rounded-full font-medium ${statusColors[collab.status] || ""}`}>
-                      {collab.status}
-                    </span>
-                    {collab.status === "pending" && (
-                      <button
-                        onClick={() => copyInviteLink(collab.invite_token)}
-                        className="text-[11px] text-violet-600 hover:text-violet-800"
-                        title="Copy invite link"
-                      >
-                        {copiedToken === collab.invite_token ? "Copied!" : "Copy link"}
-                      </button>
+            )}
+
+            {travelers.map((t) => {
+              const collab = findCollab(t.email);
+              const includedIn = travelerItineraries[t.id] || new Set();
+              return (
+                <div key={t.id} className="grid gap-3 py-2.5 border-t border-slate-100 items-center" style={{ gridTemplateColumns: `minmax(0,1fr) auto auto auto` }}>
+                  <div className="flex items-center gap-3 min-w-0">
+                    <div className="w-8 h-8 rounded-full bg-slate-200 text-slate-600 flex items-center justify-center text-sm font-semibold shrink-0">
+                      {t.name?.[0]?.toUpperCase() || "?"}
+                    </div>
+                    <div className="min-w-0">
+                      <div className="flex items-center gap-2">
+                        <p className="text-sm font-medium text-slate-900 truncate">{t.name}</p>
+                        {t.is_primary && (
+                          <span className="text-[10px] px-1.5 py-0.5 rounded-full bg-amber-100 text-amber-700 font-medium uppercase tracking-wider">Primary</span>
+                        )}
+                      </div>
+                      <p className="text-[12px] text-slate-500 truncate">
+                        {[t.role, t.email].filter(Boolean).join(" · ")}
+                        {t.notes && <span className="text-slate-400"> · {t.notes}</span>}
+                      </p>
+                    </div>
+                  </div>
+
+                  {/* Per-itinerary include toggles */}
+                  <div className="flex items-center gap-1.5">
+                    {itineraries.map((it) => {
+                      const included = includedIn.has(it.id);
+                      const isActive = it.id === activeItineraryId;
+                      return (
+                        <button
+                          key={it.id}
+                          onClick={() => isOwner && toggleItinerary(t.id, it.id)}
+                          disabled={!isOwner}
+                          className={`w-7 h-7 rounded border flex items-center justify-center transition-all ${
+                            included
+                              ? (isActive ? "bg-[#da7b4a] border-[#da7b4a] text-white" : "bg-violet-100 border-violet-300 text-violet-700")
+                              : "bg-white border-slate-300 text-slate-300 hover:border-slate-400"
+                          } ${isOwner ? "cursor-pointer" : "cursor-default"}`}
+                          title={`${included ? "Remove from" : "Include in"} ${it.title}`}
+                        >
+                          {included ? (
+                            <svg className="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24" strokeWidth={3}><path strokeLinecap="round" strokeLinejoin="round" d="M5 13l4 4L19 7" /></svg>
+                          ) : (
+                            <span className="text-[10px] font-bold">+</span>
+                          )}
+                        </button>
+                      );
+                    })}
+                  </div>
+
+                  {/* Collaborator status / invite */}
+                  <div className="flex items-center gap-2 shrink-0">
+                    {collab ? (
+                      <>
+                        <span className={`text-[10px] px-2 py-0.5 rounded-full font-medium ${statusColors[collab.status] || ""}`}>{collab.status}</span>
+                        {collab.status === "pending" && (
+                          <button onClick={() => copyInviteLink(collab.invite_token)} className="text-[11px] text-violet-600 hover:text-violet-800" title="Copy invite link">
+                            {copiedToken === collab.invite_token ? "Copied!" : "Copy link"}
+                          </button>
+                        )}
+                      </>
+                    ) : (
+                      isOwner && (
+                        <button
+                          onClick={() => inviteAsCollaborator(t)}
+                          disabled={!t.email || busy}
+                          className="text-[11px] px-2 py-1 rounded-md border border-violet-300 text-violet-700 hover:bg-violet-50 disabled:opacity-40 disabled:cursor-not-allowed"
+                          title={t.email ? "Send a collaborator invite to this traveler" : "Add an email above to invite as a collaborator"}
+                        >
+                          Invite as collab.
+                        </button>
+                      )
                     )}
-                  </>
-                ) : (
-                  isOwner && (
-                    <button
-                      onClick={() => inviteAsCollaborator(t)}
-                      disabled={!t.email || busy}
-                      className="text-[11px] px-2 py-1 rounded-md border border-violet-300 text-violet-700 hover:bg-violet-50 disabled:opacity-40 disabled:cursor-not-allowed"
-                      title={t.email ? "Send a collaborator invite to this traveler" : "Add an email above to invite as a collaborator"}
-                    >
-                      Invite as collaborator
-                    </button>
-                  )
-                )}
-                {isOwner && (
-                  <>
-                    <button onClick={() => startEdit(t)} className="text-slate-400 hover:text-violet-600 transition-colors" title="Edit traveler">
-                      <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 16 16" fill="currentColor" className="w-3.5 h-3.5"><path d="m13.498.795.149-.149a1.207 1.207 0 1 1 1.707 1.708l-.149.148a1.5 1.5 0 0 1-.059 2.059L4.854 14.854a.5.5 0 0 1-.233.131l-4 1a.5.5 0 0 1-.606-.606l1-4a.5.5 0 0 1 .131-.232l9.642-9.642a.5.5 0 0 0-.642.056L6.854 4.854a.5.5 0 1 1-.708-.708L9.44.854A1.5 1.5 0 0 1 11.5.796a1.5 1.5 0 0 1 1.998-.001Z" /></svg>
-                    </button>
-                    <button onClick={() => removeTraveler(t.id)} className="text-slate-300 hover:text-red-500 transition-colors" title="Remove traveler">
-                      <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 16 16" fill="currentColor" className="w-3.5 h-3.5"><path d="M5.28 4.22a.75.75 0 0 0-1.06 1.06L6.94 8l-2.72 2.72a.75.75 0 1 0 1.06 1.06L8 9.06l2.72 2.72a.75.75 0 1 0 1.06-1.06L9.06 8l2.72-2.72a.75.75 0 0 0-1.06-1.06L8 6.94 5.28 4.22Z" /></svg>
-                    </button>
-                  </>
-                )}
-              </div>
-            </div>
-          );
-        })}
+                  </div>
+
+                  {/* Edit / delete */}
+                  <div className="flex items-center gap-1 shrink-0">
+                    {isOwner && (
+                      <>
+                        <button onClick={() => startEdit(t)} className="text-slate-400 hover:text-violet-600 p-1" title="Edit traveler">
+                          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 16 16" fill="currentColor" className="w-3.5 h-3.5"><path d="m13.498.795.149-.149a1.207 1.207 0 1 1 1.707 1.708l-.149.148a1.5 1.5 0 0 1-.059 2.059L4.854 14.854a.5.5 0 0 1-.233.131l-4 1a.5.5 0 0 1-.606-.606l1-4a.5.5 0 0 1 .131-.232l9.642-9.642a.5.5 0 0 0-.642.056L6.854 4.854a.5.5 0 1 1-.708-.708L9.44.854A1.5 1.5 0 0 1 11.5.796a1.5 1.5 0 0 1 1.998-.001Z" /></svg>
+                        </button>
+                        <button onClick={() => removeTraveler(t.id)} className="text-slate-300 hover:text-red-500 p-1" title="Remove from trip">
+                          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 16 16" fill="currentColor" className="w-3.5 h-3.5"><path d="M5.28 4.22a.75.75 0 0 0-1.06 1.06L6.94 8l-2.72 2.72a.75.75 0 1 0 1.06 1.06L8 9.06l2.72 2.72a.75.75 0 1 0 1.06-1.06L9.06 8l2.72-2.72a.75.75 0 0 0-1.06-1.06L8 6.94 5.28 4.22Z" /></svg>
+                        </button>
+                      </>
+                    )}
+                  </div>
+                </div>
+              );
+            })}
+          </div>
+        )}
 
         {travelers.length === 0 && !adding && (
           <p className="text-sm text-slate-400 py-3 border-t border-slate-100">
-            No travelers added yet. {isOwner ? "Click \u201c+ Add traveler\u201d to start." : ""}
+            No travelers added yet. {isOwner ? "Click “+ Add traveler” to start." : ""}
           </p>
         )}
 
-        {/* Orphan collaborators (invited but not in travelers list) */}
         {orphanCollabs.length > 0 && (
           <div className="mt-4 pt-3 border-t border-slate-100">
-            <div className="text-[11px] font-semibold uppercase tracking-wider text-slate-400 mb-2">
-              Other collaborator invites
-            </div>
+            <div className="text-[11px] font-semibold uppercase tracking-wider text-slate-400 mb-2">Other collaborator invites</div>
             {orphanCollabs.map((c) => (
               <div key={c.id} className="flex items-center gap-3 py-2">
                 <div className="w-8 h-8 rounded-full bg-slate-200 text-slate-600 flex items-center justify-center text-sm font-semibold">

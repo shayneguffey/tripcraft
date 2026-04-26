@@ -94,13 +94,21 @@ export async function GET(request, { params }) {
       supabase.from("planning_checklist").select("*").eq("trip_id", tripId).order("sort_order"),
     ]);
 
-    // Travelers — fetched server-side via service role so anonymous viewers
-    // see the list on the shareable Trip Plan PDF.
-    const { data: travelersData } = await supabase
+    // Travelers — itinerary-scoped via the itinerary_travelers junction.
+    // Service role so anonymous viewers see the list on the shareable Trip Plan.
+    const { data: itinTravelerLinks } = await supabase
+      .from("itinerary_travelers")
+      .select("traveler_id")
+      .eq("itinerary_id", itineraryId);
+    const includedTravelerIds = (itinTravelerLinks || []).map((r) => r.traveler_id);
+
+    const { data: allTravelers } = await supabase
       .from("travelers")
       .select("id, name, role, is_primary, sort_order")
       .eq("trip_id", tripId)
       .order("sort_order", { ascending: true });
+
+    const travelersData = (allTravelers || []).filter((t) => includedTravelerIds.includes(t.id));
 
     // ─── Filter to only selected options ───
     const flights = (allFlights || []).filter(

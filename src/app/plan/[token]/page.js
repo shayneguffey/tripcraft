@@ -5,8 +5,8 @@
 
    Three-part document with a vintage WPA-poster aesthetic:
      1. Presentation — banner, title, pitch, TripCraft logo (top-right, white)
-     2. Trip-at-a-glance — travelers + horizontal day strip + map + budget
-     3. Trip Details — per-day pages with full event detail and inline costs;
+     2. Trip-at-a-glance — vertical spine timeline + side route map
+     3. Trip Details — per-day pages: events column + 2-image column
                        budget summary as the final page
 
    Inline editing: pitch and per-day summaries are editable for trip owners
@@ -34,6 +34,10 @@ function formatWeekday(d) {
   if (!d) return "";
   return new Date(d + "T00:00:00").toLocaleDateString("en-US", { weekday: "long" });
 }
+function formatWeekdayShort(d) {
+  if (!d) return "";
+  return new Date(d + "T00:00:00").toLocaleDateString("en-US", { weekday: "short" });
+}
 function formatTime(t) {
   if (!t) return "";
   const [h, m] = t.slice(0, 5).split(":").map(Number);
@@ -49,11 +53,6 @@ function formatMoney(amount, currency) {
   if (amount == null || amount === "") return "";
   const sym = currency === "EUR" ? "€" : currency === "GBP" ? "£" : "$";
   return `${sym}${Number(amount).toLocaleString(undefined, { maximumFractionDigits: 0 })}`;
-}
-function formatMoneyPrecise(amount, currency) {
-  if (amount == null || amount === "") return "";
-  const sym = currency === "EUR" ? "€" : currency === "GBP" ? "£" : "$";
-  return `${sym}${Number(amount).toLocaleString(undefined, { minimumFractionDigits: 0, maximumFractionDigits: 2 })}`;
 }
 function formatDuration(mins) {
   if (!mins) return "";
@@ -120,7 +119,6 @@ export default function TripPlanPage({ params }) {
         (json.days || []).forEach((d) => { if (d.summary) sm[d.date] = d.summary; });
         setDaySummaries(sm);
 
-        // Detect edit rights: owner OR accepted collaborator.
         const { data: { user } } = await supabase.auth.getUser();
         if (cancelled) return;
         if (!user) {
@@ -176,7 +174,8 @@ export default function TripPlanPage({ params }) {
   const startDate = itinerary.start_date || trip.start_date;
   const endDate = itinerary.end_date || trip.end_date;
   const allDates = getDaysBetween(startDate, endDate);
-  const numTravelers = Math.max(1, itinerary.num_travelers || 1);
+  // Number of travelers comes from the itinerary travelers list, fallback to itinerary.num_travelers, then 1.
+  const numTravelers = Math.max(1, travelers.length || itinerary.num_travelers || 1);
 
   // Build per-day events with FULL detail.
   const daySchedule = allDates.map((date, idx) => {
@@ -195,31 +194,15 @@ export default function TripPlanPage({ params }) {
 
     const events = [];
 
-    // Flights — full leg detail
+    // Flights — full leg detail with airline logo + dep/arr columns
     flightLegs.forEach((l) => {
       const opt = l._option || {};
-      const facts = [];
-      if (l.departure_airport && l.arrival_airport) facts.push({ k: "Route", v: `${l.departure_airport} → ${l.arrival_airport}` });
-      if (l.duration_minutes) facts.push({ k: "Duration", v: formatDuration(l.duration_minutes) });
-      if (l.cabin_class) facts.push({ k: "Cabin", v: l.cabin_class });
-      if (l.aircraft_type) facts.push({ k: "Aircraft", v: l.aircraft_type });
-      if (l.terminal_departure) facts.push({ k: "Dep terminal", v: l.terminal_departure });
-      if (l.gate_departure) facts.push({ k: "Dep gate", v: l.gate_departure });
-      if (l.terminal_arrival) facts.push({ k: "Arr terminal", v: l.terminal_arrival });
-      if (l.gate_arrival) facts.push({ k: "Arr gate", v: l.gate_arrival });
-      if (l.seat) facts.push({ k: "Seat", v: l.seat });
-      if (l.baggage_allowance) facts.push({ k: "Baggage", v: l.baggage_allowance });
-      if (opt.confirmation_number) facts.push({ k: "Confirmation", v: opt.confirmation_number });
-      if (opt.booking_site) facts.push({ k: "Booked via", v: opt.booking_site });
-      if (l.operating_airline_name && l.operating_airline_name !== l.airline_name) facts.push({ k: "Operated by", v: l.operating_airline_name });
       events.push({
         kind: "flight",
         time: l.departure_time?.slice(0, 5),
         timeEnd: l.arrival_time?.slice(0, 5),
-        label: `${l.airline_name || l.airline_code || "Flight"}${l.flight_number ? " " + l.flight_number : ""}`,
-        sub: l.departure_airport && l.arrival_airport ? `${l.departure_airport} → ${l.arrival_airport}` : null,
-        facts,
-        notes: opt.notes || null,
+        flightLeg: l,
+        flightOption: opt,
         cost: opt.total_price,
         currency: opt.currency,
       });
@@ -260,9 +243,9 @@ export default function TripPlanPage({ params }) {
       });
     });
 
-    // Accommodation - midnights (per-night cost on each spanned day, no check-in row)
+    // Accommodation - midnights
     stays.forEach((a) => {
-      if (a.check_in_date === date) return; // already covered by checkIn
+      if (a.check_in_date === date) return;
       const nights = nightsBetween(a.check_in_date, a.check_out_date);
       const perNight = a.price_per_night || (a.total_price ? Number(a.total_price) / nights : null);
       const dayIndex = Math.floor((new Date(date) - new Date(a.check_in_date)) / 86400000) + 1;
@@ -291,7 +274,7 @@ export default function TripPlanPage({ params }) {
       });
     });
 
-    // Activities - full detail
+    // Activities
     dayActs.forEach((a) => {
       const facts = [];
       if (a.duration_minutes) facts.push({ k: "Duration", v: formatDuration(a.duration_minutes) });
@@ -311,11 +294,10 @@ export default function TripPlanPage({ params }) {
         notes: a.notes || null,
         cost: a.price,
         currency: a.currency,
-        sourceUrl: a.source_url,
       });
     });
 
-    // Dining - full detail
+    // Dining
     dayDining.forEach((d) => {
       const facts = [];
       if (d.cuisine_type && d.cuisine_type.toLowerCase() !== "other") facts.push({ k: "Cuisine", v: d.cuisine_type });
@@ -339,11 +321,10 @@ export default function TripPlanPage({ params }) {
         notes: d.notes || null,
         cost: d.avg_meal_cost,
         currency: d.currency,
-        sourceUrl: d.source_url,
       });
     });
 
-    // Transportation - full detail (incl. car rental pickup/dropoff)
+    // Transportation
     dayTransport.forEach((t) => {
       const isReturn = t.arrival_date === date && t.departure_date !== date;
       const facts = [];
@@ -395,7 +376,7 @@ export default function TripPlanPage({ params }) {
     };
   });
 
-  // Budget rollup.
+  // Budget rollup
   const flightTotal = flights.reduce((s, f) => s + (f.total_price ? Number(f.total_price) : 0), 0);
   const stayTotal = accommodation.reduce((s, a) => s + (a.total_price ? Number(a.total_price) : 0), 0);
   const actTotal = activities.reduce((s, a) => s + (a.price ? Number(a.price) : 0), 0) * numTravelers;
@@ -468,6 +449,20 @@ export default function TripPlanPage({ params }) {
         .trip-plan .fact { font-family: "Oswald", sans-serif; font-size: 10px; letter-spacing: 0.04em; }
         .trip-plan .fact-k { color: rgba(42,31,20,0.55); text-transform: uppercase; letter-spacing: 0.14em; font-weight: 600; }
         .trip-plan .fact-v { color: #2a1f14; font-weight: 500; }
+        /* Variant B vertical spine */
+        .spine { position:relative; padding-left:64px; }
+        .spine::before { content:""; position:absolute; left:24px; top:6px; bottom:6px; width:3px; background:#da7b4a; }
+        .day-row { position:relative; padding:10px 0 12px; border-bottom:1px dashed rgba(42,31,20,0.15); }
+        .day-row:last-child { border-bottom:none; }
+        .day-row::before {
+          content:""; position:absolute; left:-40px; top:14px;
+          width:14px; height:14px; border-radius:50%;
+          background:#f1e6d2; border:3px solid #da7b4a;
+        }
+        .day-num-spine { position:absolute; left:-64px; top:8px; width:24px; text-align:right;
+          font-family:"Bebas Neue",Impact,sans-serif; font-size:24px; color:#da7b4a; line-height:1; }
+        /* Monochrome airline logo */
+        .airline-logo { height:20px; width:auto; max-width:64px; filter:grayscale(100%) brightness(0); opacity:0.85; }
       `}</style>
 
       <div className="no-print" style={{ maxWidth: "8.5in", margin: "0 auto 12px", display: "flex", justifyContent: "space-between", alignItems: "center", padding: "0 12px" }}>
@@ -488,7 +483,6 @@ export default function TripPlanPage({ params }) {
             ? `linear-gradient(180deg, rgba(0,0,0,0.0) 0%, rgba(0,0,0,0.4) 70%, rgba(0,0,0,0.85) 100%), url(${trip.banner_image}) center/cover`
             : "linear-gradient(180deg, rgba(218,123,74,0.22) 0%, rgba(74,119,135,0.55) 60%, rgba(42,31,20,0.85) 100%)",
         }}>
-          {/* TripCraft logo - upper right, white, larger */}
           <img
             src="/TRIPCRAFTLOGO.png"
             alt="TripCraft"
@@ -522,7 +516,6 @@ export default function TripPlanPage({ params }) {
             onSave={savePitch}
             displayStyle={{ fontFamily: "Lora, serif", fontStyle: "italic", fontSize: 16, lineHeight: 1.65, color: "rgba(42,31,20,0.88)" }}
           />
-          {/* Travelers strip on cover - always visible if any travelers exist */}
           {travelers.length > 0 && (
             <div style={{ marginTop: 18, paddingTop: 16, borderTop: "1px solid rgba(42,31,20,0.18)" }}>
               <span className="label">Travelers</span>
@@ -542,81 +535,124 @@ export default function TripPlanPage({ params }) {
         </div>
       </div>
 
-      {/* PART 2 - TRIP AT A GLANCE */}
+      {/* PART 2 - TRIP AT A GLANCE (Variant B) */}
       <div className="page">
         <h1 style={{ fontSize: 64, marginBottom: 0 }}>Trip at a glance</h1>
         <div className="accent-rule"></div>
 
-        <div style={{ marginTop: 22 }} className="avoid-break">
-          <span className="label">The Days</span>
-          <div style={{
-            display: "grid",
-            gridTemplateColumns: `repeat(${Math.min(daySchedule.length, 7)}, 1fr)`,
-            gap: 6, marginTop: 8,
-          }}>
-            {daySchedule.slice(0, 14).map((d) => {
-              const eventCount = d.events.length;
-              const dotColors = d.events.slice(0, 5).map((e) => CAT_COLORS[e.kind]);
+        <div style={{ marginTop: 18, display: "grid", gridTemplateColumns: "1fr 3.5in", gap: 22, alignItems: "start" }}>
+          {/* Spine */}
+          <div className="spine">
+            {daySchedule.map((d) => {
+              const eventLabels = d.events.slice(0, 8).map((e) => {
+                if (e.kind === "flight") {
+                  const l = e.flightLeg || {};
+                  return `${l.airline_code || l.airline_name || "Flight"} ${l.departure_airport || ""}→${l.arrival_airport || ""}`;
+                }
+                return e.label;
+              });
               return (
-                <div key={d.date} style={{
-                  border: "1.5px solid #2a1f14", padding: "10px 8px",
-                  background: "rgba(241,230,210,0.6)",
-                  display: "flex", flexDirection: "column", gap: 4, minHeight: 96,
-                }}>
-                  <div style={{ display: "flex", justifyContent: "space-between", alignItems: "baseline" }}>
-                    <span className="display" style={{ fontSize: 22, color: "#da7b4a", lineHeight: 1 }}>{String(d.dayNumber).padStart(2, "0")}</span>
-                    <span style={{ fontFamily: "Oswald, sans-serif", fontSize: 9, fontWeight: 600, letterSpacing: "0.14em", color: "rgba(42,31,20,0.55)", textTransform: "uppercase" }}>
-                      {formatShort(d.date)}
-                    </span>
+                <div key={d.date} className="day-row avoid-break">
+                  <div className="day-num-spine">{String(d.dayNumber).padStart(2, "0")}</div>
+                  {/* Stack: day+date on top, title below */}
+                  <div style={{ fontFamily: "Oswald, sans-serif", fontSize: 9.5, fontWeight: 600, letterSpacing: "0.18em", color: "rgba(42,31,20,0.6)", textTransform: "uppercase" }}>
+                    {formatWeekdayShort(d.date)} · {formatShort(d.date)}
                   </div>
-                  <div className="display" style={{ fontSize: 11, lineHeight: 1.18, color: "#2a1f14", flex: 1 }}>
-                    {(d.title || "").toUpperCase()}
+                  <div className="display" style={{ fontSize: 20, color: "#2a1f14", lineHeight: 1.05, marginTop: 2 }}>
+                    {(d.title || "Open day").toUpperCase()}
                   </div>
-                  <div style={{ display: "flex", gap: 3, marginTop: "auto" }}>
-                    {dotColors.map((c, i) => (<div key={i} style={{ width: 6, height: 6, borderRadius: "50%", background: c }} />))}
-                    {eventCount > 5 && (<span style={{ fontFamily: "Oswald, sans-serif", fontSize: 8, color: "rgba(42,31,20,0.5)", marginLeft: 2 }}>+{eventCount - 5}</span>)}
-                  </div>
+                  {/* Events wrap as chips */}
+                  {eventLabels.length > 0 && (
+                    <div style={{ marginTop: 6, display: "flex", flexWrap: "wrap", gap: "4px 10px" }}>
+                      {d.events.slice(0, 8).map((e, i) => {
+                        const isFlight = e.kind === "flight";
+                        const l = e.flightLeg || {};
+                        const display = isFlight
+                          ? `${l.airline_code || l.airline_name || ""} ${l.departure_airport || ""}→${l.arrival_airport || ""}`
+                          : e.label;
+                        return (
+                          <span key={i} style={{ display: "inline-flex", alignItems: "center", gap: 5, fontFamily: "Lora, serif", fontSize: 11, color: "rgba(42,31,20,0.78)" }}>
+                            <span style={{ width: 7, height: 7, borderRadius: 2, background: CAT_COLORS[e.kind], flexShrink: 0 }} />
+                            {display}
+                          </span>
+                        );
+                      })}
+                      {d.events.length > 8 && (
+                        <span style={{ fontFamily: "Oswald, sans-serif", fontSize: 10, color: "rgba(42,31,20,0.5)", fontWeight: 600 }}>
+                          +{d.events.length - 8} more
+                        </span>
+                      )}
+                    </div>
+                  )}
                 </div>
               );
             })}
           </div>
-          {daySchedule.length > 14 && (
-            <div style={{ fontFamily: "Oswald, sans-serif", fontSize: 9, fontWeight: 600, letterSpacing: "0.16em", color: "rgba(42,31,20,0.55)", textTransform: "uppercase", marginTop: 6, textAlign: "right" }}>
-              + {daySchedule.length - 14} more days follow
-            </div>
-          )}
+
+          {/* Side map - wider per request */}
+          <div className="avoid-break" style={{ height: "5.4in", position: "relative", border: "2px solid rgba(42,31,20,0.5)",
+            background: "linear-gradient(135deg, rgba(74,119,135,0.18) 0%, rgba(126,155,91,0.18) 50%, rgba(212,165,116,0.18) 100%), repeating-linear-gradient(45deg, rgba(42,31,20,0.04) 0 8px, transparent 8px 16px), #f1e6d2",
+            position: "sticky", top: 12 }}>
+            <span className="label" style={{ position: "absolute", top: 10, left: 12 }}>— Route</span>
+            <div style={{ position: "absolute", top: 10, right: 12, width: 30, height: 30, border: "2px solid #2a1f14", borderRadius: "50%", display: "flex", alignItems: "center", justifyContent: "center", fontFamily: "Bebas Neue, sans-serif", fontSize: 14 }}>N</div>
+            {/* Coastline */}
+            <div style={{ position: "absolute", left: 0, right: 0, bottom: 0, height: "55%",
+              background: "linear-gradient(180deg, rgba(74,119,135,0.06), rgba(74,119,135,0.20))",
+              clipPath: "polygon(0 30%, 18% 22%, 32% 36%, 48% 18%, 64% 30%, 80% 22%, 100% 36%, 100% 100%, 0 100%)" }} />
+            {/* Day pins along an evenly-spaced arc */}
+            {daySchedule.map((d, i) => {
+              const tt = daySchedule.length === 1 ? 0.5 : i / (daySchedule.length - 1);
+              const x = 12 + tt * 76; // 12% → 88%
+              const y = 50 + Math.sin(tt * Math.PI) * -18; // simple arc
+              return (
+                <div key={d.date}>
+                  <div style={{ position: "absolute", left: `${x}%`, top: `${y}%`, width: 11, height: 11, borderRadius: "50%",
+                    background: "#da7b4a", border: "2px solid #f1e6d2", boxShadow: "0 0 0 1.5px #da7b4a", transform: "translate(-50%,-50%)" }} />
+                  {d.title && (
+                    <div style={{
+                      position: "absolute", left: `${x}%`, top: `calc(${y}% - 14px)`,
+                      transform: "translate(-50%,-100%)",
+                      fontFamily: "Oswald, sans-serif", fontSize: 8, fontWeight: 600, letterSpacing: "0.1em",
+                      color: "#2a1f14", textTransform: "uppercase",
+                      background: "rgba(241,230,210,0.92)", padding: "1px 4px",
+                      border: "1px solid rgba(42,31,20,0.4)", whiteSpace: "nowrap",
+                    }}>
+                      {String(d.dayNumber).padStart(2, "0")} · {d.title.length > 16 ? d.title.slice(0,15) + "…" : d.title}
+                    </div>
+                  )}
+                </div>
+              );
+            })}
+            {/* Dotted route */}
+            <svg style={{ position: "absolute", inset: 0, width: "100%", height: "100%", pointerEvents: "none" }} viewBox="0 0 100 100" preserveAspectRatio="none">
+              <path
+                d={daySchedule.length > 1
+                  ? daySchedule.map((d, i) => {
+                      const tt = i / (daySchedule.length - 1);
+                      const x = 12 + tt * 76;
+                      const y = 50 + Math.sin(tt * Math.PI) * -18;
+                      return `${i === 0 ? "M" : "L"} ${x.toFixed(1)} ${y.toFixed(1)}`;
+                    }).join(" ")
+                  : ""
+                }
+                stroke="#da7b4a" strokeWidth="0.6" strokeDasharray="2 2" fill="none"
+              />
+            </svg>
+            {trip.destination && (
+              <div className="display" style={{ position: "absolute", bottom: 14, left: 0, right: 0, textAlign: "center",
+                fontSize: 28, color: "#2a1f14", textShadow: "0 1px 0 rgba(241,230,210,0.6)" }}>
+                {trip.destination.toUpperCase()}
+              </div>
+            )}
+          </div>
         </div>
 
-        <div className="avoid-break" style={{ marginTop: 22, height: "3.2in", position: "relative", border: "2px solid rgba(42,31,20,0.5)",
-          background: "linear-gradient(135deg, rgba(74,119,135,0.18) 0%, rgba(126,155,91,0.18) 50%, rgba(212,165,116,0.18) 100%), repeating-linear-gradient(45deg, rgba(42,31,20,0.04) 0 8px, transparent 8px 16px), #f1e6d2",
-          overflow: "hidden" }}>
-          <span className="label" style={{ position: "absolute", top: 12, left: 14 }}>— The Route</span>
-          <div style={{ position: "absolute", top: 14, right: 16, width: 36, height: 36, border: "2px solid #2a1f14", borderRadius: "50%", display: "flex", alignItems: "center", justifyContent: "center", fontFamily: "Bebas Neue, sans-serif", fontSize: 16 }}>N</div>
-          <div style={{ position: "absolute", left: 0, right: 0, bottom: 0, height: "60%",
-            background: "linear-gradient(180deg, rgba(74,119,135,0.06), rgba(74,119,135,0.18))",
-            clipPath: "polygon(0 30%, 18% 22%, 32% 36%, 48% 18%, 64% 30%, 80% 22%, 100% 36%, 100% 100%, 0 100%)" }} />
-          <div style={{ position: "absolute", left: "8%", right: "8%", top: "50%",
-            height: 2, background: "repeating-linear-gradient(90deg, #da7b4a 0 8px, transparent 8px 14px)",
-            transform: "translateY(-50%)" }} />
-          <div style={{ position: "absolute", top: "50%", left: "8%", transform: "translate(-50%,-50%)" }}>
-            <div style={{ width: 14, height: 14, borderRadius: "50%", background: "#da7b4a", border: "3px solid #f1e6d2", boxShadow: "0 0 0 2px #da7b4a" }} />
-          </div>
-          <div style={{ position: "absolute", top: "50%", right: "8%", transform: "translate(50%,-50%)" }}>
-            <div style={{ width: 14, height: 14, borderRadius: "50%", background: "#da7b4a", border: "3px solid #f1e6d2", boxShadow: "0 0 0 2px #da7b4a" }} />
-          </div>
-          {trip.destination && (
-            <div className="display" style={{ position: "absolute", bottom: 18, left: 0, right: 0, textAlign: "center",
-              fontSize: 36, color: "#2a1f14", textShadow: "0 1px 0 rgba(241,230,210,0.6)" }}>
-              {trip.destination.toUpperCase()}
-            </div>
-          )}
-        </div>
-
-        <div className="avoid-break" style={{ marginTop: 18, padding: "14px 18px",
+        {/* Budget banner */}
+        <div className="avoid-break" style={{ marginTop: 18, padding: "12px 18px",
           background: "linear-gradient(90deg, rgba(218,123,74,0.10), rgba(218,123,74,0.04))",
           borderLeft: "4px solid #da7b4a",
           display: "grid", gridTemplateColumns: "auto 1fr auto", gap: 22, alignItems: "center" }}>
-          <div className="display" style={{ fontSize: 40, color: "#da7b4a" }}>{formatMoney(grandTotal, "USD")}</div>
+          <div className="display" style={{ fontSize: 38, color: "#da7b4a" }}>{formatMoney(grandTotal, "USD")}</div>
           <div style={{ fontSize: 12.5, color: "rgba(42,31,20,0.8)", lineHeight: 1.5 }}>
             <span className="label" style={{ display: "block", marginBottom: 4 }}>— All-In, Estimated</span>
             Detailed costs follow per-day in trip details. Final breakdown summarized on the last page.
@@ -628,7 +664,7 @@ export default function TripPlanPage({ params }) {
         </div>
       </div>
 
-      {/* PART 3 - TRIP DETAILS - day pages */}
+      {/* PART 3 - TRIP DETAILS - day pages with 2-image column */}
       {daySchedule.map((d) => (
         <div key={d.date} className="page">
           <div style={{ display: "flex", alignItems: "stretch", gap: 16, borderBottom: "3px solid #2a1f14", paddingBottom: 10, marginBottom: 16 }}>
@@ -656,15 +692,22 @@ export default function TripPlanPage({ params }) {
             />
           </div>
 
-          <div>
-            {d.events.length === 0 ? (
-              <div style={{ fontStyle: "italic", color: "rgba(42,31,20,0.5)", padding: "20px 0" }}>Free day</div>
-            ) : (
-              d.events.map((e, i) => <EventBlock key={i} e={e} />)
-            )}
+          {/* Two columns: events on left, two stacked image placeholders on right */}
+          <div style={{ display: "grid", gridTemplateColumns: "1fr 2.4in", gap: 22, alignItems: "start" }}>
+            <div>
+              {d.events.length === 0 ? (
+                <div style={{ fontStyle: "italic", color: "rgba(42,31,20,0.5)", padding: "20px 0" }}>Free day</div>
+              ) : (
+                d.events.map((e, i) => <EventBlock key={i} e={e} />)
+              )}
+            </div>
+            <aside style={{ display: "flex", flexDirection: "column", gap: 10 }}>
+              <ImagePlaceholder label="Day image 1" />
+              <ImagePlaceholder label="Day image 2" />
+            </aside>
           </div>
 
-          <div style={{ marginTop: 28, textAlign: "center", opacity: 0.5, fontFamily: "Oswald, sans-serif", textTransform: "uppercase", fontSize: 10, letterSpacing: "0.3em" }}>
+          <div style={{ marginTop: 24, textAlign: "center", opacity: 0.5, fontFamily: "Oswald, sans-serif", textTransform: "uppercase", fontSize: 10, letterSpacing: "0.3em" }}>
             — Day {d.dayNumber} of {allDates.length} · {formatShort(d.date)} —
           </div>
         </div>
@@ -717,8 +760,33 @@ export default function TripPlanPage({ params }) {
   );
 }
 
-/* Per-event block with full detail. */
+function ImagePlaceholder({ label }) {
+  return (
+    <div style={{
+      height: "2.4in",
+      background: "repeating-linear-gradient(45deg, rgba(42,31,20,0.04) 0 8px, transparent 8px 16px), rgba(42,31,20,0.04)",
+      border: "1.5px dashed rgba(42,31,20,0.25)",
+      color: "rgba(42,31,20,0.45)",
+      fontFamily: "Oswald, sans-serif",
+      textTransform: "uppercase",
+      letterSpacing: "0.22em",
+      fontSize: 10,
+      fontWeight: 600,
+      display: "flex",
+      alignItems: "center",
+      justifyContent: "center",
+      textAlign: "center",
+      padding: 12,
+    }}>
+      {label}<br/><span style={{ fontSize: 9, opacity: 0.6, letterSpacing: "0.18em" }}>placeholder</span>
+    </div>
+  );
+}
+
+/* Per-event block with full detail. Special-cased for flights to show
+   the airline logo and DEP/ARR airport+time prominently. */
 function EventBlock({ e }) {
+  const isFlight = e.kind === "flight";
   return (
     <div className="avoid-break" style={{
       display: "grid",
@@ -739,39 +807,29 @@ function EventBlock({ e }) {
         {CAT_ICONS[e.kind]}
       </div>
       <div>
-        <div className="display" style={{ fontSize: 17, lineHeight: 1.15 }}>{e.label}</div>
-        {e.sub && <div style={{ fontSize: 12, color: "rgba(42,31,20,0.7)", marginTop: 2, lineHeight: 1.4 }}>{e.sub}</div>}
-        {e.address && <div style={{ fontSize: 11, color: "rgba(42,31,20,0.55)", marginTop: 2, lineHeight: 1.35 }}>{e.address}</div>}
-        {e.description && <div style={{ fontSize: 11.5, color: "rgba(42,31,20,0.78)", marginTop: 5, lineHeight: 1.45 }}>{e.description}</div>}
-        {e.facts && e.facts.length > 0 && (
-          <div style={{
-            marginTop: 8,
-            display: "grid",
-            gridTemplateColumns: "repeat(auto-fill, minmax(140px, 1fr))",
-            gap: "4px 14px",
-          }}>
-            {e.facts.map((f, i) => (
-              <div key={i} className="fact" style={{ display: "flex", gap: 6, lineHeight: 1.4 }}>
-                <span className="fact-k">{f.k}</span>
-                <span className="fact-v">{f.v}</span>
+        {isFlight ? <FlightDetail e={e} /> : (
+          <>
+            <div className="display" style={{ fontSize: 17, lineHeight: 1.15 }}>{e.label}</div>
+            {e.sub && <div style={{ fontSize: 12, color: "rgba(42,31,20,0.7)", marginTop: 2, lineHeight: 1.4 }}>{e.sub}</div>}
+            {e.address && <div style={{ fontSize: 11, color: "rgba(42,31,20,0.55)", marginTop: 2, lineHeight: 1.35 }}>{e.address}</div>}
+            {e.description && <div style={{ fontSize: 11.5, color: "rgba(42,31,20,0.78)", marginTop: 5, lineHeight: 1.45 }}>{e.description}</div>}
+            {e.facts && e.facts.length > 0 && <FactsGrid facts={e.facts} />}
+            {e.amenities && (
+              <div style={{ marginTop: 6, fontSize: 10.5, color: "rgba(42,31,20,0.65)", fontStyle: "italic" }}>
+                <span className="fact-k" style={{ marginRight: 6 }}>Amenities</span>{e.amenities}
               </div>
-            ))}
-          </div>
-        )}
-        {e.amenities && (
-          <div style={{ marginTop: 6, fontSize: 10.5, color: "rgba(42,31,20,0.65)", fontStyle: "italic" }}>
-            <span className="fact-k" style={{ marginRight: 6 }}>Amenities</span>{e.amenities}
-          </div>
-        )}
-        {e.meeting && (
-          <div style={{ marginTop: 6, padding: "6px 9px", background: "rgba(107,90,142,0.10)", border: "1px dashed rgba(107,90,142,0.4)", fontSize: 11, lineHeight: 1.4 }}>
-            <span className="fact-k" style={{ marginRight: 6 }}>Meeting</span>{e.meeting}
-          </div>
-        )}
-        {e.notes && (
-          <div style={{ marginTop: 6, fontSize: 11.5, color: "rgba(42,31,20,0.7)", fontStyle: "italic", lineHeight: 1.45 }}>
-            {e.notes}
-          </div>
+            )}
+            {e.meeting && (
+              <div style={{ marginTop: 6, padding: "6px 9px", background: "rgba(107,90,142,0.10)", border: "1px dashed rgba(107,90,142,0.4)", fontSize: 11, lineHeight: 1.4 }}>
+                <span className="fact-k" style={{ marginRight: 6 }}>Meeting</span>{e.meeting}
+              </div>
+            )}
+            {e.notes && (
+              <div style={{ marginTop: 6, fontSize: 11.5, color: "rgba(42,31,20,0.7)", fontStyle: "italic", lineHeight: 1.45 }}>
+                {e.notes}
+              </div>
+            )}
+          </>
         )}
       </div>
       <div style={{ textAlign: "right" }}>
@@ -789,6 +847,98 @@ function EventBlock({ e }) {
         ) : null}
       </div>
     </div>
+  );
+}
+
+function FactsGrid({ facts }) {
+  return (
+    <div style={{
+      marginTop: 8,
+      display: "grid",
+      gridTemplateColumns: "repeat(auto-fill, minmax(140px, 1fr))",
+      gap: "4px 14px",
+    }}>
+      {facts.map((f, i) => (
+        <div key={i} className="fact" style={{ display: "flex", gap: 6, lineHeight: 1.4 }}>
+          <span className="fact-k">{f.k}</span>
+          <span className="fact-v">{f.v}</span>
+        </div>
+      ))}
+    </div>
+  );
+}
+
+/* Flight-specific detail block: monochrome airline logo + DEP/ARR columns
+   showing airport code and time stacked, plus the rest of the leg facts. */
+function FlightDetail({ e }) {
+  const l = e.flightLeg || {};
+  const opt = e.flightOption || {};
+  const code = (l.airline_code || "").toUpperCase();
+  const facts = [];
+  if (l.duration_minutes) facts.push({ k: "Duration", v: formatDuration(l.duration_minutes) });
+  if (l.cabin_class) facts.push({ k: "Cabin", v: l.cabin_class });
+  if (l.aircraft_type) facts.push({ k: "Aircraft", v: l.aircraft_type });
+  if (l.terminal_departure) facts.push({ k: "Dep terminal", v: l.terminal_departure });
+  if (l.gate_departure) facts.push({ k: "Dep gate", v: l.gate_departure });
+  if (l.terminal_arrival) facts.push({ k: "Arr terminal", v: l.terminal_arrival });
+  if (l.gate_arrival) facts.push({ k: "Arr gate", v: l.gate_arrival });
+  if (l.seat) facts.push({ k: "Seat", v: l.seat });
+  if (l.baggage_allowance) facts.push({ k: "Baggage", v: l.baggage_allowance });
+  if (opt.confirmation_number) facts.push({ k: "Confirmation", v: opt.confirmation_number });
+  if (opt.booking_site) facts.push({ k: "Booked via", v: opt.booking_site });
+  if (l.operating_airline_name && l.operating_airline_name !== l.airline_name) {
+    facts.push({ k: "Operated by", v: l.operating_airline_name });
+  }
+
+  return (
+    <>
+      <div style={{ display: "flex", alignItems: "center", gap: 10 }}>
+        {code && (
+          <img
+            className="airline-logo"
+            src={`https://images.kiwi.com/airlines/64/${code}.png`}
+            alt={l.airline_name || code}
+            onError={(ev) => { ev.currentTarget.style.display = "none"; }}
+          />
+        )}
+        <div className="display" style={{ fontSize: 17, lineHeight: 1.15 }}>
+          {(l.airline_name || code || "Flight")}{l.flight_number ? ` ${l.flight_number}` : ""}
+        </div>
+      </div>
+
+      {/* DEP → ARR column row */}
+      <div style={{ display: "grid", gridTemplateColumns: "1fr auto 1fr", gap: 10, alignItems: "center", marginTop: 8,
+        padding: "8px 10px", background: "rgba(126,155,91,0.10)", border: "1px solid rgba(126,155,91,0.35)" }}>
+        <div>
+          <div className="fact-k" style={{ fontFamily: "Oswald, sans-serif", fontSize: 9, letterSpacing: "0.18em", textTransform: "uppercase", fontWeight: 600 }}>Depart</div>
+          <div className="display" style={{ fontSize: 22, lineHeight: 1, marginTop: 3 }}>{l.departure_airport || "—"}</div>
+          <div style={{ fontFamily: "Oswald, sans-serif", fontSize: 11, fontWeight: 600, color: "rgba(42,31,20,0.85)", marginTop: 2 }}>
+            {l.departure_time ? formatTime(l.departure_time) : ""}
+            {l.departure_date && <span style={{ color: "rgba(42,31,20,0.5)", marginLeft: 6, fontSize: 10 }}>{formatShort(l.departure_date)}</span>}
+          </div>
+        </div>
+        <div style={{ display: "flex", flexDirection: "column", alignItems: "center", color: "rgba(42,31,20,0.55)", fontFamily: "Oswald, sans-serif", fontSize: 10, fontWeight: 600, letterSpacing: "0.14em", textTransform: "uppercase" }}>
+          <div style={{ width: 32, height: 1, background: "rgba(42,31,20,0.4)", marginBottom: 3 }} />
+          <span>{l.duration_minutes ? formatDuration(l.duration_minutes) : "→"}</span>
+          <div style={{ width: 32, height: 1, background: "rgba(42,31,20,0.4)", marginTop: 3 }} />
+        </div>
+        <div style={{ textAlign: "right" }}>
+          <div className="fact-k" style={{ fontFamily: "Oswald, sans-serif", fontSize: 9, letterSpacing: "0.18em", textTransform: "uppercase", fontWeight: 600 }}>Arrive</div>
+          <div className="display" style={{ fontSize: 22, lineHeight: 1, marginTop: 3 }}>{l.arrival_airport || "—"}</div>
+          <div style={{ fontFamily: "Oswald, sans-serif", fontSize: 11, fontWeight: 600, color: "rgba(42,31,20,0.85)", marginTop: 2 }}>
+            {l.arrival_time ? formatTime(l.arrival_time) : ""}
+            {l.arrival_date && <span style={{ color: "rgba(42,31,20,0.5)", marginLeft: 6, fontSize: 10 }}>{formatShort(l.arrival_date)}</span>}
+          </div>
+        </div>
+      </div>
+
+      {facts.length > 0 && <FactsGrid facts={facts} />}
+      {opt.notes && (
+        <div style={{ marginTop: 6, fontSize: 11.5, color: "rgba(42,31,20,0.7)", fontStyle: "italic", lineHeight: 1.45 }}>
+          {opt.notes}
+        </div>
+      )}
+    </>
   );
 }
 

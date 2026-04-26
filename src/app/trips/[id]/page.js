@@ -155,7 +155,26 @@ export default function TripDetailPage() {
   const [editingItineraryDates, setEditingItineraryDates] = useState(false);
   const [guideLoading, setGuideLoading] = useState(false);
   const [planLoading, setPlanLoading] = useState(false);
+  // Set of traveler IDs included in the active itinerary (junction: itinerary_travelers)
+  const [itineraryTravelerIds, setItineraryTravelerIds] = useState([]);
+  const [travelersRefreshKey, setTravelersRefreshKey] = useState(0);
+  const itineraryTravelerCount = Math.max(1, itineraryTravelerIds.length);
   const guideBtnRef = useRef(null);
+
+  // Load the included travelers for the active itinerary
+  useEffect(() => {
+    if (!activeItineraryId) { setItineraryTravelerIds([]); return; }
+    let cancelled = false;
+    (async () => {
+      const { data } = await supabase
+        .from("itinerary_travelers")
+        .select("traveler_id")
+        .eq("itinerary_id", activeItineraryId);
+      if (!cancelled) setItineraryTravelerIds((data || []).map((r) => r.traveler_id));
+    })();
+    return () => { cancelled = true; };
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [activeItineraryId, travelersRefreshKey]);
   const router = useRouter();
   const params = useParams();
 
@@ -1085,33 +1104,16 @@ export default function TripDetailPage() {
                       />
                     )}
                   </div>
-                  {/* Travelers */}
+                  {/* Travelers — count derived from itinerary_travelers; managed in the Travelers tab */}
                   <div className="flex items-center gap-1 mt-0.5">
-                    {editingItineraryTravelers ? (
-                      <div className="flex items-center gap-1">
-                        <input
-                          type="number"
-                          min="1"
-                          max="50"
-                          value={itineraryTravelersValue}
-                          onChange={(e) => setItineraryTravelersValue(e.target.value)}
-                          onBlur={() => saveItineraryTravelers()}
-                          onKeyDown={(e) => { if (e.key === "Enter") saveItineraryTravelers(); if (e.key === "Escape") setEditingItineraryTravelers(false); }}
-                          autoFocus
-                          className="w-12 text-xs text-stone-600 bg-white border border-stone-300 rounded px-1 py-0.5 focus:outline-none focus:ring-1 focus:ring-[#da7b4a]/50"
-                        />
-                        <span className="text-xs text-stone-400">travelers</span>
-                      </div>
-                    ) : (
-                      <div
-                        onClick={() => { setEditingItineraryTravelers(true); setItineraryTravelersValue(activeItinerary?.num_travelers || trip?.num_travelers || 1); }}
-                        className="text-xs text-stone-400 cursor-text hover:text-[#da7b4a] transition-colors"
-                        title="Click to edit travelers"
-                      >
-                        <svg className="w-3 h-3 inline mr-0.5 -mt-0.5" fill="none" stroke="currentColor" viewBox="0 0 24 24" strokeWidth={2}><path strokeLinecap="round" strokeLinejoin="round" d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0z" /></svg>
-                        {activeItinerary?.num_travelers || trip?.num_travelers || 1} traveler{(activeItinerary?.num_travelers || trip?.num_travelers || 1) > 1 ? "s" : ""}
-                      </div>
-                    )}
+                    <div
+                      onClick={() => setActiveLowerTab("collaborators")}
+                      className="text-xs text-stone-400 cursor-pointer hover:text-[#da7b4a] transition-colors"
+                      title="Manage travelers in the Travelers tab"
+                    >
+                      <svg className="w-3 h-3 inline mr-0.5 -mt-0.5" fill="none" stroke="currentColor" viewBox="0 0 24 24" strokeWidth={2}><path strokeLinecap="round" strokeLinejoin="round" d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0z" /></svg>
+                      {itineraryTravelerCount} traveler{itineraryTravelerCount === 1 ? "" : "s"}
+                    </div>
                   </div>
                 </div>
 
@@ -1523,7 +1525,7 @@ export default function TripDetailPage() {
             <div style={{ display: activeItineraryTab === "budget" ? "block" : "none" }}>
               <BudgetTracker
                 tripId={trip?.id}
-                numTravelers={activeItinerary?.num_travelers || trip?.num_travelers || 1}
+                numTravelers={itineraryTravelerCount}
                 flightOptions={flightOptions}
                 activityOptions={activityOptions}
                 accommodationOptions={accommodationOptions}
@@ -1648,6 +1650,9 @@ export default function TripDetailPage() {
                 userId={currentUser?.id}
                 userEmail={currentUser?.email}
                 tripOwnerId={trip?.user_id}
+                itineraries={itineraries}
+                activeItineraryId={activeItineraryId}
+                onTravelersChange={() => setTravelersRefreshKey((k) => k + 1)}
               />
             </div>
           </div>
