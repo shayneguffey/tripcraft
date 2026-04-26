@@ -28,6 +28,24 @@ const TileLayer = dynamic(() => import("react-leaflet").then(m => m.TileLayer), 
 const Marker = dynamic(() => import("react-leaflet").then(m => m.Marker), { ssr: false });
 const Polyline = dynamic(() => import("react-leaflet").then(m => m.Polyline), { ssr: false });
 
+// Child component that re-fits the map view whenever the bounds change.
+// react-leaflet's MapContainer bounds prop only applies on initial mount,
+// so we use the imperative API to follow pin updates after geocoding.
+function FitBoundsOnUpdate({ bounds, fallbackCenter }) {
+  // useMap is only available on the client; lazy-loaded.
+  const ReactLeaflet = require("react-leaflet");
+  const map = ReactLeaflet.useMap();
+  useEffect(() => {
+    if (!map) return;
+    if (bounds && bounds.length === 2) {
+      map.fitBounds(bounds, { padding: [40, 40], maxZoom: 11, animate: false });
+    } else if (fallbackCenter) {
+      map.setView(fallbackCenter, 9, { animate: false });
+    }
+  }, [JSON.stringify(bounds), JSON.stringify(fallbackCenter), map]);
+  return null;
+}
+
 // Module-scoped geocode cache to avoid re-fetching across remounts.
 const geocodeCache = {};
 
@@ -79,7 +97,7 @@ function dayPinIcon(label) {
 
 export default function TripPlanMap({ destination, pinQueries = [], height = "5.4in" }) {
   const [center, setCenter] = useState(null);
-  const [bounds, setBounds] = useState(null);
+  const [destBounds, setDestBounds] = useState(null);
   const [pins, setPins] = useState([]);
   const [error, setError] = useState(null);
 
@@ -89,6 +107,23 @@ export default function TripPlanMap({ destination, pinQueries = [], height = "5.
     () => JSON.stringify(pinQueries.map((p) => `${p.dayNumber}|${(p.queries || []).join("|")}`)),
     [pinQueries]
   );
+
+  // Bounds shown on the map: pins (with a small pad) > destination bbox > null.
+  const displayBounds = useMemo(() => {
+    if (pins.length >= 2) {
+      const lats = pins.map((p) => p.lat);
+      const lngs = pins.map((p) => p.lng);
+      const south = Math.min(...lats);
+      const north = Math.max(...lats);
+      const west = Math.min(...lngs);
+      const east = Math.max(...lngs);
+      // Pad by ~10% of span (with a sane minimum so single-cluster trips don't pin too tight)
+      const padLat = Math.max(0.1, (north - south) * 0.15);
+      const padLng = Math.max(0.1, (east - west) * 0.15);
+      return [[south - padLat, west - padLng], [north + padLat, east + padLng]];
+    }
+    return destBounds;
+  }, [pins, destBounds]);
 
   // Inject Leaflet's CSS once (matches the pattern in TripMap.js).
   useEffect(() => {
@@ -116,7 +151,7 @@ export default function TripPlanMap({ destination, pinQueries = [], height = "5.
       if (dest.bbox && dest.bbox.length === 4) {
         // Nominatim bbox order: [south, north, west, east]
         const [south, north, west, east] = dest.bbox;
-        setBounds([[south, west], [north, east]]);
+        setDestBounds([[south, west], [north, east]]);
       }
     })();
     return () => { cancelled = true; };
@@ -173,9 +208,10 @@ export default function TripPlanMap({ destination, pinQueries = [], height = "5.
       overflow: "hidden",
     }} className="trip-plan-map-wrap">
       <style jsx global>{`
-        /* Vintage CSS treatment on the live map tiles */
+        /* Vintage CSS treatment on the live map tiles — kept light so the
+           geography stays readable. */
         .trip-plan-map-wrap .leaflet-tile-pane {
-          filter: sepia(0.30) saturate(0.85) contrast(1.05) brightness(0.98) hue-rotate(-6deg);
+          filter: sepia(0.18) saturate(1.10) contrast(1.10) brightness(1.02);
         }
         /* Hide controls — this is a poster, not a tool */
         .trip-plan-map-wrap .leaflet-control-zoom,
@@ -187,13 +223,14 @@ export default function TripPlanMap({ destination, pinQueries = [], height = "5.
           background: #f1e6d2;
           font-family: "Lora", Georgia, serif;
         }
-        /* Paper-texture overlay sits above tiles, below pins */
+        /* Paper-texture overlay sits above tiles, below pins. Kept subtle so
+           it doesn't crush the map underneath. */
         .trip-plan-map-wrap .map-paper-texture {
           position: absolute; inset: 0; pointer-events: none; z-index: 350;
           background:
-            repeating-linear-gradient(45deg, rgba(42,31,20,0.025) 0 2px, transparent 2px 6px),
-            radial-gradient(circle at 30% 20%, rgba(241,230,210,0) 0%, rgba(241,230,210,0.18) 70%, rgba(241,230,210,0.32) 100%);
-          mix-blend-mode: multiply;
+            repeating-linear-gradient(45deg, rgba(42,31,20,0.018) 0 2px, transparent 2px 8px),
+            radial-gradient(circle at 30% 20%, rgba(241,230,210,0) 0%, rgba(241,230,210,0.05) 80%, rgba(241,230,210,0.14) 100%);
+          opacity: 0.6;
         }
         /* Vintage corner accents */
         .trip-plan-map-wrap .map-corner {
@@ -214,8 +251,8 @@ export default function TripPlanMap({ destination, pinQueries = [], height = "5.
       {center && (
         <MapContainer
           center={center}
-          bounds={bounds || undefined}
-          zoom={bounds ? undefined : 9}
+          bounds={destBounds || undefined}
+          zoom={destBounds ? undefined : 9}
           scrollWheelZoom={false}
           dragging={false}
           doubleClickZoom={false}
@@ -223,6 +260,9 @@ export default function TripPlanMap({ destination, pinQueries = [], height = "5.
           attributionControl={false}
           style={{ width: "100%", height: "100%" }}
         >
+          {/* Re-fit map view as pins resolve so all locations are visible. */}
+          <FitBoundsOnUpdate bounds={displayBounds} fallbackCenter={center} />
+
           {/* CartoDB Voyager — cream-toned OSM, free for low-traffic use */}
           <TileLayer
             url="https://{s}.basemaps.cartocdn.com/rastertiles/voyager_nolabels/{z}/{x}/{y}{r}.png"
@@ -230,12 +270,13 @@ export default function TripPlanMap({ destination, pinQueries = [], height = "5.
             subdomains={["a","b","c","d"]}
             maxZoom={19}
           />
-          {/* Add the labels back as a separate layer so the filter doesn't crush them */}
+          {/* Labels overlay — drawn above the filtered tiles so place names
+              stay legible. Higher opacity than before. */}
           <TileLayer
             url="https://{s}.basemaps.cartocdn.com/rastertiles/voyager_only_labels/{z}/{x}/{y}{r}.png"
             subdomains={["a","b","c","d"]}
             maxZoom={19}
-            opacity={0.85}
+            opacity={1}
           />
           {/* Day pins, if we resolved them */}
           {pins.map((p) => (
@@ -249,7 +290,7 @@ export default function TripPlanMap({ destination, pinQueries = [], height = "5.
           {pins.length > 1 && (
             <Polyline
               positions={pins.map((p) => [p.lat, p.lng])}
-              pathOptions={{ color: "#da7b4a", weight: 3, dashArray: "6 6", opacity: 0.85 }}
+              pathOptions={{ color: "#da7b4a", weight: 3.5, dashArray: "6 6", opacity: 0.95 }}
             />
           )}
         </MapContainer>
