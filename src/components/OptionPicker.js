@@ -5,7 +5,7 @@
  *
  * Rendered below the events list inside DayCardView when the user taps
  * "+ Itinerary Option". Two-step UI:
- *   1. Pick a category (Activities / Dining / Transport / Stays)
+ *   1. Pick a category (Flights / Activities / Dining / Transport / Stays)
  *   2. Pick an option from that category.
  *
  * Two scheduling modes per category — see CATEGORIES below for details.
@@ -17,8 +17,9 @@
  *     Transportation with a return date will appear automatically on the
  *     return day too — the calendar/day-card already renders both ends.
  *
- * Flights are excluded — leg-anchored multi-date scheduling is handled
- * in the Flights module.
+ * Flights use the FIXED mode and are filtered by `first_leg_date`. Picking
+ * a flight adds it to the itinerary; the existing day-card render logic
+ * automatically surfaces every leg on its own departure_date.
  *
  * Props:
  *   tripId      number   — required to scope the option list
@@ -41,6 +42,15 @@ import { supabase } from "@/lib/supabase";
 //                     options whose date already matches THIS day, and picking
 //                     just adds them to the itinerary.
 const CATEGORIES = [
+  {
+    key: "flight",
+    label: "Flights",
+    table: "flight_options",
+    dateField: "first_leg_date",
+    flexible: false,
+    accentBg: "bg-emerald-100",
+    accentText: "text-emerald-700",
+  },
   {
     key: "activity",
     label: "Activities",

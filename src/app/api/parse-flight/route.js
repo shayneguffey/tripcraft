@@ -14,19 +14,35 @@ IMPORTANT: Be thorough. Extract ALL fields for EVERY flight leg. Do not leave fi
 Return ONLY valid JSON (no markdown fences, no explanation):
 
 {
+  "name": "human-friendly name for this whole flight option (e.g. \"JFK \u2192 SEA, Jun 30\" or the airline+route). REQUIRED \u2014 if the source doesn\'t state one, generate from first leg origin \u2192 last leg destination plus the first leg date.",
+  "trip_type": "one_way" | "round_trip" | "multi_city" | "open_jaw" | null,
+  "confirmation_number": "master booking PNR / confirmation code if visible, else null",
+  "booking_site": "where the booking was made (e.g. \"Delta.com\", \"Expedia\", \"Chase Travel\"). Look at the URL hostname or any \"booked through\" text. null if not visible.",
+  "refundable": true | false | null,
+  "change_fee_policy": "free-text policy snippet if visible (e.g. \"$200 change fee\", \"Non-refundable, $99 change fee, no value retained\")",
   "flights": [
     {
-      "direction": "outbound" or "return",
       "departure_airport": "3-letter IATA code",
       "arrival_airport": "3-letter IATA code",
       "departure_date": "YYYY-MM-DD",
       "departure_time": "HH:MM in 24-hour format",
+      "arrival_date": "YYYY-MM-DD (only if different from departure_date, otherwise same as departure_date)",
       "arrival_time": "HH:MM in 24-hour format",
-      "airline_code": "2-letter IATA code",
-      "airline_name": "Full airline name",
+      "airline_code": "2-letter IATA code (marketing carrier)",
+      "airline_name": "Full marketing-carrier airline name",
       "flight_number": "XX 1234 format",
+      "operating_airline_code": "2-letter IATA code if codeshare, else null",
+      "operating_airline_name": "Operating-carrier airline name if codeshare, else null",
       "duration_minutes": integer,
-      "cabin_class": "economy" or "business" or "first"
+      "cabin_class": "economy" or "business" or "first",
+      "aircraft_type": "e.g. Boeing 737, Airbus A320, null if not visible",
+      "terminal_departure": "departure terminal label if visible (e.g. \"4\", \"B\"), else null",
+      "terminal_arrival": "arrival terminal label if visible, else null",
+      "gate_departure": "departure gate label if visible (typically only on day-of), else null",
+      "gate_arrival": "arrival gate label if visible, else null",
+      "seat": "seat assignment for this leg if visible (e.g. \"23A\"), else null",
+      "baggage_allowance": "baggage rules for this leg if visible (e.g. \"1 carry-on + 1 checked\", \"2 \u00d7 23kg\"), else null",
+      "segment_confirmation": "if this leg has its own PNR distinct from the master, else null"
     }
   ],
   "total_price": number without currency symbol,
@@ -41,9 +57,13 @@ CRITICAL RULES:
 - For dates: always use YYYY-MM-DD. If no year shown, use 2026
 - For duration: if shown as "3h 7m", convert to minutes (187). If not shown, calculate from times
 - For price: look for dollar amounts, "Total price", "Airfare", or any price displayed
-- For airline: read the airline name AND look for 2-letter IATA codes (AS=Alaska, DL=Delta, AA=American, UA=United, etc.)
-- First leg = "outbound", legs going back to the origin = "return"
+- For airline: read the marketing carrier (the one selling the ticket) into airline_name/airline_code; if a codeshare is shown ("operated by X"), put X into operating_airline_name/operating_airline_code
+- For trip_type: if all legs share an origin/destination pair in reverse, "round_trip"; one direction only, "one_way"; >2 distinct routes, "multi_city"; arrive in one city and depart from a different city, "open_jaw"
+- Order legs in the "flights" array CHRONOLOGICALLY by departure date+time (no "outbound"/"return" labeling)
 - For passengers: look for "1 passenger", "2 adults", "passengers: 3", traveler count, etc. Default to 1 if not visible
+- For confirmation_number / booking_site / refundable / change_fee_policy: leave null if not visible (these typically only appear on confirmed bookings, not search results)
+- For terminal/gate/seat: leave null on search results; populate only when visible on a real booking confirmation or boarding pass
+- Always produce a non-empty "name" for the overall option — if no clear label exists, build one from the first leg\'s origin airport + an arrow + the last leg\'s destination airport, plus the first leg date
 - Return raw JSON only — no backticks, no markdown`;
 
 export async function POST(request) {

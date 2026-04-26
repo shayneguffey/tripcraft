@@ -23,19 +23,35 @@ How to find data in page content:
 Return ONLY valid JSON (no markdown fences, no explanation, no comments):
 
 {
+  "name": "human-friendly name for this whole flight option (e.g. \"JFK \u2192 SEA, Jun 30\" or the airline+route). REQUIRED \u2014 if the source doesn\'t state one, generate from first leg origin \u2192 last leg destination plus the first leg date.",
+  "trip_type": "one_way" | "round_trip" | "multi_city" | "open_jaw" | null,
+  "confirmation_number": "master booking PNR / confirmation code if visible, else null",
+  "booking_site": "where the booking was made (e.g. \"Delta.com\", \"Expedia\", \"Chase Travel\"). Look at the URL hostname or any \"booked through\" text. null if not visible.",
+  "refundable": true | false | null,
+  "change_fee_policy": "free-text policy snippet if visible (e.g. \"$200 change fee\", \"Non-refundable, $99 change fee, no value retained\")",
   "flights": [
     {
-      "direction": "outbound" or "return",
       "departure_airport": "3-letter IATA code",
       "arrival_airport": "3-letter IATA code",
       "departure_date": "YYYY-MM-DD",
       "departure_time": "HH:MM in 24-hour format",
+      "arrival_date": "YYYY-MM-DD (only if different from departure_date, otherwise same as departure_date)",
       "arrival_time": "HH:MM in 24-hour format",
-      "airline_code": "2-letter IATA code",
-      "airline_name": "Full airline name",
+      "airline_code": "2-letter IATA code (marketing carrier)",
+      "airline_name": "Full marketing-carrier airline name",
       "flight_number": "XX 1234 format",
+      "operating_airline_code": "2-letter IATA code if codeshare, else null",
+      "operating_airline_name": "Operating-carrier airline name if codeshare, else null",
       "duration_minutes": integer,
-      "cabin_class": "economy" or "business" or "first"
+      "cabin_class": "economy" or "business" or "first",
+      "aircraft_type": "e.g. Boeing 737, Airbus A320, null if not visible",
+      "terminal_departure": "departure terminal label if visible (e.g. \"4\", \"B\"), else null",
+      "terminal_arrival": "arrival terminal label if visible, else null",
+      "gate_departure": "departure gate label if visible (typically only on day-of), else null",
+      "gate_arrival": "arrival gate label if visible, else null",
+      "seat": "seat assignment for this leg if visible (e.g. \"23A\"), else null",
+      "baggage_allowance": "baggage rules for this leg if visible (e.g. \"1 carry-on + 1 checked\", \"2 \u00d7 23kg\"), else null",
+      "segment_confirmation": "if this leg has its own PNR distinct from the master, else null"
     }
   ],
   "total_price": number without currency symbol,
@@ -51,9 +67,13 @@ CRITICAL RULES:
 - For dates: always use YYYY-MM-DD format. If no year shown, use 2026
 - For duration: calculate from departure/arrival times if not explicitly stated
 - For price: look in URL params (price=, fare=, tfu=) AND page content ($xxx.xx patterns)
-- For airline: if page content mentions an airline name, use its IATA code too
-- First leg = "outbound", legs going back to origin = "return"
+- For airline: read the marketing carrier into airline_name/airline_code; if "operated by X" appears, populate operating_airline_*
+- For trip_type: if legs reverse the route, "round_trip"; one direction only, "one_way"; >2 distinct routes, "multi_city"; arrive in one city and depart from a different city, "open_jaw"
+- Order legs CHRONOLOGICALLY by departure date+time. Do NOT label "outbound"/"return"
 - For passengers: look for "1 passenger", "2 adults", "passengers=2", traveler count in URL params or page content. Default to 1 if not found
+- For confirmation_number / booking_site / refundable / change_fee_policy: extract if visible (e.g. URL host = "delta.com" → booking_site "Delta.com"); else null
+- For terminal/gate/seat/baggage: leave null on search results; only populate from confirmed booking pages
+- Always produce a non-empty "name" — if none in source, generate it from "{first_leg_dep} \u2192 {last_leg_arr}, {first_leg_date}"
 - Return raw JSON only — no backticks, no markdown, no explanation text`;
 
 export async function POST(request) {

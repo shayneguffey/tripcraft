@@ -205,19 +205,37 @@ export default function FlightOptions({ tripId, tripStart, tripEnd, onFlightOpti
 // ─── OPTION TAB ───
 function OptionTab({ option, isActive, isItinerarySelected, onSelect, onDelete, confirmDelete, onConfirmDelete, onCancelDelete }) {
   const [hovered, setHovered] = useState(false);
-  const legs = option.flight_legs || [];
-  const outboundLegs = legs.filter((l) => l.direction === "outbound");
-  const returnLegs = legs.filter((l) => l.direction === "return");
+  // Sort legs chronologically by leg_order. Direction-based grouping is gone
+  // — it didn’t represent multi-city or open-jaw itineraries correctly.
+  const legs = [...(option.flight_legs || [])].sort(
+    (a, b) => (a.leg_order ?? 0) - (b.leg_order ?? 0)
+  );
 
-  const routeSummary = outboundLegs.length > 0
-    ? `${outboundLegs[0].departure_airport} → ${outboundLegs[outboundLegs.length - 1].arrival_airport}`
+  const firstLeg = legs[0];
+  const lastLeg = legs[legs.length - 1];
+  const routeSummary = firstLeg
+    ? `${firstLeg.departure_airport} → ${lastLeg.arrival_airport}`
     : "No flights";
 
-  const airlineName = legs[0]?.airline_name || legs[0]?.airline_code || "";
-  const outboundStops = outboundLegs.length > 1 ? `${outboundLegs.length - 1} stop${outboundLegs.length > 2 ? "s" : ""}` : outboundLegs.length === 1 ? "Direct" : "";
+  const airlineName = firstLeg?.airline_name || firstLeg?.airline_code || "";
 
-  const outboundDate = outboundLegs[0]?.departure_date ? formatDate(outboundLegs[0].departure_date) : "";
-  const returnDate = returnLegs[0]?.departure_date ? formatDate(returnLegs[0].departure_date) : "";
+  // "Direct" only when the option has a single leg. Otherwise count legs.
+  const stopCount = legs.length - 1;
+  const outboundStops = legs.length === 1
+    ? "Direct"
+    : legs.length > 1
+      ? `${stopCount} stop${stopCount === 1 ? "" : "s"}`
+      : "";
+
+  const outboundDate = firstLeg?.departure_date ? formatDate(firstLeg.departure_date) : "";
+  // Show last-leg date as a secondary date when the trip spans multiple days,
+  // i.e. when the option clearly returns or wraps around (last arrival on a
+  // different date than the first departure).
+  const returnDate = lastLeg && lastLeg.arrival_date
+    && firstLeg && firstLeg.departure_date
+    && lastLeg.arrival_date !== firstLeg.departure_date
+    ? formatDate(lastLeg.arrival_date)
+    : "";
 
   return (
     <div
@@ -270,9 +288,12 @@ function OptionTab({ option, isActive, isItinerarySelected, onSelect, onDelete, 
 
 // ─── OPTION DETAIL PANEL ───
 function OptionDetail({ option, isItinerarySelected, onToggleSelected, onToggleBooked, onNotesChange }) {
-  const legs = option.flight_legs || [];
-  const outbound = legs.filter((l) => l.direction === "outbound");
-  const returnLegs = legs.filter((l) => l.direction === "return");
+  // Sort all legs chronologically by leg_order. The old `direction`
+  // (outbound/return) column is intentionally ignored — it doesn’t model
+  // multi-city or open-jaw itineraries.
+  const legs = [...(option.flight_legs || [])].sort(
+    (a, b) => (a.leg_order ?? 0) - (b.leg_order ?? 0)
+  );
   return (
     <div className="flex gap-4">
       {/* Itinerary button — fixed left column */}
@@ -342,22 +363,22 @@ function OptionDetail({ option, isItinerarySelected, onToggleSelected, onToggleB
           )}
         </div>
 
-        {/* Flight legs */}
-        {outbound.length > 0 && (
-          <div className="mb-4">
-            <div className="text-xs font-bold text-slate-400 uppercase tracking-wide mb-2">Outbound</div>
-            {outbound.map((leg) => (
-              <FlightLegCard key={leg.id} leg={leg} />
-            ))}
-          </div>
-        )}
+        {/* Booking-level meta strip — only renders when something is set */}
+        <BookingMetaStrip option={option} />
 
-        {returnLegs.length > 0 && (
+        {/* Flight legs (sorted by leg_order, with layover dividers) */}
+        {legs.length > 0 && (
           <div className="mb-4">
-            <div className="text-xs font-bold text-slate-400 uppercase tracking-wide mb-2">Return</div>
-            {returnLegs.map((leg) => (
-              <FlightLegCard key={leg.id} leg={leg} />
-            ))}
+            {legs.map((leg, i) => {
+              const prev = i > 0 ? legs[i - 1] : null;
+              const lo = prev ? computeLayover(prev, leg) : null;
+              return (
+                <div key={leg.id}>
+                  {lo && <LayoverDivider info={lo} />}
+                  <FlightLegCard leg={leg} />
+                </div>
+              );
+            })}
           </div>
         )}
 
@@ -389,6 +410,7 @@ function FlightLegCard({ leg }) {
   const logoUrl = airlineLogoUrl(leg.airline_code);
 
   return (
+    <>
     <div className="flex items-center gap-3 p-3 bg-slate-50 rounded-lg mb-2">
       {/* Airline logo or code */}
       <div className="w-10 h-10 rounded-lg bg-white border border-slate-200 flex items-center justify-center flex-shrink-0 overflow-hidden">
@@ -443,6 +465,106 @@ function FlightLegCard({ leg }) {
         <div className="text-xs text-slate-400">{getCityName(leg.departure_airport)}</div>
         <div className="text-xs text-slate-400">{getCityName(leg.arrival_airport)}</div>
       </div>
+    </div>
+    {/* Per-leg detail sub-line: terminals/gates/seat/baggage/operating airline. */}
+    <LegDetailSubline leg={leg} />
+    </>
+  );
+}
+
+function LegDetailSubline({ leg }) {
+  const bits = [];
+  const dep = [leg.terminal_departure && `T${leg.terminal_departure}`, leg.gate_departure && `Gate ${leg.gate_departure}`].filter(Boolean).join(" · ");
+  if (dep) bits.push({ k: "dep", label: leg.departure_airport, text: dep });
+  const arr = [leg.terminal_arrival && `T${leg.terminal_arrival}`, leg.gate_arrival && `Gate ${leg.gate_arrival}`].filter(Boolean).join(" · ");
+  if (arr) bits.push({ k: "arr", label: leg.arrival_airport, text: arr });
+  if (leg.seat) bits.push({ k: "seat", text: `Seat ${leg.seat}` });
+  if (leg.baggage_allowance) bits.push({ k: "bag", text: leg.baggage_allowance });
+  if (leg.operating_airline_name && leg.operating_airline_name !== leg.airline_name) {
+    bits.push({ k: "op", text: `Operated by ${leg.operating_airline_name}` });
+  }
+  if (leg.segment_confirmation) bits.push({ k: "segconf", text: `Conf ${leg.segment_confirmation}` });
+  if (leg.aircraft_type) bits.push({ k: "ac", text: leg.aircraft_type });
+  if (bits.length === 0) return null;
+  return (
+    <div className="ml-13 mt-0.5 mb-2 flex flex-wrap gap-x-3 gap-y-0.5 text-[11px] text-slate-500">
+      {bits.map((b) => (
+        <span key={b.k}>
+          {b.label && <span className="font-semibold text-slate-600">{b.label} </span>}
+          {b.text}
+        </span>
+      ))}
+    </div>
+  );
+}
+
+// Compute layover info between two consecutive legs.
+// Returns null unless both legs share an airport AND the gap < 24h.
+// Anything longer is "destination time" — not a connection.
+function computeLayover(prev, next) {
+  if (!prev || !next) return null;
+  if (prev.arrival_airport !== next.departure_airport) return null;
+  if (!prev.arrival_date || !prev.arrival_time) return null;
+  if (!next.departure_date || !next.departure_time) return null;
+  const arriveAt = new Date(`${prev.arrival_date}T${prev.arrival_time}`);
+  const departAt = new Date(`${next.departure_date}T${next.departure_time}`);
+  const minutes = Math.round((departAt - arriveAt) / 60000);
+  if (minutes <= 0) return null;
+  if (minutes >= 24 * 60) return null;
+  const h = Math.floor(minutes / 60);
+  const m = minutes % 60;
+  const duration = h ? `${h}h ${m}m` : `${m}m`;
+  return { airport: prev.arrival_airport, duration, minutes };
+}
+
+function LayoverDivider({ info }) {
+  return (
+    <div className="flex items-center gap-2 my-1 ml-13">
+      <div className="h-px flex-1 bg-slate-200" />
+      <span className="text-[10px] font-semibold text-slate-400 uppercase tracking-wide">
+        Layover at {info.airport} · {info.duration}
+      </span>
+      <div className="h-px flex-1 bg-slate-200" />
+    </div>
+  );
+}
+
+function BookingMetaStrip({ option }) {
+  const items = [];
+  if (option.trip_type) {
+    const labels = {
+      one_way: "One-way",
+      round_trip: "Round trip",
+      multi_city: "Multi-city",
+      open_jaw: "Open-jaw",
+    };
+    items.push({ key: "trip", text: labels[option.trip_type] || option.trip_type });
+  }
+  if (option.confirmation_number) {
+    items.push({ key: "conf", text: `Conf ${option.confirmation_number}` });
+  }
+  if (option.booking_site) {
+    items.push({ key: "site", text: `Booked via ${option.booking_site}` });
+  }
+  if (option.refundable === true) {
+    items.push({ key: "ref", text: "Refundable" });
+  } else if (option.refundable === false) {
+    items.push({ key: "ref", text: "Non-refundable" });
+  }
+  if (option.change_fee_policy) {
+    items.push({ key: "fee", text: option.change_fee_policy });
+  }
+  if (items.length === 0) return null;
+  return (
+    <div className="flex flex-wrap gap-1.5 mb-3 pb-3 border-b border-emerald-50">
+      {items.map((it) => (
+        <span
+          key={it.key}
+          className="px-2 py-0.5 text-[10px] font-medium text-slate-600 bg-slate-100 rounded"
+        >
+          {it.text}
+        </span>
+      ))}
     </div>
   );
 }

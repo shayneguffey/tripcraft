@@ -186,7 +186,7 @@ export default function EventDetailPanel({ record, type, canEdit, onChange, isDr
           </span>
         </div>
       )}
-      {(record?.start_time && record?.end_time) || (record?.departure_time && record?.arrival_time && type !== "flight") ? (
+      {(record?.start_time && record?.end_time) || (record?.departure_time && record?.arrival_time) ? (
         <div className="flex items-baseline gap-2 text-xs">
           <span className="text-[10px] font-semibold text-stone-400 uppercase tracking-wide">Time</span>
           <span className="text-stone-600">
