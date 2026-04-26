@@ -367,11 +367,15 @@ function OptionDetail({ opt, tripStart, tripEnd, onToggleSelected, onToggleBooke
         {opt.category === "car_rental" && (
           <div className="mb-4">
             {/* Pickup & Dropoff */}
-            {(opt.pickup_location || opt.departure_date || opt.dropoff_location || opt.arrival_date) && (
+            {(opt.pickup_location || opt.departure_date || opt.dropoff_location || opt.arrival_date) && (() => {
+              const stationStyle = ["train", "bus", "ferry"].includes(opt.category);
+              const pickupLabel = stationStyle ? "From" : "Pick Up";
+              const dropoffLabel = stationStyle ? "To" : "Drop Off";
+              return (
               <div className="flex gap-6 mb-3">
                 {(opt.pickup_location || opt.departure_date) && (
                   <div>
-                    <div className={LABEL_MB1}>Pick Up</div>
+                    <div className={LABEL_MB1}>{pickupLabel}</div>
                     {opt.pickup_location && <div className="text-sm font-medium text-slate-700">{opt.pickup_location}</div>}
                     {opt.departure_date && (
                       <div className="text-sm text-slate-600">
@@ -383,7 +387,7 @@ function OptionDetail({ opt, tripStart, tripEnd, onToggleSelected, onToggleBooke
                 )}
                 {(opt.dropoff_location || opt.arrival_date) && (
                   <div>
-                    <div className={LABEL_MB1}>Drop Off</div>
+                    <div className={LABEL_MB1}>{dropoffLabel}</div>
                     {opt.dropoff_location && <div className="text-sm font-medium text-slate-700">{opt.dropoff_location}</div>}
                     {opt.arrival_date && (
                       <div className="text-sm text-slate-600">
@@ -394,7 +398,8 @@ function OptionDetail({ opt, tripStart, tripEnd, onToggleSelected, onToggleBooke
                   </div>
                 )}
               </div>
-            )}
+              );
+            })()}
 
             {/* Rental extras */}
             <div className={LABEL_MB2}>Rental Details</div>

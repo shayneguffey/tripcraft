@@ -136,6 +136,11 @@ export default function EventDetailPanel({ record, type, canEdit, onChange, isDr
   const pickup = record?.pickup_location || null;
   const dropoff = record?.dropoff_location || null;
   const hasTransportAddrs = isTransport && (pickup || dropoff);
+  // Mode-aware location labels: stations use "From / To", ride-style modes
+  // use "Pick-up / Drop-off".
+  const stationStyle = ["train", "bus", "ferry"].includes(record?.category);
+  const pickupLabel = stationStyle ? "From" : "Pick-up";
+  const dropoffLabel = stationStyle ? "To" : "Drop-off";
   // Hide the generic Address line for transportation — it has its own
   // pickup/drop-off lines instead.
   const address = !isTransport
@@ -244,7 +249,7 @@ export default function EventDetailPanel({ record, type, canEdit, onChange, isDr
         <>
           {pickup && (
             <div className="flex items-baseline gap-2 text-xs">
-              <span className="text-[10px] font-semibold text-stone-400 uppercase tracking-wide flex-shrink-0">Pick-up</span>
+              <span className="text-[10px] font-semibold text-stone-400 uppercase tracking-wide flex-shrink-0">{pickupLabel}</span>
               <a
                 href={`https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(pickup)}`}
                 target="_blank"
@@ -259,7 +264,7 @@ export default function EventDetailPanel({ record, type, canEdit, onChange, isDr
           )}
           {dropoff && (
             <div className="flex items-baseline gap-2 text-xs">
-              <span className="text-[10px] font-semibold text-stone-400 uppercase tracking-wide flex-shrink-0">Drop-off</span>
+              <span className="text-[10px] font-semibold text-stone-400 uppercase tracking-wide flex-shrink-0">{dropoffLabel}</span>
               <a
                 href={`https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(dropoff)}`}
                 target="_blank"
