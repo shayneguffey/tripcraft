@@ -104,6 +104,8 @@ export default function TripPlanPage({ params }) {
 
   const [pitch, setPitch] = useState("");
   const [daySummaries, setDaySummaries] = useState({});
+  const [mapImage, setMapImage] = useState(null);
+  const [mapLoading, setMapLoading] = useState(false);
 
   useEffect(() => {
     let cancelled = false;
@@ -115,6 +117,7 @@ export default function TripPlanPage({ params }) {
         if (cancelled) return;
         setData(json);
         setPitch(json.itinerary?.pitch || "");
+        setMapImage(json.trip?.map_image || null);
         const sm = {};
         (json.days || []).forEach((d) => { if (d.summary) sm[d.date] = d.summary; });
         setDaySummaries(sm);
@@ -163,6 +166,29 @@ export default function TripPlanPage({ params }) {
     } else {
       const { error: e } = await supabase.from("days").insert({ itinerary_id: data.itinerary.id, date, summary: next });
       if (e) console.error("[plan] insert day summary failed:", e.message);
+    }
+  }
+
+  async function generateMap(force = false) {
+    if (!data?.trip?.destination) return;
+    setMapLoading(true);
+    try {
+      const res = await fetch("/api/generate-map", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          destination: data.trip.destination,
+          tripId: data.trip.id,
+          force,
+        }),
+      });
+      if (!res.ok) throw new Error("Map generation failed");
+      const json = await res.json();
+      if (json.imageUrl) setMapImage(json.imageUrl);
+    } catch (err) {
+      console.error("[plan] generate map failed:", err);
+    } finally {
+      setMapLoading(false);
     }
   }
 
@@ -462,7 +488,7 @@ export default function TripPlanPage({ params }) {
         .day-num-spine { position:absolute; left:-64px; top:8px; width:24px; text-align:right;
           font-family:"Bebas Neue",Impact,sans-serif; font-size:24px; color:#da7b4a; line-height:1; }
         /* Monochrome airline logo */
-        .airline-logo { height:20px; width:auto; max-width:64px; filter:grayscale(100%) brightness(0); opacity:0.85; }
+        .airline-logo { height:24px; width:auto; max-width:96px; filter:grayscale(100%) contrast(1.05); mix-blend-mode:multiply; opacity:0.95; }
       `}</style>
 
       <div className="no-print" style={{ maxWidth: "8.5in", margin: "0 auto 12px", display: "flex", justifyContent: "space-between", alignItems: "center", padding: "0 12px" }}>
@@ -515,6 +541,25 @@ export default function TripPlanPage({ params }) {
             canEdit={canEdit}
             onSave={savePitch}
             displayStyle={{ fontFamily: "Lora, serif", fontStyle: "italic", fontSize: 16, lineHeight: 1.65, color: "rgba(42,31,20,0.88)" }}
+            onGenerate={canEdit ? async () => {
+              const res = await fetch("/api/ai/pitch", {
+                method: "POST",
+                headers: { "Content-Type": "application/json" },
+                body: JSON.stringify({
+                  destination: trip.destination,
+                  title: trip.title,
+                  startDate, endDate, numTravelers,
+                  travelers,
+                  days: daySchedule.slice(0, 14).map((d) => ({
+                    date: d.date, title: d.title,
+                    events: d.events.slice(0, 4).map((e) => e.label || ""),
+                  })),
+                }),
+              });
+              if (!res.ok) throw new Error("Failed");
+              const json = await res.json();
+              return json.pitch;
+            } : null}
           />
           {travelers.length > 0 && (
             <div style={{ marginTop: 18, paddingTop: 16, borderTop: "1px solid rgba(42,31,20,0.18)" }}>
@@ -589,21 +634,49 @@ export default function TripPlanPage({ params }) {
             })}
           </div>
 
-          {/* Side map - wider per request */}
-          <div className="avoid-break" style={{ height: "5.4in", position: "relative", border: "2px solid rgba(42,31,20,0.5)",
-            background: "linear-gradient(135deg, rgba(74,119,135,0.18) 0%, rgba(126,155,91,0.18) 50%, rgba(212,165,116,0.18) 100%), repeating-linear-gradient(45deg, rgba(42,31,20,0.04) 0 8px, transparent 8px 16px), #f1e6d2",
-            position: "sticky", top: 12 }}>
-            <span className="label" style={{ position: "absolute", top: 10, left: 12 }}>— Route</span>
-            <div style={{ position: "absolute", top: 10, right: 12, width: 30, height: 30, border: "2px solid #2a1f14", borderRadius: "50%", display: "flex", alignItems: "center", justifyContent: "center", fontFamily: "Bebas Neue, sans-serif", fontSize: 14 }}>N</div>
-            {/* Coastline */}
-            <div style={{ position: "absolute", left: 0, right: 0, bottom: 0, height: "55%",
-              background: "linear-gradient(180deg, rgba(74,119,135,0.06), rgba(74,119,135,0.20))",
-              clipPath: "polygon(0 30%, 18% 22%, 32% 36%, 48% 18%, 64% 30%, 80% 22%, 100% 36%, 100% 100%, 0 100%)" }} />
-            {/* Day pins along an evenly-spaced arc */}
+          {/* Side map — generated posterized destination map (or fallback) */}
+          <div className="avoid-break" style={{
+            height: "5.4in", position: "sticky", top: 12,
+            border: "2px solid rgba(42,31,20,0.5)",
+            background: mapImage
+              ? `url(${mapImage}) center/cover`
+              : "linear-gradient(135deg, rgba(74,119,135,0.18) 0%, rgba(126,155,91,0.18) 50%, rgba(212,165,116,0.18) 100%), repeating-linear-gradient(45deg, rgba(42,31,20,0.04) 0 8px, transparent 8px 16px), #f1e6d2",
+            overflow: "hidden",
+          }}>
+            <span className="label" style={{ position: "absolute", top: 10, left: 12, background: "rgba(241,230,210,0.92)", padding: "3px 6px" }}>— Route</span>
+            <div style={{ position: "absolute", top: 10, right: 12, width: 30, height: 30, border: "2px solid #2a1f14", borderRadius: "50%", display: "flex", alignItems: "center", justifyContent: "center", fontFamily: "Bebas Neue, sans-serif", fontSize: 14, background: "rgba(241,230,210,0.92)" }}>N</div>
+
+            {/* Generate / regenerate control — owner only, screen-only */}
+            {canEdit && (
+              <div className="no-print" style={{ position: "absolute", top: 10, left: "50%", transform: "translateX(-50%)", display: "flex", gap: 6 }}>
+                <button
+                  onClick={() => generateMap(!!mapImage)}
+                  disabled={mapLoading}
+                  style={{
+                    fontFamily: "Oswald, sans-serif", fontSize: 9, letterSpacing: "0.18em",
+                    textTransform: "uppercase", fontWeight: 600,
+                    color: "#da7b4a", background: "rgba(241,230,210,0.95)",
+                    border: "1px solid rgba(218,123,74,0.5)",
+                    padding: "3px 9px", cursor: mapLoading ? "wait" : "pointer",
+                  }}
+                >
+                  {mapLoading ? "Generating\u2026" : (mapImage ? "\u2728 Regenerate map" : "\u2728 Generate map")}
+                </button>
+              </div>
+            )}
+
+            {/* Fallback geography (only when no map image) */}
+            {!mapImage && (
+              <div style={{ position: "absolute", left: 0, right: 0, bottom: 0, height: "55%",
+                background: "linear-gradient(180deg, rgba(74,119,135,0.06), rgba(74,119,135,0.20))",
+                clipPath: "polygon(0 30%, 18% 22%, 32% 36%, 48% 18%, 64% 30%, 80% 22%, 100% 36%, 100% 100%, 0 100%)" }} />
+            )}
+
+            {/* Day pins overlay */}
             {daySchedule.map((d, i) => {
               const tt = daySchedule.length === 1 ? 0.5 : i / (daySchedule.length - 1);
-              const x = 12 + tt * 76; // 12% → 88%
-              const y = 50 + Math.sin(tt * Math.PI) * -18; // simple arc
+              const x = 12 + tt * 76;
+              const y = 50 + Math.sin(tt * Math.PI) * -18;
               return (
                 <div key={d.date}>
                   <div style={{ position: "absolute", left: `${x}%`, top: `${y}%`, width: 11, height: 11, borderRadius: "50%",
@@ -623,7 +696,8 @@ export default function TripPlanPage({ params }) {
                 </div>
               );
             })}
-            {/* Dotted route */}
+
+            {/* Dotted route through pins */}
             <svg style={{ position: "absolute", inset: 0, width: "100%", height: "100%", pointerEvents: "none" }} viewBox="0 0 100 100" preserveAspectRatio="none">
               <path
                 d={daySchedule.length > 1
@@ -638,9 +712,10 @@ export default function TripPlanPage({ params }) {
                 stroke="#da7b4a" strokeWidth="0.6" strokeDasharray="2 2" fill="none"
               />
             </svg>
+
             {trip.destination && (
               <div className="display" style={{ position: "absolute", bottom: 14, left: 0, right: 0, textAlign: "center",
-                fontSize: 28, color: "#2a1f14", textShadow: "0 1px 0 rgba(241,230,210,0.6)" }}>
+                fontSize: 28, color: "#2a1f14", textShadow: "0 1px 0 rgba(241,230,210,0.85), 0 0 6px rgba(241,230,210,0.7)" }}>
                 {trip.destination.toUpperCase()}
               </div>
             )}
@@ -689,6 +764,24 @@ export default function TripPlanPage({ params }) {
               onSave={(v) => saveDaySummary(d.date, v)}
               displayStyle={{ background: "rgba(218,123,74,0.08)", borderLeft: "4px solid #da7b4a",
                 padding: "11px 16px", fontStyle: "italic", fontSize: 13.5, lineHeight: 1.5, color: "rgba(42,31,20,0.85)" }}
+              onGenerate={canEdit ? async () => {
+                const res = await fetch("/api/ai/day-summary", {
+                  method: "POST",
+                  headers: { "Content-Type": "application/json" },
+                  body: JSON.stringify({
+                    destination: trip.destination,
+                    date: d.date,
+                    dayNumber: d.dayNumber,
+                    title: d.title,
+                    events: d.events.map((e) => ({
+                      kind: e.kind, time: e.time, label: e.label, sub: e.sub,
+                    })),
+                  }),
+                });
+                if (!res.ok) throw new Error("Failed");
+                const json = await res.json();
+                return json.summary;
+              } : null}
             />
           </div>
 
@@ -942,10 +1035,15 @@ function FlightDetail({ e }) {
   );
 }
 
-/* Inline-editable text block. */
-function EditableBlock({ value, placeholder, canEdit, onSave, displayStyle }) {
+/* Inline-editable text block.
+   - canEdit + onSave : text editing
+   - onGenerate (optional, async): adds a "✨ Generate" button next to the
+     edit hint that calls the AI endpoint and replaces the value. */
+function EditableBlock({ value, placeholder, canEdit, onSave, displayStyle, onGenerate }) {
   const [editing, setEditing] = useState(false);
   const [draft, setDraft] = useState(value || "");
+  const [generating, setGenerating] = useState(false);
+  const [genError, setGenError] = useState(null);
   const taRef = useRef(null);
 
   useEffect(() => { setDraft(value || ""); }, [value]);
@@ -963,6 +1061,21 @@ function EditableBlock({ value, placeholder, canEdit, onSave, displayStyle }) {
   function cancel() {
     setDraft(value || "");
     setEditing(false);
+  }
+
+  async function handleGenerate(e) {
+    e.stopPropagation();
+    if (!onGenerate || generating) return;
+    setGenError(null);
+    setGenerating(true);
+    try {
+      const next = await onGenerate();
+      if (next && next.trim()) onSave(next.trim());
+    } catch (err) {
+      setGenError("Generation failed");
+    } finally {
+      setGenerating(false);
+    }
   }
 
   if (editing) {
@@ -990,10 +1103,36 @@ function EditableBlock({ value, placeholder, canEdit, onSave, displayStyle }) {
       style={{ cursor: canEdit ? "text" : "default" }}
       onClick={() => { if (canEdit) setEditing(true); }}
     >
-      {canEdit && <span className="edit-hint no-print">click to edit</span>}
+      {canEdit && (
+        <div className="no-print" style={{ position: "absolute", top: -16, right: 0, display: "flex", alignItems: "center", gap: 8 }}>
+          {onGenerate && (
+            <button
+              type="button"
+              onClick={handleGenerate}
+              disabled={generating}
+              style={{
+                fontFamily: "Oswald, sans-serif", fontSize: 9, letterSpacing: "0.18em",
+                textTransform: "uppercase", fontWeight: 600,
+                color: generating ? "rgba(218,123,74,0.5)" : "#da7b4a",
+                background: "rgba(218,123,74,0.10)", border: "1px solid rgba(218,123,74,0.4)",
+                padding: "2px 8px", cursor: generating ? "wait" : "pointer",
+              }}
+              title="Generate with AI"
+            >
+              {generating ? "Generating…" : (hasValue ? "✨ Regenerate" : "✨ Generate")}
+            </button>
+          )}
+          <span className="edit-hint" style={{ position: "static", opacity: undefined }}>click to edit</span>
+        </div>
+      )}
       <div style={{ ...displayStyle, opacity: hasValue ? 1 : 0.5 }}>
         {hasValue ? value : (placeholder || "")}
       </div>
+      {genError && (
+        <div className="no-print" style={{ marginTop: 4, fontFamily: "Oswald, sans-serif", fontSize: 9, color: "#c8624c", letterSpacing: "0.12em", textTransform: "uppercase" }}>
+          {genError}
+        </div>
+      )}
     </div>
   );
 }
