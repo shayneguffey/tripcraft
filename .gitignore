@@ -13,8 +13,12 @@
 # testing
 /coverage
 
-# next.js
+# next.js — every variant. Build caches can contain baked-in env-var
+# secrets (notably turbopack .sst caches), so these MUST stay ignored.
 /.next/
+/.next-*
+.next/
+.next-*/
 /out/
 
 # production
@@ -29,6 +33,17 @@ npm-debug.log*
 yarn-debug.log*
 yarn-error.log*
 .pnpm-debug.log*
+dev*.log
+dev*.err
+*.err
+
+# scratch/temp local files
+fetched.html
+guide.html
+root.html
+git-path.txt
+node-procs.txt
+test-write.txt
 
 # env files (can opt-in for committing if needed)
 .env*
