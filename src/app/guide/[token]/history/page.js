@@ -236,24 +236,12 @@ export default function TravelHistoryPage({ params }) {
           )}
           <div className="text-xs uppercase tracking-[0.2em] text-stone-400 mb-1">Travel History</div>
           <h1 className="text-5xl font-normal text-stone-900 mb-2">{(trip.title || "Untitled Trip").toUpperCase()}</h1>
-          {itinerary?.title && (
-            <p className="text-sm font-semibold uppercase tracking-[0.15em] text-stone-500 mb-2">
-              Itinerary: {itinerary.title}
-            </p>
-          )}
           {trip.destination && <p className="text-lg italic text-stone-700 mb-1">{trip.destination}</p>}
           {startDate && endDate && (
             <p className="text-sm text-stone-600">
               {formatDate(startDate)} — {formatDate(endDate)}
               {itinerary.num_travelers > 1 && ` · ${itinerary.num_travelers} travelers`}
             </p>
-          )}
-
-          {itinerary.notes && (
-            <div className="mt-6 p-4 bg-stone-50 rounded-lg border border-stone-200 print:border-stone-400">
-              <div className="text-[10px] uppercase tracking-wider text-stone-500 font-semibold mb-1">Itinerary notes</div>
-              <p className="text-sm text-stone-700 whitespace-pre-wrap leading-relaxed">{itinerary.notes}</p>
-            </div>
           )}
 
           {/* Summary chips */}
@@ -302,13 +290,6 @@ export default function TravelHistoryPage({ params }) {
                   </li>
                 ))}
               </ul>
-            )}
-
-            {day.notes && (
-              <div className="mt-3 p-3 bg-stone-50 rounded-lg border border-stone-200 print:border-stone-300">
-                <div className="text-[10px] uppercase tracking-wider text-stone-500 font-semibold mb-1">Day notes</div>
-                <p className="text-sm text-stone-700 whitespace-pre-wrap">{day.notes}</p>
-              </div>
             )}
 
             {day.journal && (
