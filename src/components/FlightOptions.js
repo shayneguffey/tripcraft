@@ -960,24 +960,60 @@ function AddFlightModal({ tripId, onClose, onSave }) {
             />
           </div>
 
-          {/* Smart paste box */}
+          {/* Unified paste / screenshot field */}
           <div className="mb-4">
-            <label className="block text-sm font-medium text-slate-700 mb-1">
-              Paste Flight Info
-            </label>
+            <label className="block text-sm font-medium text-slate-700 mb-1">Paste Flight Info or Screenshot</label>
             <p className="text-xs text-slate-400 mb-2">
-              Paste a Delta, Skyscanner, or booking URL — or type flight details as text
+              Paste a Delta, Skyscanner, or booking URL — or paste / drop a flight screenshot.
             </p>
-            <textarea
-              value={pasteInput}
-              onChange={(e) => handlePasteChange(e.target.value)}
-              rows={3}
-              placeholder={"Paste a booking URL here, e.g.:\nhttps://www.delta.com/completepurchase/...\nhttps://www.skyscanner.com/transport/flights/..."}
-              className="w-full px-3 py-2 border border-slate-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-sky-500 focus:border-transparent text-sm font-mono"
-              autoFocus
-            />
+            {!screenshot ? (
+              <div
+                onDragOver={(e) => { e.preventDefault(); setDragOver(true); }}
+                onDragLeave={() => setDragOver(false)}
+                onDrop={handleDrop}
+                className={`border-2 border-dashed rounded-lg transition-colors ${
+                  dragOver ? "border-sky-400 bg-sky-50" : "border-slate-300"
+                }`}
+              >
+                <textarea
+                  value={pasteInput}
+                  onChange={(e) => handlePasteChange(e.target.value)}
+                  rows={3}
+                  autoFocus
+                  placeholder={"Paste a booking URL here — or paste an image\nhttps://www.delta.com/...\nhttps://www.skyscanner.com/..."}
+                  className="w-full px-3 py-2 bg-transparent border-0 rounded-t-lg outline-none focus:ring-0 text-sm font-mono resize-none"
+                />
+                <div className="flex items-center justify-between px-3 py-1.5 border-t border-slate-200/60 bg-slate-50/50 rounded-b-lg">
+                  <span className="text-[10px] text-slate-400">Drop image, paste (Ctrl+V), or upload →</span>
+                  <button
+                    type="button"
+                    onClick={() => document.getElementById("flight-screenshot-input").click()}
+                    className="text-[10px] font-semibold text-sky-600 hover:text-sky-700"
+                  >
+                    + Upload image
+                  </button>
+                  <input
+                    id="flight-screenshot-input"
+                    type="file"
+                    accept="image/*"
+                    className="hidden"
+                    onChange={(e) => handleImageFile(e.target.files[0])}
+                  />
+                </div>
+              </div>
+            ) : (
+              <div className="relative">
+                <img src={screenshot} alt="Flight screenshot" className="w-full rounded-lg border border-slate-200 max-h-48 object-contain bg-slate-50" />
+                <button
+                  onClick={() => { setScreenshot(null); setOcrStatus(null); setOcrText(""); setOcrLegs([]); }}
+                  className="absolute top-2 right-2 w-6 h-6 bg-white/90 rounded-full flex items-center justify-center text-slate-400 hover:text-red-500 shadow-sm"
+                >
+                  ✕
+                </button>
+              </div>
+            )}
 
-            {/* Parse status */}
+            {/* URL parse status */}
             {urlParseStatus === "analyzing" && (
               <div className="mt-2 px-3 py-2 bg-blue-50 rounded-lg text-xs text-blue-700 flex items-center gap-2">
                 <svg className="animate-spin w-3.5 h-3.5" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
@@ -1005,75 +1041,33 @@ function AddFlightModal({ tripId, onClose, onSave }) {
                 )}
               </div>
             )}
-          </div>
 
-          {/* Screenshot drop zone */}
-          <div className="mb-4">
-            <label className="block text-sm font-medium text-slate-700 mb-1">
-              Screenshot
-            </label>
-            {!screenshot ? (
-              <div
-                onDragOver={(e) => { e.preventDefault(); setDragOver(true); }}
-                onDragLeave={() => setDragOver(false)}
-                onDrop={handleDrop}
-                className={`border-2 border-dashed rounded-lg p-4 text-center cursor-pointer transition-colors ${dragOver ? "border-sky-400 bg-sky-50" : "border-slate-200 hover:border-sky-300"}`}
-                onClick={() => document.getElementById("flight-screenshot-input").click()}
-              >
-                <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor" className="w-8 h-8 mx-auto text-slate-300 mb-2">
-                  <path fillRule="evenodd" d="M1.5 6a2.25 2.25 0 0 1 2.25-2.25h16.5A2.25 2.25 0 0 1 22.5 6v12a2.25 2.25 0 0 1-2.25 2.25H3.75A2.25 2.25 0 0 1 1.5 18V6ZM3 16.06V18c0 .414.336.75.75.75h16.5A.75.75 0 0 0 21 18v-1.94l-2.69-2.689a1.5 1.5 0 0 0-2.12 0l-.88.879.97.97a.75.75 0 1 1-1.06 1.06l-5.16-5.159a1.5 1.5 0 0 0-2.12 0L3 16.061Zm10.125-7.81a1.125 1.125 0 1 1 2.25 0 1.125 1.125 0 0 1-2.25 0Z" clipRule="evenodd" />
+            {/* Screenshot OCR status */}
+            {ocrStatus === "processing" && (
+              <div className="mt-2 px-3 py-2 bg-blue-50 rounded-lg text-xs text-blue-700 flex items-center gap-2">
+                <svg className="animate-spin w-3.5 h-3.5" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+                  <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
+                  <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4z"></path>
                 </svg>
-                <p className="text-xs text-slate-400">
-                  Drag & drop a screenshot, paste from clipboard (Ctrl+V), or click to browse
-                </p>
-                <input
-                  id="flight-screenshot-input"
-                  type="file"
-                  accept="image/*"
-                  className="hidden"
-                  onChange={(e) => handleImageFile(e.target.files[0])}
-                />
+                Analyzing screenshot with AI... (this may take a few seconds)
               </div>
-            ) : (
-              <div>
-                <div className="relative">
-                  <img src={screenshot} alt="Flight screenshot" className="w-full rounded-lg border border-slate-200 max-h-48 object-contain bg-slate-50" />
-                  <button
-                    onClick={() => { setScreenshot(null); setOcrStatus(null); setOcrText(""); setOcrLegs([]); }}
-                    className="absolute top-2 right-2 w-6 h-6 bg-white/90 rounded-full flex items-center justify-center text-slate-400 hover:text-red-500 shadow-sm"
-                  >
-                    ✕
-                  </button>
-                </div>
-
-                {/* OCR status */}
-                {ocrStatus === "processing" && (
-                  <div className="mt-2 px-3 py-2 bg-blue-50 rounded-lg text-xs text-blue-700 flex items-center gap-2">
-                    <svg className="animate-spin w-3.5 h-3.5" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
-                      <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
-                      <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4z"></path>
-                    </svg>
-                    Analyzing screenshot with AI... (this may take a few seconds)
-                  </div>
-                )}
-                {ocrStatus === "done" && ocrLegCount > 0 && (
-                  <div className="mt-2 px-3 py-2 bg-emerald-50 rounded-lg text-xs text-emerald-700">
-                    Extracted {ocrLegCount} flight leg(s) from screenshot:
-                    <span className="font-medium ml-1">
-                      {ocrLegs.filter((l) => l.departure_airport).map((l) => `${l.departure_airport}→${l.arrival_airport}`).join(", ")}
-                    </span>
-                  </div>
-                )}
-                {ocrStatus === "done" && ocrLegCount === 0 && (
-                  <div className="mt-2 px-3 py-2 bg-amber-50 rounded-lg text-xs text-amber-700">
-                    No flights found in the image. Try a clearer screenshot showing flight details, or add legs manually below.
-                  </div>
-                )}
-                {ocrStatus === "error" && (
-                  <div className="mt-2 px-3 py-2 bg-red-50 rounded-lg text-xs text-red-700">
-                    {ocrText || "Couldn't analyze the screenshot. You can still save it as a visual reference and add legs manually."}
-                  </div>
-                )}
+            )}
+            {ocrStatus === "done" && ocrLegCount > 0 && (
+              <div className="mt-2 px-3 py-2 bg-emerald-50 rounded-lg text-xs text-emerald-700">
+                Extracted {ocrLegCount} flight leg(s) from screenshot:
+                <span className="font-medium ml-1">
+                  {ocrLegs.filter((l) => l.departure_airport).map((l) => `${l.departure_airport}→${l.arrival_airport}`).join(", ")}
+                </span>
+              </div>
+            )}
+            {ocrStatus === "done" && ocrLegCount === 0 && (
+              <div className="mt-2 px-3 py-2 bg-amber-50 rounded-lg text-xs text-amber-700">
+                No flights found in the image. Try a clearer screenshot showing flight details, or add legs manually below.
+              </div>
+            )}
+            {ocrStatus === "error" && (
+              <div className="mt-2 px-3 py-2 bg-red-50 rounded-lg text-xs text-red-700">
+                {ocrText || "Couldn't analyze the screenshot. You can still save it as a visual reference and add legs manually."}
               </div>
             )}
           </div>

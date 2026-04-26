@@ -575,13 +575,47 @@ function AddAccommodationModal({ tripId, tripStart, tripEnd, onClose, onSave }) 
               className="w-full px-3 py-2 border border-slate-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-sky-500 text-sm" />
           </div>
 
-          {/* Paste URL */}
+          {/* Unified paste / screenshot field */}
           <div className="mb-4">
-            <label className="block text-sm font-medium text-slate-700 mb-1">Paste URL</label>
-            <p className="text-xs text-slate-400 mb-1">Paste a Booking.com, Airbnb, or any lodging URL</p>
-            <textarea value={pasteInput} onChange={(e) => handlePasteChange(e.target.value)} rows={2} autoFocus
-              placeholder="https://www.booking.com/hotel/..."
-              className="w-full px-3 py-2 border border-slate-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-sky-500 text-sm font-mono" />
+            <label className="block text-sm font-medium text-slate-700 mb-1">Paste URL or Screenshot</label>
+            <p className="text-xs text-slate-400 mb-2">Paste a Booking.com, Airbnb, Hotels.com, or stay URL. Or paste / drop a screenshot.</p>
+            {!screenshot ? (
+              <div
+                onDragOver={(e) => { e.preventDefault(); setDragOver(true); }}
+                onDragLeave={() => setDragOver(false)}
+                onDrop={handleDrop}
+                className={`border-2 border-dashed rounded-lg transition-colors ${
+                  dragOver ? "border-sky-400 bg-sky-50" : "border-slate-300"
+                }`}
+              >
+                <textarea
+                  value={pasteInput}
+                  onChange={(e) => handlePasteChange(e.target.value)}
+                  rows={2}
+                  autoFocus
+                  placeholder={`https://www.booking.com/... — or paste an image`}
+                  className="w-full px-3 py-2 bg-transparent border-0 rounded-t-lg outline-none focus:ring-0 text-sm font-mono resize-none"
+                />
+                <div className="flex items-center justify-between px-3 py-1.5 border-t border-slate-200/60 bg-slate-50/50 rounded-b-lg">
+                  <span className="text-[10px] text-slate-400">Drop image, paste (Ctrl+V), or upload →</span>
+                  <button
+                    type="button"
+                    onClick={() => fileInputRef.current?.click()}
+                    className="text-[10px] font-semibold text-sky-600 hover:text-sky-700"
+                  >
+                    + Upload image
+                  </button>
+                  <input ref={fileInputRef} type="file" accept="image/*" className="hidden" onChange={(e) => handleImageFile(e.target.files[0])} />
+                </div>
+              </div>
+            ) : (
+              <div className="relative">
+                <img src={screenshot} alt="Screenshot" className="rounded-lg border border-slate-200 max-h-48 object-contain w-full" />
+                <button onClick={() => { setScreenshot(null); setAiStatus(null); setAiResult(null); }}
+                  className="absolute top-2 right-2 bg-white/90 rounded-full w-6 h-6 flex items-center justify-center text-slate-500 hover:text-red-500 shadow">×</button>
+              </div>
+            )}
+            {/* Combined status messages */}
             {urlStatus === "analyzing" && (
               <div className="mt-2 px-3 py-2 bg-blue-50 rounded-lg text-xs text-blue-700 flex items-center gap-2">
                 <svg className="animate-spin w-3.5 h-3.5" fill="none" viewBox="0 0 24 24">
@@ -593,7 +627,7 @@ function AddAccommodationModal({ tripId, tripStart, tripEnd, onClose, onSave }) 
             )}
             {urlStatus === "done" && aiResult?.name && (
               <div className="mt-2 px-3 py-2 bg-sky-50 rounded-lg text-xs text-sky-700">
-                Found: {aiResult.name}{aiResult.price_per_night ? ` · ${formatPrice(aiResult.price_per_night, aiResult.currency)}/night` : ""}
+                Found: {aiResult.name}
               </div>
             )}
             {urlStatus?.startsWith("error") && (
@@ -601,53 +635,26 @@ function AddAccommodationModal({ tripId, tripStart, tripEnd, onClose, onSave }) 
                 {urlStatus.includes(":") ? urlStatus.split(":").slice(1).join(":") : "Couldn't analyze URL. You can still enter details manually."}
               </div>
             )}
-          </div>
-
-          {/* Screenshot */}
-          <div className="mb-4">
-            <label className="block text-sm font-medium text-slate-700 mb-1">Screenshot</label>
-            {!screenshot ? (
-              <div onDragOver={(e) => { e.preventDefault(); setDragOver(true); }}
-                onDragLeave={() => setDragOver(false)} onDrop={handleDrop}
-                className={`border-2 border-dashed rounded-lg p-6 text-center transition-colors cursor-pointer ${
-                  dragOver ? "border-sky-400 bg-sky-50" : "border-slate-300 hover:border-sky-400"
-                }`}
-                onClick={() => fileInputRef.current?.click()}>
-                <svg className="w-8 h-8 text-slate-300 mx-auto mb-2" fill="none" stroke="currentColor" viewBox="0 0 24 24" strokeWidth={1.5}>
-                  <path strokeLinecap="round" strokeLinejoin="round" d="M2.25 15.75l5.159-5.159a2.25 2.25 0 013.182 0l5.159 5.159m-1.5-1.5l1.409-1.409a2.25 2.25 0 013.182 0l2.909 2.909M3.75 21h16.5A2.25 2.25 0 0022.5 18.75V5.25A2.25 2.25 0 0020.25 3H3.75A2.25 2.25 0 001.5 5.25v13.5A2.25 2.25 0 003.75 21z" />
+            {aiStatus === "processing" && (
+              <div className="mt-2 px-3 py-2 bg-blue-50 rounded-lg text-xs text-blue-700 flex items-center gap-2">
+                <svg className="animate-spin w-3.5 h-3.5" fill="none" viewBox="0 0 24 24">
+                  <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
+                  <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4z"></path>
                 </svg>
-                <p className="text-xs text-slate-400">Drop screenshot, paste (Ctrl+V), or click to upload</p>
-                <input ref={fileInputRef} type="file" accept="image/*" className="hidden" onChange={(e) => handleImageFile(e.target.files[0])} />
+                Analyzing screenshot with AI...
               </div>
-            ) : (
-              <div className="relative">
-                <img src={screenshot} alt="Screenshot" className="rounded-lg border border-slate-200 max-h-48 object-contain w-full" />
-                <button onClick={() => { setScreenshot(null); setAiStatus(null); setAiResult(null); }}
-                  className="absolute top-2 right-2 bg-white/90 rounded-full w-6 h-6 flex items-center justify-center text-slate-500 hover:text-red-500 shadow">×</button>
-                {aiStatus === "processing" && (
-                  <div className="mt-2 px-3 py-2 bg-blue-50 rounded-lg text-xs text-blue-700 flex items-center gap-2">
-                    <svg className="animate-spin w-3.5 h-3.5" fill="none" viewBox="0 0 24 24">
-                      <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
-                      <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4z"></path>
-                    </svg>
-                    Analyzing screenshot with AI...
-                  </div>
-                )}
-                {aiStatus === "done" && aiResult?.name && (
-                  <div className="mt-2 px-3 py-2 bg-sky-50 rounded-lg text-xs text-sky-700">
-                    Found: {aiResult.name}{aiResult.price_per_night ? ` · ${formatPrice(aiResult.price_per_night, aiResult.currency)}/night` : ""}
-                    {aiResult.rating ? ` · ★${aiResult.rating}` : ""}
-                  </div>
-                )}
-                {aiStatus?.startsWith("error") && (
-                  <div className="mt-2 px-3 py-2 bg-red-50 rounded-lg text-xs text-red-700">
-                    {aiStatus.includes(":") ? aiStatus.split(":").slice(1).join(":") : "Couldn't analyze screenshot. You can still save it and enter details manually."}
-                  </div>
-                )}
+            )}
+            {aiStatus === "done" && aiResult?.name && (
+              <div className="mt-2 px-3 py-2 bg-sky-50 rounded-lg text-xs text-sky-700">
+                Found: {aiResult.name}
+              </div>
+            )}
+            {aiStatus?.startsWith("error") && (
+              <div className="mt-2 px-3 py-2 bg-red-50 rounded-lg text-xs text-red-700">
+                {aiStatus.includes(":") ? aiStatus.split(":").slice(1).join(":") : "Couldn't analyze screenshot. You can still save it and enter details manually."}
               </div>
             )}
           </div>
-
           {/* Price per night */}
           <div className="mb-4">
             <label className="block text-sm font-medium text-slate-700 mb-1">Price per Night</label>
