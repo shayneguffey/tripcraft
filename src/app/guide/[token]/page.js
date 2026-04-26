@@ -604,6 +604,7 @@ function DayCard({ day, tripStart, canEdit, tripId, itineraryId, allDays, onRefr
         tripId={tripId}
         itineraryId={itineraryId}
         onRefresh={onRefresh}
+        showJournal={true}
       />
     </div>
   );

@@ -37,6 +37,7 @@ import TimeSelectPopup, {
 import EventDetailPanel from "@/components/EventDetailPanel";
 import BookedBadge from "@/components/BookedBadge";
 import OptionPicker from "@/components/OptionPicker";
+import DayJournal from "@/components/DayJournal";
 
 /* ── Helpers ───────────────────────────────────────────────────────── */
 
@@ -88,6 +89,7 @@ export default function DayCardView({
   itineraryId,
   onClose,
   onRefresh,
+  showJournal = false,
 }) {
   const [title, setTitle] = useState(dayData?.title || "");
   const [editingTitle, setEditingTitle] = useState(false);
@@ -595,6 +597,11 @@ export default function DayCardView({
               </div>
             )}
           </div>
+        )}
+
+        {/* Travel journal — Pocket Guide only, never on the calendar popup */}
+        {showJournal && (
+          <DayJournal tripId={tripId} dateKey={dateKey} dayId={dayData?.id || null} />
         )}
       </div>
     </>
