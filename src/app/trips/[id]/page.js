@@ -312,7 +312,7 @@ export default function TripDetailPage() {
       { data: diningData },
       { data: transportData },
     ] = await Promise.all([
-      supabase.from("flight_options").select("*").eq("trip_id", tripData.id).order("sort_order", { ascending: true }),
+      supabase.from("flight_options").select("*, flight_legs(*)").eq("trip_id", tripData.id).order("sort_order", { ascending: true }),
       supabase.from("activity_options").select("*").eq("trip_id", tripData.id).order("sort_order", { ascending: true }),
       supabase.from("accommodation_options").select("*").eq("trip_id", tripData.id).order("sort_order", { ascending: true }),
       supabase.from("dining_options").select("*").eq("trip_id", tripData.id).order("sort_order", { ascending: true }),
