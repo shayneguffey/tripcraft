@@ -175,6 +175,27 @@ export default function DayCardView({
     onRefresh?.();
   }
 
+  // Remove an option event from this itinerary. For flexible categories
+  // (activity / dining) we also clear scheduled_date so the option can be
+  // re-picked from the picker afterwards (the picker hides options whose date
+  // matches THIS day).
+  async function handleRemoveFromItinerary(optionType, optionId) {
+    if (!itineraryId || !optionId) return;
+    await supabase
+      .from("itinerary_selections")
+      .delete()
+      .eq("itinerary_id", itineraryId)
+      .eq("option_type", optionType)
+      .eq("option_id", optionId);
+    if (optionType === "activity") {
+      await supabase.from("activity_options").update({ scheduled_date: null }).eq("id", optionId);
+    } else if (optionType === "dining") {
+      await supabase.from("dining_options").update({ scheduled_date: null }).eq("id", optionId);
+    }
+    setExpandedKey(null);
+    onRefresh?.();
+  }
+
   async function handleUpdateActivity(activityId, updates) {
     await supabase.from("activities").update(updates).eq("id", activityId);
     onRefresh?.();
@@ -425,6 +446,10 @@ export default function DayCardView({
                       onToggleExpand={() => setExpandedKey(isExpanded ? null : item.sortKey)}
                       canEdit={canEdit}
                       onRefresh={onRefresh}
+                      onRemove={canEdit ? () => {
+                        const id = item.type === "flight" ? item._record?._optionId : item._record?.id;
+                        if (id) handleRemoveFromItinerary(item.type, id);
+                      } : undefined}
                     />
                   </div>
                 );
@@ -498,7 +523,7 @@ export default function DayCardView({
                 const isExpanded = expandedKey === accomKey;
                 const onToggle = () => setExpandedKey(isExpanded ? null : accomKey);
                 return (
-                  <div key={accomKey} className={`${c.bg} border ${c.border} rounded-lg overflow-hidden`}>
+                  <div key={accomKey} className={`${c.bg} border ${c.border} rounded-lg overflow-hidden group`}>
                     <div
                       className="flex items-start gap-2.5 px-3 py-2 cursor-pointer"
                       onClick={onToggle}
@@ -524,6 +549,9 @@ export default function DayCardView({
                           <path strokeLinecap="round" strokeLinejoin="round" d="M19 9l-7 7-7-7" />
                         </svg>
                       </button>
+                      {canEdit && evt._record?.id && (
+                        <AccomRemoveButton onRemove={() => handleRemoveFromItinerary("accommodation", evt._record.id)} />
+                      )}
                     </div>
                     {isExpanded && (
                       <EventDetailPanel
@@ -592,8 +620,10 @@ export function OptionEventCard({
   onToggleExpand,
   canEdit,
   onRefresh,
+  onRemove,
 }) {
   const [showPopup, setShowPopup] = useState(false);
+  const [confirmRemove, setConfirmRemove] = useState(false);
 
   const isTransport = item.type === "transportation";
   const startLabel = isTransport ? "Depart" : "Start";
@@ -683,6 +713,40 @@ export function OptionEventCard({
             </svg>
           </button>
         )}
+
+        {/* Remove from itinerary — X with inline Remove/Cancel confirm. */}
+        {onRemove && (
+          !confirmRemove ? (
+            <button
+              type="button"
+              onClick={(e) => { e.stopPropagation(); setConfirmRemove(true); }}
+              className="flex-shrink-0 mt-0.5 text-stone-300 hover:text-red-500 transition-all opacity-0 group-hover:opacity-100"
+              title="Remove from itinerary"
+              aria-label="Remove from itinerary"
+            >
+              <svg className="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24" strokeWidth={2}>
+                <path strokeLinecap="round" strokeLinejoin="round" d="M6 18L18 6M6 6l12 12" />
+              </svg>
+            </button>
+          ) : (
+            <div className="flex items-center gap-1 flex-shrink-0">
+              <button
+                type="button"
+                onClick={(e) => { e.stopPropagation(); setConfirmRemove(false); onRemove(); }}
+                className="px-1.5 py-0.5 text-[10px] font-semibold text-white bg-red-500 rounded hover:bg-red-600 transition-colors"
+              >
+                Remove
+              </button>
+              <button
+                type="button"
+                onClick={(e) => { e.stopPropagation(); setConfirmRemove(false); }}
+                className="px-1.5 py-0.5 text-[10px] text-stone-500 hover:text-stone-700 transition-colors"
+              >
+                Cancel
+              </button>
+            </div>
+          )
+        )}
       </div>
 
       {expanded && (
@@ -694,6 +758,43 @@ export function OptionEventCard({
           isDraggable={!!isDraggable}
         />
       )}
+    </div>
+  );
+}
+
+function AccomRemoveButton({ onRemove }) {
+  const [confirm, setConfirm] = useState(false);
+  if (!confirm) {
+    return (
+      <button
+        type="button"
+        onClick={(e) => { e.stopPropagation(); setConfirm(true); }}
+        className="flex-shrink-0 mt-0.5 text-stone-300 hover:text-red-500 transition-all opacity-0 group-hover:opacity-100"
+        title="Remove from itinerary"
+        aria-label="Remove from itinerary"
+      >
+        <svg className="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24" strokeWidth={2}>
+          <path strokeLinecap="round" strokeLinejoin="round" d="M6 18L18 6M6 6l12 12" />
+        </svg>
+      </button>
+    );
+  }
+  return (
+    <div className="flex items-center gap-1 flex-shrink-0">
+      <button
+        type="button"
+        onClick={(e) => { e.stopPropagation(); setConfirm(false); onRemove(); }}
+        className="px-1.5 py-0.5 text-[10px] font-semibold text-white bg-red-500 rounded hover:bg-red-600 transition-colors"
+      >
+        Remove
+      </button>
+      <button
+        type="button"
+        onClick={(e) => { e.stopPropagation(); setConfirm(false); }}
+        className="px-1.5 py-0.5 text-[10px] text-stone-500 hover:text-stone-700 transition-colors"
+      >
+        Cancel
+      </button>
     </div>
   );
 }
