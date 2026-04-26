@@ -94,6 +94,14 @@ export async function GET(request, { params }) {
       supabase.from("planning_checklist").select("*").eq("trip_id", tripId).order("sort_order"),
     ]);
 
+    // Travelers — fetched server-side via service role so anonymous viewers
+    // see the list on the shareable Trip Plan PDF.
+    const { data: travelersData } = await supabase
+      .from("travelers")
+      .select("id, name, role, is_primary, sort_order")
+      .eq("trip_id", tripId)
+      .order("sort_order", { ascending: true });
+
     // ─── Filter to only selected options ───
     const flights = (allFlights || []).filter(
       (f) => selectedIds.flight?.has(f.id)
@@ -164,6 +172,7 @@ export async function GET(request, { params }) {
       days,
       documents: documents || [],
       checklist: checklist || [],
+      travelers: travelersData || [],
     });
   } catch (err) {
     console.error("[itinerary] API error:", err);

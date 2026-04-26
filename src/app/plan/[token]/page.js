@@ -2,28 +2,21 @@
 
 /* ══════════════════════════════════════════════════════════════════
    Trip Plan — printable, shareable PDF view of an itinerary.
-   ──────────────────────────────────────────────────────────────────
+
    Three-part document with a vintage WPA-poster aesthetic:
-     1. Presentation — banner, title, pitch, TripCraft logo (top-right)
-     2. Trip-at-a-glance — horizontal day strip + posterized route map
-                          + budget banner (one page)
+     1. Presentation — banner, title, pitch, TripCraft logo (top-right, white)
+     2. Trip-at-a-glance — travelers + horizontal day strip + map + budget
      3. Trip Details — per-day pages with full event detail and inline costs;
                        budget summary as the final page
 
-   Data sources:
-     - GET /api/itinerary/[token]   public trip + itinerary + days + options
-     - supabase.from("travelers")   client-side, RLS-scoped
-     - supabase.from("trip_collaborators") + auth.user — to detect edit rights
-
-   Inline editing: the pitch and per-day summaries are editable in place
-   when the viewer is the trip owner or an accepted collaborator. Anonymous
-   viewers get a static, read-only view. Edits persist to the DB via
-   the Supabase client (RLS enforces ownership/collaborator rules).
+   Inline editing: pitch and per-day summaries are editable for trip owners
+   and accepted collaborators. Anonymous viewers get read-only.
    ══════════════════════════════════════════════════════════════════ */
 
 import { use, useEffect, useState, useRef } from "react";
 import Link from "next/link";
 import { supabase } from "@/lib/supabase";
+import FlightPathLoader from "@/components/FlightPathLoader";
 
 function formatLong(d) {
   if (!d) return "";
@@ -57,6 +50,19 @@ function formatMoney(amount, currency) {
   const sym = currency === "EUR" ? "€" : currency === "GBP" ? "£" : "$";
   return `${sym}${Number(amount).toLocaleString(undefined, { maximumFractionDigits: 0 })}`;
 }
+function formatMoneyPrecise(amount, currency) {
+  if (amount == null || amount === "") return "";
+  const sym = currency === "EUR" ? "€" : currency === "GBP" ? "£" : "$";
+  return `${sym}${Number(amount).toLocaleString(undefined, { minimumFractionDigits: 0, maximumFractionDigits: 2 })}`;
+}
+function formatDuration(mins) {
+  if (!mins) return "";
+  const h = Math.floor(mins / 60);
+  const m = mins % 60;
+  if (h && m) return `${h}h ${m}m`;
+  if (h) return `${h}h`;
+  return `${m}m`;
+}
 function getDaysBetween(start, end) {
   if (!start || !end) return [];
   const arr = [];
@@ -67,6 +73,12 @@ function getDaysBetween(start, end) {
     c.setDate(c.getDate() + 1);
   }
   return arr;
+}
+function nightsBetween(checkIn, checkOut) {
+  if (!checkIn || !checkOut) return 1;
+  const a = new Date(checkIn + "T00:00:00");
+  const b = new Date(checkOut + "T00:00:00");
+  return Math.max(1, Math.round((b - a) / 86400000));
 }
 
 const CAT_COLORS = {
@@ -87,14 +99,12 @@ const CAT_ICONS = {
 export default function TripPlanPage({ params }) {
   const { token } = use(params);
   const [data, setData] = useState(null);
-  const [travelers, setTravelers] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
   const [canEdit, setCanEdit] = useState(false);
 
-  // Editable fields — local state mirrors DB.
   const [pitch, setPitch] = useState("");
-  const [daySummaries, setDaySummaries] = useState({}); // date -> summary
+  const [daySummaries, setDaySummaries] = useState({});
 
   useEffect(() => {
     let cancelled = false;
@@ -109,14 +119,6 @@ export default function TripPlanPage({ params }) {
         const sm = {};
         (json.days || []).forEach((d) => { if (d.summary) sm[d.date] = d.summary; });
         setDaySummaries(sm);
-
-        // Travelers — RLS-scoped; anonymous viewers get [].
-        const { data: trav } = await supabase
-          .from("travelers")
-          .select("*")
-          .eq("trip_id", json.trip.id)
-          .order("sort_order", { ascending: true });
-        if (!cancelled) setTravelers(trav || []);
 
         // Detect edit rights: owner OR accepted collaborator.
         const { data: { user } } = await supabase.auth.getUser();
@@ -156,27 +158,21 @@ export default function TripPlanPage({ params }) {
   async function saveDaySummary(date, next) {
     if (!data) return;
     setDaySummaries((prev) => ({ ...prev, [date]: next }));
-    // Upsert by (itinerary_id, date)
     const existing = (data.days || []).find((d) => d.date === date);
     if (existing) {
-      const { error: e } = await supabase
-        .from("days")
-        .update({ summary: next })
-        .eq("id", existing.id);
+      const { error: e } = await supabase.from("days").update({ summary: next }).eq("id", existing.id);
       if (e) console.error("[plan] update day summary failed:", e.message);
     } else {
-      const { error: e } = await supabase
-        .from("days")
-        .insert({ itinerary_id: data.itinerary.id, date, summary: next });
+      const { error: e } = await supabase.from("days").insert({ itinerary_id: data.itinerary.id, date, summary: next });
       if (e) console.error("[plan] insert day summary failed:", e.message);
     }
   }
 
-  if (loading) return <div className="min-h-screen flex items-center justify-center text-stone-500">Loading trip plan…</div>;
+  if (loading) return <FlightPathLoader text="Loading your Trip Plan..." />;
   if (error) return <div className="min-h-screen flex items-center justify-center text-red-600">{error}</div>;
   if (!data) return null;
 
-  const { trip, itinerary, flights, accommodation, activities, dining, transportation, days } = data;
+  const { trip, itinerary, flights, accommodation, activities, dining, transportation, days, travelers = [] } = data;
   const startDate = itinerary.start_date || trip.start_date;
   const endDate = itinerary.end_date || trip.end_date;
   const allDates = getDaysBetween(startDate, endDate);
@@ -186,69 +182,201 @@ export default function TripPlanPage({ params }) {
   const daySchedule = allDates.map((date, idx) => {
     const dayRow = days.find((d) => d.date === date);
     const flightLegs = flights.flatMap((f) =>
-      (f.legs || []).filter((l) => l.departure_date === date)
-        .map((leg) => ({ ...leg, _airline: leg.airline_name || leg.airline_code, _option: f }))
+      (f.legs || [])
+        .filter((l) => l.departure_date === date)
+        .map((leg) => ({ ...leg, _option: f }))
     );
     const stays = accommodation.filter((a) => a.check_in_date && date >= a.check_in_date && date < (a.check_out_date || a.check_in_date));
     const checkIns = accommodation.filter((a) => a.check_in_date === date);
     const checkOuts = accommodation.filter((a) => a.check_out_date === date);
     const dayActs = activities.filter((a) => a.scheduled_date === date);
     const dayDining = dining.filter((d) => d.scheduled_date === date);
-    const dayTransport = transportation.filter((t) =>
-      t.departure_date === date || t.arrival_date === date
-    );
+    const dayTransport = transportation.filter((t) => t.departure_date === date || t.arrival_date === date);
 
     const events = [];
-    flightLegs.forEach((l) => events.push({
-      kind: "flight",
-      time: l.departure_time?.slice(0, 5),
-      timeEnd: l.arrival_time?.slice(0, 5),
-      label: `${l.departure_airport || ""} → ${l.arrival_airport || ""}`,
-      sub: [l._airline, l.flight_number].filter(Boolean).join(" "),
-      address: null,
-      notes: l._option?.notes || null,
-      cost: l._option?.total_price,
-      currency: l._option?.currency,
-    }));
-    checkIns.forEach((a) => events.push({
-      kind: "stay", time: null, label: `Check in: ${a.name}`,
-      sub: a.location_name || "",
-      address: a.address || null,
-      notes: a.notes || null,
-      cost: a.total_price, currency: a.currency,
-    }));
-    checkOuts.forEach((a) => events.push({
-      kind: "stay", time: null, label: `Check out: ${a.name}`, sub: "", address: null, notes: null,
-    }));
-    dayActs.forEach((a) => events.push({
-      kind: "activity",
-      time: a.start_time?.slice(0, 5),
-      timeEnd: a.end_time?.slice(0, 5),
-      label: a.name,
-      sub: a.location_name || "",
-      address: a.address || null,
-      notes: a.notes || null,
-      durationHours: a.duration_hours || null,
-      cost: a.price, currency: a.currency,
-    }));
-    dayDining.forEach((d) => events.push({
-      kind: "dining",
-      time: d.start_time?.slice(0, 5),
-      label: d.name,
-      sub: [(d.cuisine_type && d.cuisine_type.toLowerCase() !== "other") ? d.cuisine_type : null, d.location_name].filter(Boolean).join(" · "),
-      address: d.address || null,
-      notes: d.notes || null,
-      cost: d.avg_meal_cost, currency: d.currency,
-    }));
+
+    // Flights — full leg detail
+    flightLegs.forEach((l) => {
+      const opt = l._option || {};
+      const facts = [];
+      if (l.departure_airport && l.arrival_airport) facts.push({ k: "Route", v: `${l.departure_airport} → ${l.arrival_airport}` });
+      if (l.duration_minutes) facts.push({ k: "Duration", v: formatDuration(l.duration_minutes) });
+      if (l.cabin_class) facts.push({ k: "Cabin", v: l.cabin_class });
+      if (l.aircraft_type) facts.push({ k: "Aircraft", v: l.aircraft_type });
+      if (l.terminal_departure) facts.push({ k: "Dep terminal", v: l.terminal_departure });
+      if (l.gate_departure) facts.push({ k: "Dep gate", v: l.gate_departure });
+      if (l.terminal_arrival) facts.push({ k: "Arr terminal", v: l.terminal_arrival });
+      if (l.gate_arrival) facts.push({ k: "Arr gate", v: l.gate_arrival });
+      if (l.seat) facts.push({ k: "Seat", v: l.seat });
+      if (l.baggage_allowance) facts.push({ k: "Baggage", v: l.baggage_allowance });
+      if (opt.confirmation_number) facts.push({ k: "Confirmation", v: opt.confirmation_number });
+      if (opt.booking_site) facts.push({ k: "Booked via", v: opt.booking_site });
+      if (l.operating_airline_name && l.operating_airline_name !== l.airline_name) facts.push({ k: "Operated by", v: l.operating_airline_name });
+      events.push({
+        kind: "flight",
+        time: l.departure_time?.slice(0, 5),
+        timeEnd: l.arrival_time?.slice(0, 5),
+        label: `${l.airline_name || l.airline_code || "Flight"}${l.flight_number ? " " + l.flight_number : ""}`,
+        sub: l.departure_airport && l.arrival_airport ? `${l.departure_airport} → ${l.arrival_airport}` : null,
+        facts,
+        notes: opt.notes || null,
+        cost: opt.total_price,
+        currency: opt.currency,
+      });
+    });
+
+    // Accommodation - check-in
+    checkIns.forEach((a) => {
+      const nights = nightsBetween(a.check_in_date, a.check_out_date);
+      const perNight = a.price_per_night || (a.total_price ? Number(a.total_price) / nights : null);
+      const facts = [];
+      if (a.room_type) facts.push({ k: "Room", v: a.room_type });
+      if (a.bedrooms || a.bathrooms) {
+        const parts = [];
+        if (a.bedrooms) parts.push(`${a.bedrooms} bed`);
+        if (a.bathrooms) parts.push(`${a.bathrooms} bath`);
+        facts.push({ k: "Layout", v: parts.join(" · ") });
+      }
+      if (a.max_guests) facts.push({ k: "Sleeps", v: String(a.max_guests) });
+      if (a.rating) facts.push({ k: "Rating", v: `${a.rating}★${a.review_count ? ` (${a.review_count})` : ""}` });
+      if (perNight) facts.push({ k: "Per night", v: formatMoney(perNight, a.currency) });
+      if (a.total_price) facts.push({ k: "Total", v: `${formatMoney(a.total_price, a.currency)} · ${nights} ${nights === 1 ? "night" : "nights"}` });
+      if (a.cancellation_policy) facts.push({ k: "Cancellation", v: a.cancellation_policy });
+      if (a.distance_info) facts.push({ k: "Distance", v: a.distance_info });
+      if (a.provider) facts.push({ k: "Provider", v: a.provider });
+      events.push({
+        kind: "stay",
+        time: null,
+        label: `Check in: ${a.name}`,
+        sub: a.location_name || null,
+        address: a.address || null,
+        amenities: a.amenities || null,
+        description: a.description || null,
+        facts,
+        notes: a.notes || null,
+        cost: perNight,
+        costLabel: "/night",
+        currency: a.currency,
+      });
+    });
+
+    // Accommodation - midnights (per-night cost on each spanned day, no check-in row)
+    stays.forEach((a) => {
+      if (a.check_in_date === date) return; // already covered by checkIn
+      const nights = nightsBetween(a.check_in_date, a.check_out_date);
+      const perNight = a.price_per_night || (a.total_price ? Number(a.total_price) / nights : null);
+      const dayIndex = Math.floor((new Date(date) - new Date(a.check_in_date)) / 86400000) + 1;
+      events.push({
+        kind: "stay",
+        time: null,
+        label: `Stay: ${a.name}`,
+        sub: a.location_name ? `${a.location_name} · night ${dayIndex} of ${nights}` : `Night ${dayIndex} of ${nights}`,
+        facts: [],
+        notes: null,
+        cost: perNight,
+        costLabel: "/night",
+        currency: a.currency,
+      });
+    });
+
+    // Accommodation - check-out
+    checkOuts.forEach((a) => {
+      events.push({
+        kind: "stay",
+        time: null,
+        label: `Check out: ${a.name}`,
+        sub: a.location_name || null,
+        facts: [],
+        notes: null,
+      });
+    });
+
+    // Activities - full detail
+    dayActs.forEach((a) => {
+      const facts = [];
+      if (a.duration_minutes) facts.push({ k: "Duration", v: formatDuration(a.duration_minutes) });
+      if (a.category) facts.push({ k: "Type", v: a.category });
+      if (a.rating) facts.push({ k: "Rating", v: `${a.rating}★${a.review_count ? ` (${a.review_count})` : ""}` });
+      if (a.provider) facts.push({ k: "Provider", v: a.provider });
+      if (a.price) facts.push({ k: a.price_per === "per_group" ? "Group price" : "Per person", v: formatMoney(a.price, a.currency) });
+      events.push({
+        kind: "activity",
+        time: a.start_time?.slice(0, 5),
+        timeEnd: a.end_time?.slice(0, 5),
+        label: a.name,
+        sub: a.location_name || null,
+        address: a.address || null,
+        description: a.description || null,
+        facts,
+        notes: a.notes || null,
+        cost: a.price,
+        currency: a.currency,
+        sourceUrl: a.source_url,
+      });
+    });
+
+    // Dining - full detail
+    dayDining.forEach((d) => {
+      const facts = [];
+      if (d.cuisine_type && d.cuisine_type.toLowerCase() !== "other") facts.push({ k: "Cuisine", v: d.cuisine_type });
+      if (d.meal_type) facts.push({ k: "Meal", v: d.meal_type });
+      if (d.price_range) facts.push({ k: "Price", v: d.price_range });
+      if (d.reservation_required) facts.push({ k: "Reservation", v: "Required" });
+      if (d.dietary_options) facts.push({ k: "Dietary", v: d.dietary_options });
+      if (d.known_for) facts.push({ k: "Known for", v: d.known_for });
+      if (d.hours) facts.push({ k: "Hours", v: d.hours });
+      if (d.rating) facts.push({ k: "Rating", v: `${d.rating}★${d.review_count ? ` (${d.review_count})` : ""}` });
+      if (d.neighborhood) facts.push({ k: "Neighborhood", v: d.neighborhood });
+      events.push({
+        kind: "dining",
+        time: d.start_time?.slice(0, 5),
+        timeEnd: d.end_time?.slice(0, 5),
+        label: d.name,
+        sub: d.location_name || null,
+        address: d.address || null,
+        description: d.description || null,
+        facts,
+        notes: d.notes || null,
+        cost: d.avg_meal_cost,
+        currency: d.currency,
+        sourceUrl: d.source_url,
+      });
+    });
+
+    // Transportation - full detail (incl. car rental pickup/dropoff)
     dayTransport.forEach((t) => {
       const isReturn = t.arrival_date === date && t.departure_date !== date;
+      const facts = [];
+      if (t.category) facts.push({ k: "Type", v: t.category.replace(/_/g, " ") });
+      if (t.vehicle_type) facts.push({ k: "Vehicle", v: t.vehicle_type });
+      if (t.class_type) facts.push({ k: "Class", v: t.class_type });
+      if (t.duration_minutes) facts.push({ k: "Duration", v: formatDuration(t.duration_minutes) });
+      if (t.passengers) facts.push({ k: "Passengers", v: String(t.passengers) });
+      if (t.is_private != null && t.category !== "car_rental") facts.push({ k: "Mode", v: t.is_private ? "Private" : "Shared" });
+      if (t.service_name) facts.push({ k: "Service", v: t.service_name });
+      if (t.seat_number) facts.push({ k: "Seat", v: t.seat_number });
+      if (t.platform_terminal) facts.push({ k: "Platform/Terminal", v: t.platform_terminal });
+      if (t.driver_name) facts.push({ k: "Driver", v: t.driver_name });
+      if (t.driver_phone) facts.push({ k: "Driver phone", v: t.driver_phone });
+      if (t.boarding_deadline) facts.push({ k: "Boarding by", v: formatTime(t.boarding_deadline) });
+      if (t.fuel_policy) facts.push({ k: "Fuel", v: t.fuel_policy });
+      if (t.mileage_policy) facts.push({ k: "Mileage", v: t.mileage_policy });
+      if (t.insurance_included) facts.push({ k: "Insurance", v: "Included" });
+      if (t.additional_drivers) facts.push({ k: "Add’l drivers", v: t.additional_drivers });
+      if (t.cancellation_policy) facts.push({ k: "Cancellation", v: t.cancellation_policy });
+      if (t.booking_reference) facts.push({ k: "Confirmation", v: t.booking_reference });
+      if (t.provider) facts.push({ k: "Provider", v: t.provider });
+      if (t.vehicle_id) facts.push({ k: "Vehicle ID", v: t.vehicle_id });
+      const pickupDropoff = [t.pickup_location, t.dropoff_location].filter(Boolean).join(" → ");
       events.push({
         kind: "transport",
         time: isReturn ? t.arrival_time?.slice(0, 5) : t.departure_time?.slice(0, 5),
         timeEnd: isReturn ? null : t.arrival_time?.slice(0, 5),
-        label: isReturn ? `↩ ${t.name}` : t.name,
-        sub: [t.pickup_location, t.dropoff_location].filter(Boolean).join(" → "),
-        address: null,
+        label: isReturn ? `↩ Return: ${t.name}` : t.name,
+        sub: pickupDropoff || null,
+        meeting: t.meeting_instructions || null,
+        description: t.description || null,
+        facts,
         notes: t.notes || null,
         cost: isReturn ? null : t.price,
         currency: t.currency,
@@ -264,7 +392,6 @@ export default function TripPlanPage({ params }) {
       title: dayRow?.title || null,
       summary: daySummaries[date] || dayRow?.summary || null,
       events: [...untimed, ...timed],
-      stays,
     };
   });
 
@@ -287,7 +414,6 @@ export default function TripPlanPage({ params }) {
   ].filter((r) => r.amount > 0);
   const maxBudget = Math.max(1, ...budgetRows.map((r) => r.amount));
 
-  // Slug helper for "Back to planning page" link.
   const planningHref = `/trips/${trip.id}`;
 
   return (
@@ -308,7 +434,6 @@ export default function TripPlanPage({ params }) {
           body { background: white !important; }
           .avoid-break { page-break-inside: avoid; break-inside: avoid; }
         }
-        /* CRITICAL: render background colors / images in PDF output. */
         .trip-plan, .trip-plan * {
           -webkit-print-color-adjust: exact !important;
           print-color-adjust: exact !important;
@@ -340,9 +465,11 @@ export default function TripPlanPage({ params }) {
           color: rgba(218,123,74,0.85); font-weight: 600; opacity: 0; transition: opacity 0.15s;
         }
         .trip-plan .editable-block:hover .edit-hint { opacity: 1; }
+        .trip-plan .fact { font-family: "Oswald", sans-serif; font-size: 10px; letter-spacing: 0.04em; }
+        .trip-plan .fact-k { color: rgba(42,31,20,0.55); text-transform: uppercase; letter-spacing: 0.14em; font-weight: 600; }
+        .trip-plan .fact-v { color: #2a1f14; font-weight: 500; }
       `}</style>
 
-      {/* Toolbar - screen only */}
       <div className="no-print" style={{ maxWidth: "8.5in", margin: "0 auto 12px", display: "flex", justifyContent: "space-between", alignItems: "center", padding: "0 12px" }}>
         <Link href={planningHref} style={{ color: "#2a1f14", fontFamily: "Oswald, sans-serif", fontSize: 12, letterSpacing: "0.16em", textTransform: "uppercase", fontWeight: 600 }}>← Back to planning page</Link>
         <button
@@ -361,14 +488,13 @@ export default function TripPlanPage({ params }) {
             ? `linear-gradient(180deg, rgba(0,0,0,0.0) 0%, rgba(0,0,0,0.4) 70%, rgba(0,0,0,0.85) 100%), url(${trip.banner_image}) center/cover`
             : "linear-gradient(180deg, rgba(218,123,74,0.22) 0%, rgba(74,119,135,0.55) 60%, rgba(42,31,20,0.85) 100%)",
         }}>
-          {/* TripCraft logo - upper right */}
+          {/* TripCraft logo - upper right, white, larger */}
           <img
             src="/TRIPCRAFTLOGO.png"
             alt="TripCraft"
-            style={{ position: "absolute", top: "0.45in", right: "0.55in", height: 64, width: "auto",
-              filter: "drop-shadow(0 2px 6px rgba(0,0,0,0.45))" }}
+            style={{ position: "absolute", top: "0.45in", right: "0.55in", height: 110, width: "auto",
+              filter: "brightness(0) invert(1) drop-shadow(0 2px 6px rgba(0,0,0,0.45))" }}
           />
-          {/* Decorative top rules */}
           <div style={{ position: "absolute", top: "0.5in", left: 0, width: "55%", textAlign: "left" }}>
             <div style={{ height: 4, background: "#f1e6d2", margin: "6px 0 6px 0.55in", opacity: 0.75, width: "55%" }} />
             <div style={{ height: 4, background: "#f1e6d2", margin: "6px 0 6px 0.55in", opacity: 0.75, width: "70%" }} />
@@ -388,7 +514,6 @@ export default function TripPlanPage({ params }) {
           </div>
         </div>
 
-        {/* Pitch row beneath banner - no label, no stats */}
         <div style={{ padding: "0.45in 0.6in 0.55in", background: "#f1e6d2" }}>
           <EditableBlock
             value={pitch}
@@ -397,6 +522,23 @@ export default function TripPlanPage({ params }) {
             onSave={savePitch}
             displayStyle={{ fontFamily: "Lora, serif", fontStyle: "italic", fontSize: 16, lineHeight: 1.65, color: "rgba(42,31,20,0.88)" }}
           />
+          {/* Travelers strip on cover - always visible if any travelers exist */}
+          {travelers.length > 0 && (
+            <div style={{ marginTop: 18, paddingTop: 16, borderTop: "1px solid rgba(42,31,20,0.18)" }}>
+              <span className="label">Travelers</span>
+              <div style={{ display: "flex", flexWrap: "wrap", gap: 10, marginTop: 8 }}>
+                {travelers.map((t) => (
+                  <div key={t.id} style={{ display: "flex", alignItems: "center", gap: 8, padding: "5px 12px",
+                    border: "1px solid rgba(42,31,20,0.22)",
+                    background: t.is_primary ? "rgba(218,123,74,0.10)" : "rgba(255,255,255,0.4)" }}>
+                    <span className="display" style={{ fontSize: 14, color: "#2a1f14" }}>{t.name.toUpperCase()}</span>
+                    {t.role && <span style={{ fontFamily: "Oswald, sans-serif", fontSize: 9, letterSpacing: "0.12em", textTransform: "uppercase", color: "rgba(42,31,20,0.55)", fontWeight: 600 }}>· {t.role}</span>}
+                    {t.is_primary && <span style={{ fontFamily: "Oswald, sans-serif", fontSize: 8, padding: "1px 5px", background: "#da7b4a", color: "#f1e6d2", letterSpacing: "0.14em", textTransform: "uppercase", fontWeight: 600 }}>Lead</span>}
+                  </div>
+                ))}
+              </div>
+            </div>
+          )}
         </div>
       </div>
 
@@ -405,20 +547,6 @@ export default function TripPlanPage({ params }) {
         <h1 style={{ fontSize: 64, marginBottom: 0 }}>Trip at a glance</h1>
         <div className="accent-rule"></div>
 
-        {travelers.length > 0 && (
-          <div style={{ marginTop: 18 }} className="avoid-break">
-            <span className="label">Travelers</span>
-            <div style={{ display: "flex", flexWrap: "wrap", gap: 8, marginTop: 6 }}>
-              {travelers.map((t) => (
-                <div key={t.id} style={{ border: "1px solid rgba(42,31,20,0.18)", padding: "5px 11px", fontFamily: "Oswald, sans-serif", textTransform: "uppercase", letterSpacing: "0.1em", fontSize: 11, fontWeight: 600 }}>
-                  {t.name}{t.role && <span style={{ color: "rgba(42,31,20,0.55)" }}> · {t.role}</span>}
-                </div>
-              ))}
-            </div>
-          </div>
-        )}
-
-        {/* Horizontal day strip - replaces the long TOC */}
         <div style={{ marginTop: 22 }} className="avoid-break">
           <span className="label">The Days</span>
           <div style={{
@@ -445,14 +573,8 @@ export default function TripPlanPage({ params }) {
                     {(d.title || "").toUpperCase()}
                   </div>
                   <div style={{ display: "flex", gap: 3, marginTop: "auto" }}>
-                    {dotColors.map((c, i) => (
-                      <div key={i} style={{ width: 6, height: 6, borderRadius: "50%", background: c }} />
-                    ))}
-                    {eventCount > 5 && (
-                      <span style={{ fontFamily: "Oswald, sans-serif", fontSize: 8, color: "rgba(42,31,20,0.5)", marginLeft: 2 }}>
-                        +{eventCount - 5}
-                      </span>
-                    )}
+                    {dotColors.map((c, i) => (<div key={i} style={{ width: 6, height: 6, borderRadius: "50%", background: c }} />))}
+                    {eventCount > 5 && (<span style={{ fontFamily: "Oswald, sans-serif", fontSize: 8, color: "rgba(42,31,20,0.5)", marginLeft: 2 }}>+{eventCount - 5}</span>)}
                   </div>
                 </div>
               );
@@ -465,7 +587,6 @@ export default function TripPlanPage({ params }) {
           )}
         </div>
 
-        {/* Posterized destination map - made larger, prominent */}
         <div className="avoid-break" style={{ marginTop: 22, height: "3.2in", position: "relative", border: "2px solid rgba(42,31,20,0.5)",
           background: "linear-gradient(135deg, rgba(74,119,135,0.18) 0%, rgba(126,155,91,0.18) 50%, rgba(212,165,116,0.18) 100%), repeating-linear-gradient(45deg, rgba(42,31,20,0.04) 0 8px, transparent 8px 16px), #f1e6d2",
           overflow: "hidden" }}>
@@ -491,7 +612,6 @@ export default function TripPlanPage({ params }) {
           )}
         </div>
 
-        {/* Budget banner - kept as one block */}
         <div className="avoid-break" style={{ marginTop: 18, padding: "14px 18px",
           background: "linear-gradient(90deg, rgba(218,123,74,0.10), rgba(218,123,74,0.04))",
           borderLeft: "4px solid #da7b4a",
@@ -511,7 +631,6 @@ export default function TripPlanPage({ params }) {
       {/* PART 3 - TRIP DETAILS - day pages */}
       {daySchedule.map((d) => (
         <div key={d.date} className="page">
-          {/* Day header: stacked DAY + smaller number on left, date inline on right */}
           <div style={{ display: "flex", alignItems: "stretch", gap: 16, borderBottom: "3px solid #2a1f14", paddingBottom: 10, marginBottom: 16 }}>
             <div style={{ display: "flex", flexDirection: "column", alignItems: "center", justifyContent: "center", minWidth: 64,
               borderRight: "2px solid rgba(42,31,20,0.4)", paddingRight: 14 }}>
@@ -526,7 +645,6 @@ export default function TripPlanPage({ params }) {
             </div>
           </div>
 
-          {/* Day summary - editable */}
           <div style={{ marginBottom: 14 }}>
             <EditableBlock
               value={daySummaries[d.date] || ""}
@@ -538,63 +656,12 @@ export default function TripPlanPage({ params }) {
             />
           </div>
 
-          <div style={{ display: "grid", gridTemplateColumns: "1fr 2.2in", gap: 22 }}>
-            <div>
-              {d.events.length === 0 && d.stays.length === 0 ? (
-                <div style={{ fontStyle: "italic", color: "rgba(42,31,20,0.5)", padding: "20px 0" }}>Free day</div>
-              ) : (
-                d.events.map((e, i) => (
-                  <div key={i} className="avoid-break" style={{ display: "grid", gridTemplateColumns: "84px 28px 1fr auto", gap: 12, padding: "11px 0", borderBottom: "1px dashed rgba(42,31,20,0.18)", alignItems: "start" }}>
-                    <div style={{ fontFamily: "Oswald, sans-serif", textTransform: "uppercase", letterSpacing: "0.08em", fontSize: 10.5, fontWeight: 600, paddingTop: 2, color: "rgba(42,31,20,0.85)", lineHeight: 1.35 }}>
-                      {e.time ? formatTimeRange(e.time, e.timeEnd) : "—"}
-                      {e.durationHours && (
-                        <div style={{ fontSize: 9, color: "rgba(42,31,20,0.55)", marginTop: 2 }}>
-                          {e.durationHours}h
-                        </div>
-                      )}
-                    </div>
-                    <div style={{ width: 28, height: 28, borderRadius: 4, display: "flex", alignItems: "center", justifyContent: "center",
-                      background: CAT_COLORS[e.kind], color: e.kind === "activity" ? "#2a1f14" : "white",
-                      fontFamily: "Bebas Neue, sans-serif", fontSize: 13 }}>
-                      {CAT_ICONS[e.kind]}
-                    </div>
-                    <div>
-                      <div className="display" style={{ fontSize: 17, lineHeight: 1.15 }}>{e.label}</div>
-                      {e.sub && <div style={{ fontSize: 12, color: "rgba(42,31,20,0.7)", marginTop: 2, lineHeight: 1.4 }}>{e.sub}</div>}
-                      {e.address && <div style={{ fontSize: 11, color: "rgba(42,31,20,0.55)", marginTop: 2, lineHeight: 1.35 }}>{e.address}</div>}
-                      {e.notes && <div style={{ fontSize: 11.5, color: "rgba(42,31,20,0.7)", marginTop: 4, fontStyle: "italic", lineHeight: 1.45 }}>{e.notes}</div>}
-                    </div>
-                    <div className="display" style={{ fontSize: 16, color: "#da7b4a", whiteSpace: "nowrap" }}>
-                      {e.cost ? formatMoney(e.cost, e.currency) : ""}
-                    </div>
-                  </div>
-                ))
-              )}
-              {d.stays.map((a) => (
-                <div key={`stay-${a.id}`} className="avoid-break" style={{ display: "grid", gridTemplateColumns: "84px 28px 1fr auto", gap: 12, padding: "11px 0", borderBottom: "1px dashed rgba(42,31,20,0.18)", alignItems: "start" }}>
-                  <div style={{ fontFamily: "Oswald, sans-serif", fontSize: 10.5, color: "rgba(42,31,20,0.5)", paddingTop: 2 }}>STAY</div>
-                  <div style={{ width: 28, height: 28, borderRadius: 4, background: CAT_COLORS.stay, color: "white", display: "flex", alignItems: "center", justifyContent: "center", fontFamily: "Bebas Neue, sans-serif", fontSize: 13 }}>BED</div>
-                  <div>
-                    <div className="display" style={{ fontSize: 17 }}>{a.name}</div>
-                    {a.location_name && <div style={{ fontSize: 12, color: "rgba(42,31,20,0.7)" }}>{a.location_name}</div>}
-                    {a.address && <div style={{ fontSize: 11, color: "rgba(42,31,20,0.55)", marginTop: 2 }}>{a.address}</div>}
-                  </div>
-                  <div></div>
-                </div>
-              ))}
-            </div>
-
-            <aside>
-              <div style={{
-                height: "2.2in",
-                background: "repeating-linear-gradient(45deg, rgba(42,31,20,0.04) 0 8px, transparent 8px 16px), rgba(42,31,20,0.04)",
-                border: "1.5px dashed rgba(42,31,20,0.25)", color: "rgba(42,31,20,0.45)",
-                fontFamily: "Oswald, sans-serif", textTransform: "uppercase", letterSpacing: "0.22em", fontSize: 10, fontWeight: 600,
-                display: "flex", alignItems: "center", justifyContent: "center", textAlign: "center", padding: 12,
-              }}>
-                Day Image<br/><span style={{ fontSize: 9, opacity: 0.6, letterSpacing: "0.18em" }}>placeholder</span>
-              </div>
-            </aside>
+          <div>
+            {d.events.length === 0 ? (
+              <div style={{ fontStyle: "italic", color: "rgba(42,31,20,0.5)", padding: "20px 0" }}>Free day</div>
+            ) : (
+              d.events.map((e, i) => <EventBlock key={i} e={e} />)
+            )}
           </div>
 
           <div style={{ marginTop: 28, textAlign: "center", opacity: 0.5, fontFamily: "Oswald, sans-serif", textTransform: "uppercase", fontSize: 10, letterSpacing: "0.3em" }}>
@@ -603,7 +670,7 @@ export default function TripPlanPage({ params }) {
         </div>
       ))}
 
-      {/* BUDGET SUMMARY (final page) */}
+      {/* BUDGET SUMMARY */}
       <div className="page">
         <div className="label">Final Page</div>
         <h1 style={{ fontSize: 72 }}>Budget Summary</h1>
@@ -650,10 +717,82 @@ export default function TripPlanPage({ params }) {
   );
 }
 
-/* Inline-editable text block. Click to edit when canEdit is true.
-   - Click anywhere on the block to enter edit mode.
-   - Blur or Cmd/Ctrl-Enter to save.
-   - Escape to cancel. */
+/* Per-event block with full detail. */
+function EventBlock({ e }) {
+  return (
+    <div className="avoid-break" style={{
+      display: "grid",
+      gridTemplateColumns: "84px 28px 1fr auto",
+      gap: 12,
+      padding: "12px 0",
+      borderBottom: "1px dashed rgba(42,31,20,0.18)",
+      alignItems: "start",
+    }}>
+      <div style={{ fontFamily: "Oswald, sans-serif", textTransform: "uppercase", letterSpacing: "0.08em", fontSize: 10.5, fontWeight: 600, paddingTop: 2, color: "rgba(42,31,20,0.85)", lineHeight: 1.35 }}>
+        {e.time ? formatTimeRange(e.time, e.timeEnd) : "—"}
+      </div>
+      <div style={{
+        width: 28, height: 28, borderRadius: 4, display: "flex", alignItems: "center", justifyContent: "center",
+        background: CAT_COLORS[e.kind], color: e.kind === "activity" ? "#2a1f14" : "white",
+        fontFamily: "Bebas Neue, sans-serif", fontSize: 13,
+      }}>
+        {CAT_ICONS[e.kind]}
+      </div>
+      <div>
+        <div className="display" style={{ fontSize: 17, lineHeight: 1.15 }}>{e.label}</div>
+        {e.sub && <div style={{ fontSize: 12, color: "rgba(42,31,20,0.7)", marginTop: 2, lineHeight: 1.4 }}>{e.sub}</div>}
+        {e.address && <div style={{ fontSize: 11, color: "rgba(42,31,20,0.55)", marginTop: 2, lineHeight: 1.35 }}>{e.address}</div>}
+        {e.description && <div style={{ fontSize: 11.5, color: "rgba(42,31,20,0.78)", marginTop: 5, lineHeight: 1.45 }}>{e.description}</div>}
+        {e.facts && e.facts.length > 0 && (
+          <div style={{
+            marginTop: 8,
+            display: "grid",
+            gridTemplateColumns: "repeat(auto-fill, minmax(140px, 1fr))",
+            gap: "4px 14px",
+          }}>
+            {e.facts.map((f, i) => (
+              <div key={i} className="fact" style={{ display: "flex", gap: 6, lineHeight: 1.4 }}>
+                <span className="fact-k">{f.k}</span>
+                <span className="fact-v">{f.v}</span>
+              </div>
+            ))}
+          </div>
+        )}
+        {e.amenities && (
+          <div style={{ marginTop: 6, fontSize: 10.5, color: "rgba(42,31,20,0.65)", fontStyle: "italic" }}>
+            <span className="fact-k" style={{ marginRight: 6 }}>Amenities</span>{e.amenities}
+          </div>
+        )}
+        {e.meeting && (
+          <div style={{ marginTop: 6, padding: "6px 9px", background: "rgba(107,90,142,0.10)", border: "1px dashed rgba(107,90,142,0.4)", fontSize: 11, lineHeight: 1.4 }}>
+            <span className="fact-k" style={{ marginRight: 6 }}>Meeting</span>{e.meeting}
+          </div>
+        )}
+        {e.notes && (
+          <div style={{ marginTop: 6, fontSize: 11.5, color: "rgba(42,31,20,0.7)", fontStyle: "italic", lineHeight: 1.45 }}>
+            {e.notes}
+          </div>
+        )}
+      </div>
+      <div style={{ textAlign: "right" }}>
+        {e.cost ? (
+          <>
+            <div className="display" style={{ fontSize: 16, color: "#da7b4a", whiteSpace: "nowrap" }}>
+              {formatMoney(e.cost, e.currency)}
+            </div>
+            {e.costLabel && (
+              <div style={{ fontFamily: "Oswald, sans-serif", fontSize: 9, color: "rgba(42,31,20,0.55)", letterSpacing: "0.14em", textTransform: "uppercase", marginTop: 2 }}>
+                {e.costLabel}
+              </div>
+            )}
+          </>
+        ) : null}
+      </div>
+    </div>
+  );
+}
+
+/* Inline-editable text block. */
 function EditableBlock({ value, placeholder, canEdit, onSave, displayStyle }) {
   const [editing, setEditing] = useState(false);
   const [draft, setDraft] = useState(value || "");
@@ -697,7 +836,7 @@ function EditableBlock({ value, placeholder, canEdit, onSave, displayStyle }) {
 
   return (
     <div
-      className="editable-block no-print-hover"
+      className="editable-block"
       style={{ cursor: canEdit ? "text" : "default" }}
       onClick={() => { if (canEdit) setEditing(true); }}
     >
