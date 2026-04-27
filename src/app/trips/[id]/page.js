@@ -1545,17 +1545,22 @@ export default function TripDetailPage() {
               />
             </div>
             <div style={{ display: activeItineraryTab === "map" ? "block" : "none" }}>
-              <TripMap
-                tripDestination={trip?.destination}
-                tripStart={trip?.start_date}
-                tripEnd={trip?.end_date}
-                flightOptions={flightOptions}
-                accommodationOptions={accommodationOptions}
-                activityOptions={activityOptions}
-                diningOptions={diningOptions}
-                transportOptions={transportOptions}
-                itinerarySelections={itinerarySelections}
-              />
+              {/* Mount TripMap only while its tab is active. Leaflet can't
+                  measure its container when it's display:none on first mount,
+                  which would leave it blank until a hard reload. */}
+              {activeItineraryTab === "map" && (
+                <TripMap
+                  tripDestination={trip?.destination}
+                  tripStart={trip?.start_date}
+                  tripEnd={trip?.end_date}
+                  flightOptions={flightOptions}
+                  accommodationOptions={accommodationOptions}
+                  activityOptions={activityOptions}
+                  diningOptions={diningOptions}
+                  transportOptions={transportOptions}
+                  itinerarySelections={itinerarySelections}
+                />
+              )}
             </div>
             <div style={{ display: activeItineraryTab === "checklist" ? "block" : "none" }}>
               <PlanningChecklist tripId={trip?.id} />
