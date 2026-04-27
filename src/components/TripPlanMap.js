@@ -208,11 +208,10 @@ export default function TripPlanMap({ destination, pinQueries = [], height = "5.
       overflow: "hidden",
     }} className="trip-plan-map-wrap">
       <style jsx global>{`
-        /* Vintage CSS treatment on the live map tiles — kept light so the
-           geography stays readable. */
-        .trip-plan-map-wrap .leaflet-tile-pane {
-          filter: sepia(0.18) saturate(1.10) contrast(1.10) brightness(1.02);
-        }
+        /* No filter on the tile pane — Voyager is already cream-toned and
+           the vintage feel comes from the overlays (compass, corners,
+           wordmark, accent border). Filtering hurts legibility more than
+           it helps the aesthetic. */
         /* Hide controls — this is a poster, not a tool */
         .trip-plan-map-wrap .leaflet-control-zoom,
         .trip-plan-map-wrap .leaflet-control-attribution {
@@ -223,14 +222,12 @@ export default function TripPlanMap({ destination, pinQueries = [], height = "5.
           background: #f1e6d2;
           font-family: "Lora", Georgia, serif;
         }
-        /* Paper-texture overlay sits above tiles, below pins. Kept subtle so
-           it doesn't crush the map underneath. */
+        /* Subtle vignette only — corners darken slightly to frame the map
+           without occluding any of the geography. No texture overlay so the
+           map reads cleanly. */
         .trip-plan-map-wrap .map-paper-texture {
           position: absolute; inset: 0; pointer-events: none; z-index: 350;
-          background:
-            repeating-linear-gradient(45deg, rgba(42,31,20,0.018) 0 2px, transparent 2px 8px),
-            radial-gradient(circle at 30% 20%, rgba(241,230,210,0) 0%, rgba(241,230,210,0.05) 80%, rgba(241,230,210,0.14) 100%);
-          opacity: 0.6;
+          background: radial-gradient(ellipse at center, transparent 60%, rgba(42,31,20,0.10) 100%);
         }
         /* Vintage corner accents */
         .trip-plan-map-wrap .map-corner {
@@ -241,9 +238,12 @@ export default function TripPlanMap({ destination, pinQueries = [], height = "5.
         .trip-plan-map-wrap .map-corner.tr { top: 6px; right: 6px; border-left: none; border-bottom: none; }
         .trip-plan-map-wrap .map-corner.bl { bottom: 6px; left: 6px; border-right: none; border-top: none; }
         .trip-plan-map-wrap .map-corner.br { bottom: 6px; right: 6px; border-left: none; border-top: none; }
-        /* Make sure tiles render in print */
+        /* Make sure background colors render in print */
         @media print {
-          .trip-plan-map-wrap .leaflet-tile-pane { filter: sepia(0.30) saturate(0.85) contrast(1.05); }
+          .trip-plan-map-wrap, .trip-plan-map-wrap * {
+            -webkit-print-color-adjust: exact !important;
+            print-color-adjust: exact !important;
+          }
         }
       `}</style>
 
@@ -263,20 +263,13 @@ export default function TripPlanMap({ destination, pinQueries = [], height = "5.
           {/* Re-fit map view as pins resolve so all locations are visible. */}
           <FitBoundsOnUpdate bounds={displayBounds} fallbackCenter={center} />
 
-          {/* CartoDB Voyager — cream-toned OSM, free for low-traffic use */}
+          {/* CartoDB Voyager — same source TripMap uses on the planning page.
+              Labels baked into the tile so we don't need a separate overlay. */}
           <TileLayer
-            url="https://{s}.basemaps.cartocdn.com/rastertiles/voyager_nolabels/{z}/{x}/{y}{r}.png"
+            url="https://{s}.basemaps.cartocdn.com/rastertiles/voyager/{z}/{x}/{y}{r}.png"
             attribution='&copy; OSM &copy; CARTO'
             subdomains={["a","b","c","d"]}
             maxZoom={19}
-          />
-          {/* Labels overlay — drawn above the filtered tiles so place names
-              stay legible. Higher opacity than before. */}
-          <TileLayer
-            url="https://{s}.basemaps.cartocdn.com/rastertiles/voyager_only_labels/{z}/{x}/{y}{r}.png"
-            subdomains={["a","b","c","d"]}
-            maxZoom={19}
-            opacity={1}
           />
           {/* Day pins, if we resolved them */}
           {pins.map((p) => (

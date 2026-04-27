@@ -381,7 +381,28 @@ export default function TripPlanPage({ params }) {
   // location signal so Nominatim can find it. Each entry has a list of
   // candidate query strings (most specific first); the map component tries
   // each in turn and stops at the first hit.
+  //
+  // Mirrors TripMap's collectLocations logic: identify the home airport
+  // (origin of the first outbound leg) and exclude it from pins so the map
+  // shows the destination side of every flight, never home.
   const pinQueries = (() => {
+    // Find home (origin) airport from the first outbound leg of any flight.
+    const allOutbound = flights.flatMap((f) =>
+      (f.legs || []).filter((l) => l.direction === "outbound")
+    );
+    const homeAirport = allOutbound.length > 0 ? allOutbound[0].departure_airport : null;
+
+    // Returns the destination-side airport of a leg, or null if it would be home.
+    function destSideAirport(leg) {
+      if (!leg) return null;
+      // Outbound: arrival = destination. Return: departure = destination
+      // (arrival on a return is home — never show).
+      const code = leg.direction === "return" ? leg.departure_airport : leg.arrival_airport;
+      if (!code || code.length !== 3) return null;
+      if (homeAirport && code === homeAirport) return null;
+      return code;
+    }
+
     const out = [];
     for (const d of daySchedule) {
       const date = d.date;
@@ -400,8 +421,8 @@ export default function TripPlanPage({ params }) {
       if (dayDining[0]) push(dayDining[0].address, dayDining[0].location_name, dayDining[0].name);
       if (dayTransport[0]) push(dayTransport[0].pickup_location, dayTransport[0].dropoff_location);
       if (dayFlightLegs[0]) {
-        const arr = dayFlightLegs[0].arrival_airport;
-        if (arr && arr.length === 3) push(`${arr} airport`);
+        const code = destSideAirport(dayFlightLegs[0]);
+        if (code) push(`${code} airport`);
       }
       if (d.title) push(`${d.title}, ${trip.destination}`, d.title);
 
