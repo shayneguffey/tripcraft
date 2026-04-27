@@ -45,7 +45,7 @@ export default function AccountMenu({ variant = "light" }) {
   const isDark = variant === "dark";
   const buttonClass = isDark
     ? "w-10 h-10 rounded-full text-white/90 flex items-center justify-center backdrop-blur-sm hover:brightness-110 transition-all"
-    : "w-12 h-12 rounded-full bg-stone-800/20 text-stone-700 flex items-center justify-center backdrop-blur-sm hover:bg-[#da7b4a]/30 hover:text-[#b5552a] transition-colors";
+    : "w-12 h-12 rounded-full bg-white/20 text-stone-500 flex items-center justify-center backdrop-blur-sm hover:bg-[#da7b4a]/25 hover:text-[#b5552a] transition-colors";
   const buttonStyle = isDark
     ? { background: "rgba(30,22,12,0.55)", border: "1px solid rgba(212,165,116,0.25)" }
     : undefined;
