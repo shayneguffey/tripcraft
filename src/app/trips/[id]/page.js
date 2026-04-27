@@ -1117,7 +1117,7 @@ export default function TripDetailPage() {
                 </div>
 
                 {/* Itinerary notes — inline, capped width */}
-                <div className="flex-1 min-w-0 max-w-sm">
+                <div className="w-80 max-w-sm flex-shrink-0">
                   <div className="text-[10px] font-semibold text-stone-400 uppercase tracking-wide mb-1">Itinerary notes</div>
                   {editingItineraryNotes ? (
                     <textarea
@@ -1145,8 +1145,8 @@ export default function TripDetailPage() {
                   )}
                 </div>
 
-                {/* Calendar View label + month range — far right */}
-                <div className="flex-shrink-0 text-right self-start">
+                {/* Calendar View label + month range — bottom-right corner of the info area */}
+                <div className="flex-shrink-0 text-right ml-auto self-end">
                   <div className="text-[10px] font-semibold text-stone-400 uppercase tracking-widest mb-0.5">Calendar View</div>
                   <div className="text-sm font-medium text-stone-400 tracking-wide">{getCalendarTitle()}</div>
                 </div>
