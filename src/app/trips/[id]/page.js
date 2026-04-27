@@ -1116,8 +1116,8 @@ export default function TripDetailPage() {
                   </div>
                 </div>
 
-                {/* Itinerary notes — inline, takes the remaining horizontal space */}
-                <div className="flex-1 min-w-0">
+                {/* Itinerary notes — inline, capped width */}
+                <div className="flex-1 min-w-0 max-w-sm">
                   <div className="text-[10px] font-semibold text-stone-400 uppercase tracking-wide mb-1">Itinerary notes</div>
                   {editingItineraryNotes ? (
                     <textarea
