@@ -1396,7 +1396,7 @@ export default function TripDetailPage() {
             as folders sticking up out of the calendar drawer. The calendar
             always shows a partial trailing week beyond the trip dates, so
             the overlap covers visual chrome rather than meaningful content. */}
-        <div className="trip-tabs-wrap" style={{ marginTop: -28, position: "relative", zIndex: 5 }}>
+        <div className="trip-tabs-wrap" style={{ marginTop: -28, position: "relative", zIndex: 20 }}>
           <style jsx>{`
             .trip-tabs-row { display: flex; align-items: flex-end; padding-left: 14px; height: 152px; position: relative; z-index: 2; }
             .trip-tab {
