@@ -1082,7 +1082,7 @@ export default function TripDetailPage() {
                   <div className="relative mt-0.5 min-h-[16px]">
                     <div
                       onClick={() => setEditingItineraryDates(true)}
-                      className="text-xs text-stone-400 cursor-pointer hover:text-[#da7b4a] transition-colors inline-flex items-center gap-1"
+                      className="text-xs text-[#da7b4a] cursor-pointer hover:text-[#b5552a] transition-colors inline-flex items-center gap-1"
                       title="Click to edit dates"
                     >
                       <svg className="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24" strokeWidth={2}><path strokeLinecap="round" strokeLinejoin="round" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" /></svg>
@@ -1107,7 +1107,7 @@ export default function TripDetailPage() {
                   <div className="flex items-center gap-1 mt-0.5">
                     <div
                       onClick={() => setActiveItineraryTab("collaborators")}
-                      className="text-xs text-stone-400 cursor-pointer hover:text-[#da7b4a] transition-colors"
+                      className="text-xs text-[#da7b4a] cursor-pointer hover:text-[#b5552a] transition-colors"
                       title="Manage travelers in the Travelers tab"
                     >
                       <svg className="w-3 h-3 inline mr-0.5 -mt-0.5" fill="none" stroke="currentColor" viewBox="0 0 24 24" strokeWidth={2}><path strokeLinecap="round" strokeLinejoin="round" d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0z" /></svg>
@@ -1118,7 +1118,7 @@ export default function TripDetailPage() {
 
                 {/* Itinerary notes — inline, capped width */}
                 <div className="w-80 max-w-sm flex-shrink-0">
-                  <div className="text-[10px] font-semibold text-stone-400 uppercase tracking-wide mb-1">Itinerary notes</div>
+                  <div className="text-[10px] font-semibold text-[#da7b4a] uppercase tracking-wide mb-1">Itinerary notes</div>
                   {editingItineraryNotes ? (
                     <textarea
                       value={itineraryNotesValue}
