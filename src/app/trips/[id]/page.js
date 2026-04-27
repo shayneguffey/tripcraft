@@ -1116,12 +1116,8 @@ export default function TripDetailPage() {
                   </div>
                 </div>
 
-              </div>
-
-              {/* Description (left) + Calendar range (right) */}
-              <div className="flex items-end justify-between mt-2">
-                {/* Itinerary notes — also appears in the Pocket Guide. */}
-                <div className="w-full max-w-md">
+                {/* Itinerary notes — inline, takes the remaining horizontal space */}
+                <div className="flex-1 min-w-0">
                   <div className="text-[10px] font-semibold text-stone-400 uppercase tracking-wide mb-1">Itinerary notes</div>
                   {editingItineraryNotes ? (
                     <textarea
@@ -1132,12 +1128,12 @@ export default function TripDetailPage() {
                       autoFocus
                       rows={2}
                       placeholder="Add notes for this itinerary..."
-                      className="w-full text-sm text-stone-600 bg-white border border-stone-300 rounded-lg px-2 py-1 focus:outline-none focus:ring-2 focus:ring-inset focus:ring-[#da7b4a]/50 resize-none min-h-[32px] max-h-[96px] overflow-y-auto"
+                      className="w-full text-sm text-stone-600 bg-white border border-stone-300 rounded-lg px-2 py-1 focus:outline-none focus:ring-2 focus:ring-inset focus:ring-[#da7b4a]/50 resize-none min-h-[40px] max-h-[80px] overflow-y-auto"
                     />
                   ) : (
                     <div
                       onClick={() => { setEditingItineraryNotes(true); setItineraryNotesValue(activeItinerary?.notes || ""); }}
-                      className={`text-sm px-2 py-1 rounded-lg cursor-text whitespace-pre-wrap transition-colors border border-stone-300 ${
+                      className={`text-sm px-2 py-1 rounded-lg cursor-text whitespace-pre-wrap transition-colors border border-stone-300 min-h-[40px] ${
                         activeItinerary?.notes
                           ? "text-stone-600"
                           : "text-stone-300 italic hover:bg-stone-50"
@@ -1149,8 +1145,8 @@ export default function TripDetailPage() {
                   )}
                 </div>
 
-                {/* Calendar View label + month range */}
-                <div className="flex-shrink-0 text-right">
+                {/* Calendar View label + month range — far right */}
+                <div className="flex-shrink-0 text-right self-start">
                   <div className="text-[10px] font-semibold text-stone-400 uppercase tracking-widest mb-0.5">Calendar View</div>
                   <div className="text-sm font-medium text-stone-400 tracking-wide">{getCalendarTitle()}</div>
                 </div>
