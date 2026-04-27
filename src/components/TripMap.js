@@ -10,29 +10,15 @@ const Marker = dynamic(() => import("react-leaflet").then(m => m.Marker), { ssr:
 const Popup = dynamic(() => import("react-leaflet").then(m => m.Popup), { ssr: false });
 const Polyline = dynamic(() => import("react-leaflet").then(m => m.Polyline), { ssr: false });
 import CATEGORY_COLORS from "@/lib/categoryColors";
+import CategoryIcon from "@/components/CategoryIcon";
 
-// ── Pin category config — colors from centralized system, SVG icons match itinerary tabs ──
+// ── Pin category config — colors from centralized system, icons from CategoryIcon ──
 const PIN_CONFIG = {
-  flight: {
-    color: CATEGORY_COLORS.flight.hex, label: "Flights", emoji: "✈️",
-    icon: <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor" className="w-3.5 h-3.5"><path d="M3.105 2.288a.75.75 0 0 0-.826.95l1.414 4.926A1.5 1.5 0 0 0 5.135 9.25h6.115a.75.75 0 0 1 0 1.5H5.135a1.5 1.5 0 0 0-1.442 1.086l-1.414 4.926a.75.75 0 0 0 .826.95 28.897 28.897 0 0 0 15.293-7.154.75.75 0 0 0 0-1.115A28.897 28.897 0 0 0 3.105 2.289Z" /></svg>,
-  },
-  accommodation: {
-    color: CATEGORY_COLORS.accommodation.hex, label: "Stays", emoji: "🏨",
-    icon: <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor" className="w-3.5 h-3.5"><path d="M.75 15.5a.75.75 0 0 0 1.5 0V13h16v2.5a.75.75 0 0 0 1.5 0v-6a.75.75 0 0 0-1.5 0V11H16V4.5A2.5 2.5 0 0 0 13.5 2h-7A2.5 2.5 0 0 0 4 4.5V11H2.25V9.5a.75.75 0 0 0-1.5 0v6ZM5.5 4.5a1 1 0 0 1 1-1h7a1 1 0 0 1 1 1V11h-9V4.5Z" /></svg>,
-  },
-  activity: {
-    color: CATEGORY_COLORS.activity.hex, label: "Activities", emoji: "⭐",
-    icon: <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor" className="w-3.5 h-3.5"><path fillRule="evenodd" d="M8.157 2.176a1.5 1.5 0 0 0-1.147 0l-4.084 1.69A1.5 1.5 0 0 0 2 5.25v10.877a1.5 1.5 0 0 0 2.074 1.386l3.51-1.452 4.26 1.762a1.5 1.5 0 0 0 1.147 0l4.084-1.69A1.5 1.5 0 0 0 18 14.75V3.873a1.5 1.5 0 0 0-2.074-1.386l-3.51 1.452-4.26-1.762ZM7.58 5a.75.75 0 0 1 .75.75v6.5a.75.75 0 0 1-1.5 0v-6.5A.75.75 0 0 1 7.58 5Zm5.59 2a.75.75 0 0 1 .75.75v6.5a.75.75 0 0 1-1.5 0v-6.5a.75.75 0 0 1 .75-.75Z" clipRule="evenodd" /></svg>,
-  },
-  dining: {
-    color: CATEGORY_COLORS.dining.hex, label: "Dining", emoji: "🍽️",
-    icon: <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor" className="w-3.5 h-3.5"><path strokeLinecap="round" strokeLinejoin="round" d="M12 8.25v-1.5m0 1.5c-1.355 0-2.697.056-4.024.166C6.845 8.51 6 9.473 6 10.608v2.513m6-4.871c1.355 0 2.697.056 4.024.166C17.155 8.51 18 9.473 18 10.608v2.513M15 8.25v-1.5m-6 1.5v-1.5m12 9.75-1.5.75a3.354 3.354 0 0 1-3 0 3.354 3.354 0 0 0-3 0 3.354 3.354 0 0 1-3 0 3.354 3.354 0 0 0-3 0 3.354 3.354 0 0 1-3 0L3 16.5m15-3.379a48.474 48.474 0 0 0-6-.371c-2.032 0-4.034.126-6 .371m12 0c.39.049.777.102 1.163.16 1.07.16 1.837 1.094 1.837 2.175v5.169c0 .621-.504 1.125-1.125 1.125H4.125A1.125 1.125 0 0 1 3 20.625v-5.17c0-1.08.768-2.014 1.837-2.174A47.78 47.78 0 0 1 6 13.12M12.265 3.11a.375.375 0 1 1-.53 0L12 2.845l.265.265Z" /></svg>,
-  },
-  transport: {
-    color: CATEGORY_COLORS.transport.hex, label: "Transport", emoji: "🚌",
-    icon: <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor" className="w-3.5 h-3.5"><path strokeLinecap="round" strokeLinejoin="round" d="M7.5 21 3 16.5m0 0L7.5 12M3 16.5h13.5m0-13.5L21 7.5m0 0L16.5 12M21 7.5H7.5" /></svg>,
-  },
+  flight:        { color: CATEGORY_COLORS.flight.hex,        label: "Flights",    emoji: "✈️",  icon: <CategoryIcon kind="flight" size={14} /> },
+  accommodation: { color: CATEGORY_COLORS.accommodation.hex, label: "Stays",      emoji: "🏨", icon: <CategoryIcon kind="accommodation" size={14} /> },
+  activity:      { color: CATEGORY_COLORS.activity.hex,      label: "Activities", emoji: "⭐",  icon: <CategoryIcon kind="activity" size={14} /> },
+  dining:        { color: CATEGORY_COLORS.dining.hex,        label: "Dining",     emoji: "🍽️", icon: <CategoryIcon kind="dining" size={14} /> },
+  transport:     { color: CATEGORY_COLORS.transport.hex,     label: "Transport",  emoji: "🚌", icon: <CategoryIcon kind="transport" size={14} /> },
 };
 
 // ── Route view accent color — terracotta (matches style guide primary) ──

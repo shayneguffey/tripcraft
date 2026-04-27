@@ -29,6 +29,7 @@
 import { useEffect, useRef, useState } from "react";
 import { supabase } from "@/lib/supabase";
 import CATEGORY_COLORS from "@/lib/categoryColors";
+import CategoryIcon from "@/components/CategoryIcon";
 import TimeSelectPopup, {
   to12h,
   to24h,
@@ -513,9 +514,7 @@ export default function DayCardView({
         {accommodationEvents.length > 0 && (
           <div>
             <div className="flex items-center gap-1.5 mb-2">
-              <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor" className="w-3.5 h-3.5 text-stone-400">
-                <path d="M.75 15.5a.75.75 0 0 0 1.5 0V13h16v2.5a.75.75 0 0 0 1.5 0v-6a.75.75 0 0 0-1.5 0V11H16V4.5A2.5 2.5 0 0 0 13.5 2h-7A2.5 2.5 0 0 0 4 4.5V11H2.25V9.5a.75.75 0 0 0-1.5 0v6ZM5.5 4.5a1 1 0 0 1 1-1h7a1 1 0 0 1 1 1V11h-9V4.5Z" />
-              </svg>
+              <CategoryIcon kind="accommodation" size={14} className="text-stone-400" />
               <span className="text-xs font-medium text-stone-400 uppercase tracking-wide">Accommodations</span>
             </div>
             <div className="space-y-1.5">
