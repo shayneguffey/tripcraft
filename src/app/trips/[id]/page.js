@@ -1392,11 +1392,15 @@ export default function TripDetailPage() {
         {/* ═══ COMBINED ANGLED-TAB MODULES ═══
               File-folder-style tabs: right-leaning, vertical labels.
               Active tab straightens to vertical and lifts forward. */}
-        <div className="mt-8 trip-tabs-wrap">
+        {/* Tab strip overlaps the calendar's bottom edge so the tabs read
+            as folders sticking up out of the calendar drawer. The calendar
+            always shows a partial trailing week beyond the trip dates, so
+            the overlap covers visual chrome rather than meaningful content. */}
+        <div className="trip-tabs-wrap" style={{ marginTop: -28, position: "relative", zIndex: 5 }}>
           <style jsx>{`
-            .trip-tabs-row { display: flex; align-items: flex-end; padding-left: 14px; height: 140px; position: relative; z-index: 2; }
+            .trip-tabs-row { display: flex; align-items: flex-end; padding-left: 14px; height: 152px; position: relative; z-index: 2; }
             .trip-tab {
-              width: 64px; height: 132px;
+              width: 64px; height: 144px;
               background: #e8d8bd;
               border: 1px solid rgba(120,95,55,0.35);
               border-bottom: none;
