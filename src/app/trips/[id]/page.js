@@ -1390,50 +1390,51 @@ export default function TripDetailPage() {
               Active tab straightens to vertical and lifts forward. */}
         <div className="mt-8 trip-tabs-wrap">
           <style jsx>{`
-            .trip-tabs-row { display: flex; align-items: flex-end; padding-left: 14px; height: 96px; position: relative; z-index: 2; }
+            .trip-tabs-row { display: flex; align-items: flex-end; padding-left: 14px; height: 132px; position: relative; z-index: 2; }
             .trip-tab {
-              width: 58px; height: 88px;
-              background: rgba(195,178,155,0.45);
-              border: 1px solid rgba(180,165,140,0.55);
+              width: 58px; height: 124px;
+              background: #e8d8bd;
+              border: 1px solid rgba(120,95,55,0.35);
               border-bottom: none;
               border-radius: 4px 4px 0 0;
               transform: rotate(8deg) translateY(0);
               transform-origin: bottom center;
               transition: transform 0.18s ease, background 0.18s ease, border-color 0.18s ease, box-shadow 0.18s ease;
               display: flex; flex-direction: column; align-items: center; justify-content: flex-start;
-              gap: 4px; padding: 8px 4px; cursor: pointer;
-              margin-right: -8px; box-sizing: border-box;
+              gap: 6px; padding: 8px 4px 14px; cursor: pointer;
+              margin-right: -10px; box-sizing: border-box;
               position: relative; z-index: 1;
               flex-shrink: 0;
             }
-            .trip-tab:hover { background: rgba(255,255,255,0.55); z-index: 3; }
+            .trip-tab:hover { background: #f0e3cd; z-index: 3; }
             .trip-tab.active {
-              background: rgba(255,255,255,0.85);
+              background: #fefcf5;
               border-color: #da7b4a;
               border-width: 1.5px;
               transform: rotate(0deg) translateY(-3px);
               z-index: 6;
               box-shadow: 0 -3px 0 0 #da7b4a inset, 0 -3px 10px rgba(218,123,74,0.20);
             }
-            .trip-tab .tab-icon { width: 16px; height: 16px; flex-shrink: 0; opacity: 0.75; }
-            .trip-tab.active .tab-icon { opacity: 1; }
+            .trip-tab .tab-icon {
+              width: 18px; height: 18px; flex-shrink: 0;
+              color: rgba(42,31,20,0.7); stroke: currentColor;
+            }
+            .trip-tab.active .tab-icon { color: #2a1f14; }
             .trip-tab .tab-label {
               writing-mode: vertical-rl;
+              text-orientation: mixed;
               font-family: "Oswald", sans-serif;
-              font-size: 11.5px; letter-spacing: 0.10em;
+              font-size: 12px; letter-spacing: 0.10em;
               text-transform: uppercase; font-weight: 600;
               color: rgba(42,31,20,0.65);
               line-height: 1; white-space: nowrap;
+              flex: 0 0 auto;
+              align-self: center;
             }
             .trip-tab.active .tab-label { color: #2a1f14; }
-            .trip-tab-divider {
-              width: 1px; align-self: stretch;
-              margin: 14px 12px 0 4px;
-              background: rgba(180,165,140,0.4);
-            }
             .trip-tab-content {
-              background: rgba(255,255,255,0.65);
-              border: 1px solid rgba(180,165,140,0.45);
+              background: #fefcf5;
+              border: 1px solid rgba(180,165,140,0.55);
               border-radius: 0 8px 8px 8px;
               padding: 18px 14px 10px;
               min-height: 320px;
@@ -1444,21 +1445,18 @@ export default function TripDetailPage() {
           `}</style>
           <div className="trip-tabs-row">
             {[
-              { key: "flights",        label: "Flights",     group: "build" },
-              { key: "accommodations", label: "Stays",       group: "build" },
-              { key: "activities",     label: "Activities",  group: "build" },
-              { key: "dining",         label: "Dining",      group: "build" },
-              { key: "transportation", label: "Transport",   group: "build" },
-              { key: "_div1",          divider: true },
-              { key: "map",            label: "Map",         group: "view" },
-              { key: "budget",         label: "Budget",      group: "view" },
-              { key: "_div2",          divider: true },
-              { key: "checklist",      label: "Checklist",   group: "prep" },
-              { key: "packing",        label: "Packing",     group: "prep" },
-              { key: "documents",      label: "Resources",   group: "prep" },
-              { key: "collaborators",  label: "Travelers",   group: "prep" },
+              { key: "flights",        label: "Flights" },
+              { key: "accommodations", label: "Stays" },
+              { key: "activities",     label: "Activities" },
+              { key: "dining",         label: "Dining" },
+              { key: "transportation", label: "Transport" },
+              { key: "map",            label: "Map" },
+              { key: "budget",         label: "Budget" },
+              { key: "checklist",      label: "Checklist" },
+              { key: "packing",        label: "Packing" },
+              { key: "documents",      label: "Resources" },
+              { key: "collaborators",  label: "Travelers" },
             ].map((tab) => {
-              if (tab.divider) return <div key={tab.key} className="trip-tab-divider" />;
               const isActive = activeItineraryTab === tab.key;
               return (
                 <button
@@ -1848,32 +1846,37 @@ function getCategoryInfo(value) {
   return CATEGORIES.find((c) => c.value === value) || { value: "other", label: "Other", icon: "📌" };
 }
 
-// Compact SVG icon set for the angled-folder tab strip.
+// Uniform outline-style icon set for the angled-folder tab strip.
+// All icons: 24x24 viewBox, fill="none", stroke="currentColor", strokeWidth 1.6,
+// round line joins/caps. Same visual weight across the whole row.
 function TabIcon({ kind }) {
   const cls = "tab-icon";
+  const wrap = (children) => (
+    <svg className={cls} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.6" strokeLinecap="round" strokeLinejoin="round">{children}</svg>
+  );
   switch (kind) {
     case "flights":
-      return (<svg className={cls} viewBox="0 0 20 20" fill="currentColor"><path d="M3.105 2.288a.75.75 0 0 0-.826.95l1.414 4.926A1.5 1.5 0 0 0 5.135 9.25h6.115a.75.75 0 0 1 0 1.5H5.135a1.5 1.5 0 0 0-1.442 1.086l-1.414 4.926a.75.75 0 0 0 .826.95 28.897 28.897 0 0 0 15.293-7.154.75.75 0 0 0 0-1.115A28.897 28.897 0 0 0 3.105 2.289Z" /></svg>);
+      return wrap(<path d="M6 12 3.27 4.54a.5.5 0 0 1 .67-.65l16.91 7.65a.5.5 0 0 1 0 .92L3.94 20.11a.5.5 0 0 1-.67-.65L6 12Zm0 0h7" />);
     case "accommodations":
-      return (<svg className={cls} viewBox="0 0 20 20" fill="currentColor"><path d="M.75 15.5a.75.75 0 0 0 1.5 0V13h16v2.5a.75.75 0 0 0 1.5 0v-6a.75.75 0 0 0-1.5 0V11H16V4.5A2.5 2.5 0 0 0 13.5 2h-7A2.5 2.5 0 0 0 4 4.5V11H2.25V9.5a.75.75 0 0 0-1.5 0v6ZM5.5 4.5a1 1 0 0 1 1-1h7a1 1 0 0 1 1 1V11h-9V4.5Z" /></svg>);
+      return wrap(<><path d="M3 18v-7a3 3 0 0 1 3-3h12a3 3 0 0 1 3 3v7" /><path d="M3 14h18" /><path d="M3 18v3M21 18v3" /><circle cx="8" cy="11.5" r="1.5" /></>);
     case "activities":
-      return (<svg className={cls} viewBox="0 0 24 24" fill="currentColor"><path d="M13.5 5.5c1.1 0 2-.9 2-2s-.9-2-2-2-2 .9-2 2 .9 2 2 2zM9.8 8.9L7 23h2.1l1.8-8 2.1 2v6h2v-7.5l-2.1-2 .6-3C14.8 12 16.8 13 19 13v-2c-1.9 0-3.5-1-4.3-2.4l-1-1.6c-.4-.6-1-1-1.7-1-.3 0-.5.1-.8.1L6 8.3V13h2V9.6l1.8-.7"/></svg>);
+      return wrap(<path d="m12 3 2.7 5.5 6 .9-4.4 4.3 1 6L12 16.9 6.7 19.7l1-6L3.3 9.4l6-.9L12 3Z" />);
     case "dining":
-      return (<svg className={cls} fill="none" viewBox="0 0 24 24" strokeWidth={1.7} stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" d="M12 8.25v-1.5m0 1.5c-1.355 0-2.697.056-4.024.166C6.845 8.51 6 9.473 6 10.608v2.513m6-4.871c1.355 0 2.697.056 4.024.166C17.155 8.51 18 9.473 18 10.608v2.513M15 8.25v-1.5m-6 1.5v-1.5m12 9.75-1.5.75a3.354 3.354 0 0 1-3 0 3.354 3.354 0 0 0-3 0 3.354 3.354 0 0 1-3 0 3.354 3.354 0 0 0-3 0 3.354 3.354 0 0 1-3 0L3 16.5m15-3.379a48.474 48.474 0 0 0-6-.371c-2.032 0-4.034.126-6 .371" /></svg>);
+      return wrap(<><path d="M7 3v8a2 2 0 0 0 4 0V3M9 11v10" /><path d="M17 3c-1.7 0-3 2-3 5s1.3 5 3 5v8" /></>);
     case "transportation":
-      return (<svg className={cls} fill="none" viewBox="0 0 24 24" strokeWidth={1.7} stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" d="M7.5 21 3 16.5m0 0L7.5 12M3 16.5h13.5m0-13.5L21 7.5m0 0L16.5 12M21 7.5H7.5" /></svg>);
+      return wrap(<path d="M7.5 21 3 16.5 7.5 12M3 16.5h13.5M16.5 3 21 7.5 16.5 12M21 7.5H7.5" />);
     case "budget":
-      return (<svg className={cls} fill="none" stroke="currentColor" viewBox="0 0 24 24" strokeWidth={1.7}><path strokeLinecap="round" strokeLinejoin="round" d="M12 1v22M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6" /></svg>);
+      return wrap(<path d="M12 2v20M16 6H10a3 3 0 0 0 0 6h4a3 3 0 0 1 0 6H7" />);
     case "map":
-      return (<svg className={cls} viewBox="0 0 20 20" fill="currentColor"><path fillRule="evenodd" d="m9.69 18.933.003.001C9.89 19.02 10 19 10 19s.11.02.308-.066l.002-.001.006-.003.018-.008a5.741 5.741 0 0 0 .281-.145c.186-.1.429-.24.713-.42.567-.362 1.308-.892 2.052-1.586C14.786 15.396 16.5 13.134 16.5 10a6.5 6.5 0 1 0-13 0c0 3.134 1.714 5.396 3.12 6.771.744.694 1.485 1.224 2.052 1.586a13.73 13.73 0 0 0 .994.565l.018.008.006.003ZM10 11.5a1.5 1.5 0 1 0 0-3 1.5 1.5 0 0 0 0 3Z" clipRule="evenodd" /></svg>);
+      return wrap(<><path d="M12 22s7-7 7-12a7 7 0 0 0-14 0c0 5 7 12 7 12Z" /><circle cx="12" cy="10" r="2.5" /></>);
     case "checklist":
-      return (<svg className={cls} fill="none" stroke="currentColor" viewBox="0 0 24 24" strokeWidth={1.7}><path strokeLinecap="round" strokeLinejoin="round" d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2m-6 9l2 2 4-4" /></svg>);
+      return wrap(<><path d="M9 5H7a2 2 0 0 0-2 2v12a2 2 0 0 0 2 2h10a2 2 0 0 0 2-2V7a2 2 0 0 0-2-2h-2" /><rect x="9" y="3" width="6" height="4" rx="1" /><path d="m9 14 2 2 4-4" /></>);
     case "packing":
-      return (<svg className={cls} fill="none" stroke="currentColor" viewBox="0 0 24 24" strokeWidth={1.7}><path strokeLinecap="round" strokeLinejoin="round" d="M20 7l-8-4-8 4m16 0l-8 4m8-4v10l-8 4m0-10L4 7m8 4v10M4 7v10l8 4" /></svg>);
+      return wrap(<><path d="M5 9V7a3 3 0 0 1 3-3h8a3 3 0 0 1 3 3v2" /><rect x="5" y="9" width="14" height="12" rx="2" /><path d="M9 13h6M10 4V3a2 2 0 0 1 4 0v1" /></>);
     case "documents":
-      return (<svg className={cls} fill="none" stroke="currentColor" viewBox="0 0 24 24" strokeWidth={1.7}><path strokeLinecap="round" strokeLinejoin="round" d="M14 3H6a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V9zM14 3v6h6" /></svg>);
+      return wrap(<><path d="M14 3H6a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V9z" /><path d="M14 3v6h6" /><path d="M8 13h8M8 17h6" /></>);
     case "collaborators":
-      return (<svg className={cls} viewBox="0 0 20 20" fill="currentColor"><path d="M7 8a3 3 0 1 0 0-6 3 3 0 0 0 0 6Zm7.5 1a2.5 2.5 0 1 0 0-5 2.5 2.5 0 0 0 0 5ZM1.615 16.428a1.224 1.224 0 0 1-.569-1.175 6.002 6.002 0 0 1 11.908 0c.058.467-.172.92-.57 1.174A9.953 9.953 0 0 1 7 18a9.953 9.953 0 0 1-5.385-1.572ZM14.5 16h-.106c.07-.297.088-.611.048-.933a7.47 7.47 0 0 0-1.588-3.755 4.502 4.502 0 0 1 5.874 2.636.818.818 0 0 1-.36.98A7.465 7.465 0 0 1 14.5 16Z" /></svg>);
+      return wrap(<><circle cx="9" cy="8" r="3.2" /><path d="M3 20a6 6 0 0 1 12 0" /><circle cx="17" cy="9.5" r="2.4" /><path d="M14.5 14.5a4.5 4.5 0 0 1 6.5 4" /></>);
     default:
       return null;
   }
