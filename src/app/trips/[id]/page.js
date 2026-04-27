@@ -685,7 +685,10 @@ export default function TripDetailPage() {
     }
   }
 
-  // Update itinerary date range in database
+  // Update itinerary date range in database. If the parent trip has no
+  // dates of its own yet, mirror them onto the trip too — this is the
+  // first time dates are being set, so the trip card on the list page
+  // (which reads from trip.start_date / trip.end_date) needs them.
   async function updateItineraryDates(newStart, newEnd) {
     if (!activeItineraryId) return;
     await supabase
@@ -695,6 +698,13 @@ export default function TripDetailPage() {
     setItineraries((prev) => prev.map((i) =>
       i.id === activeItineraryId ? { ...i, start_date: newStart, end_date: newEnd } : i
     ));
+    if (trip && (!trip.start_date || !trip.end_date)) {
+      await supabase
+        .from("trips")
+        .update({ start_date: newStart, end_date: newEnd })
+        .eq("id", trip.id);
+      setTrip((prev) => prev ? { ...prev, start_date: newStart, end_date: newEnd } : prev);
+    }
   }
 
   // Determine which dates to use for calendar: itinerary dates if available, else trip dates
