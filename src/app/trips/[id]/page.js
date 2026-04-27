@@ -1882,3 +1882,29 @@ function TabIcon({ kind }) {
     default:               return null;
   }
 }
+
+function DayPopout({ dateKey, tripId, tripStart, dayData, activities, inRange, onClose, onUpdate, calendarEvents, activeItineraryId }) {
+  return (
+    <div className="fixed inset-0 bg-black/30 flex items-center justify-center z-50 p-4" onClick={onClose}>
+      <div
+        className="bg-white rounded-2xl shadow-xl border border-stone-200 w-full max-w-md max-h-[85vh] overflow-y-auto relative"
+        onClick={(e) => e.stopPropagation()}
+        style={{ animation: "cardFadeIn 0.2s ease-out" }}
+      >
+        <DayCardView
+          dateKey={dateKey}
+          tripStart={tripStart}
+          inRange={inRange}
+          dayData={dayData}
+          userActivities={activities}
+          calendarEvents={calendarEvents}
+          canEdit={true}
+          tripId={tripId}
+          itineraryId={activeItineraryId}
+          onClose={onClose}
+          onRefresh={onUpdate}
+        />
+      </div>
+    </div>
+  );
+}
