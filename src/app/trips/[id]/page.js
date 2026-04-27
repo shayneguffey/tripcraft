@@ -1390,18 +1390,18 @@ export default function TripDetailPage() {
               Active tab straightens to vertical and lifts forward. */}
         <div className="mt-8 trip-tabs-wrap">
           <style jsx>{`
-            .trip-tabs-row { display: flex; align-items: flex-end; padding-left: 14px; height: 132px; position: relative; z-index: 2; }
+            .trip-tabs-row { display: flex; align-items: flex-end; padding-left: 14px; height: 140px; position: relative; z-index: 2; }
             .trip-tab {
-              width: 58px; height: 124px;
+              width: 64px; height: 132px;
               background: #e8d8bd;
               border: 1px solid rgba(120,95,55,0.35);
               border-bottom: none;
               border-radius: 4px 4px 0 0;
               transform: rotate(8deg) translateY(0);
               transform-origin: bottom center;
-              transition: transform 0.18s ease, background 0.18s ease, border-color 0.18s ease, box-shadow 0.18s ease;
+              transition: transform 0.18s ease, background 0.18s ease, border-color 0.18s ease, box-shadow 0.18s ease, border-width 0.18s ease;
               display: flex; flex-direction: column; align-items: center; justify-content: flex-start;
-              gap: 6px; padding: 8px 4px 14px; cursor: pointer;
+              gap: 8px; padding: 10px 4px 14px; cursor: pointer;
               margin-right: -10px; box-sizing: border-box;
               position: relative; z-index: 1;
               flex-shrink: 0;
@@ -1409,22 +1409,24 @@ export default function TripDetailPage() {
             .trip-tab:hover { background: #f0e3cd; z-index: 3; }
             .trip-tab.active {
               background: #fefcf5;
-              border-color: #da7b4a;
-              border-width: 1.5px;
+              border-top: 4px solid #da7b4a;
+              border-left: 2.5px solid #da7b4a;
+              border-right: 2.5px solid #da7b4a;
+              border-bottom: none;
               transform: rotate(0deg) translateY(-3px);
               z-index: 6;
-              box-shadow: 0 -3px 0 0 #da7b4a inset, 0 -3px 10px rgba(218,123,74,0.20);
+              box-shadow: 0 -3px 10px rgba(218,123,74,0.22);
             }
             .trip-tab .tab-icon {
-              width: 18px; height: 18px; flex-shrink: 0;
-              color: rgba(42,31,20,0.7); stroke: currentColor;
+              width: 22px; height: 22px; flex-shrink: 0;
+              color: rgba(42,31,20,0.75); stroke: currentColor;
             }
             .trip-tab.active .tab-icon { color: #2a1f14; }
             .trip-tab .tab-label {
               writing-mode: vertical-rl;
-              text-orientation: mixed;
+              transform: rotate(180deg);
               font-family: "Oswald", sans-serif;
-              font-size: 12px; letter-spacing: 0.10em;
+              font-size: 12.5px; letter-spacing: 0.12em;
               text-transform: uppercase; font-weight: 600;
               color: rgba(42,31,20,0.65);
               line-height: 1; white-space: nowrap;
@@ -1437,7 +1439,8 @@ export default function TripDetailPage() {
               border: 1px solid rgba(180,165,140,0.55);
               border-radius: 0 8px 8px 8px;
               padding: 18px 14px 10px;
-              min-height: 320px;
+              height: 720px;
+              overflow-y: auto;
               position: relative;
               z-index: 4;
               margin-top: -10px;
@@ -1858,25 +1861,25 @@ function TabIcon({ kind }) {
     case "flights":
       return wrap(<path d="M6 12 3.27 4.54a.5.5 0 0 1 .67-.65l16.91 7.65a.5.5 0 0 1 0 .92L3.94 20.11a.5.5 0 0 1-.67-.65L6 12Zm0 0h7" />);
     case "accommodations":
-      return wrap(<><path d="M3 18v-7a3 3 0 0 1 3-3h12a3 3 0 0 1 3 3v7" /><path d="M3 14h18" /><path d="M3 18v3M21 18v3" /><circle cx="8" cy="11.5" r="1.5" /></>);
+      return wrap(<><path d="M3 19V8M21 19V8M3 13a3 3 0 0 1 3-3h12a3 3 0 0 1 3 3M3 19h18M3 19v3M21 19v3" /><circle cx="8" cy="11" r="2" /></>);
     case "activities":
-      return wrap(<path d="m12 3 2.7 5.5 6 .9-4.4 4.3 1 6L12 16.9 6.7 19.7l1-6L3.3 9.4l6-.9L12 3Z" />);
+      return wrap(<path d="m12 2.5 3 6.1 6.7 1-4.85 4.7 1.15 6.7L12 17.85 5.95 21l1.15-6.7L2.25 9.6l6.7-1L12 2.5Z" />);
     case "dining":
-      return wrap(<><path d="M7 3v8a2 2 0 0 0 4 0V3M9 11v10" /><path d="M17 3c-1.7 0-3 2-3 5s1.3 5 3 5v8" /></>);
+      return wrap(<><path d="M5 3v7a3 3 0 0 0 6 0V3M5 7h6M8 10v11" /><path d="M19 3c-2.5 0-4 2.5-4 6s1.5 6 4 6v6" /></>);
     case "transportation":
       return wrap(<path d="M7.5 21 3 16.5 7.5 12M3 16.5h13.5M16.5 3 21 7.5 16.5 12M21 7.5H7.5" />);
     case "budget":
-      return wrap(<path d="M12 2v20M16 6H10a3 3 0 0 0 0 6h4a3 3 0 0 1 0 6H7" />);
+      return wrap(<><path d="M12 3v18" /><path d="M18 7H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6" /></>);
     case "map":
       return wrap(<><path d="M12 22s7-7 7-12a7 7 0 0 0-14 0c0 5 7 12 7 12Z" /><circle cx="12" cy="10" r="2.5" /></>);
     case "checklist":
-      return wrap(<><path d="M9 5H7a2 2 0 0 0-2 2v12a2 2 0 0 0 2 2h10a2 2 0 0 0 2-2V7a2 2 0 0 0-2-2h-2" /><rect x="9" y="3" width="6" height="4" rx="1" /><path d="m9 14 2 2 4-4" /></>);
+      return wrap(<><path d="M9 5H6a2 2 0 0 0-2 2v13a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V7a2 2 0 0 0-2-2h-3" /><rect x="9" y="2.5" width="6" height="4.5" rx="1" /><path d="m8.5 14 2.5 2.5L16 11" /></>);
     case "packing":
       return wrap(<><path d="M5 9V7a3 3 0 0 1 3-3h8a3 3 0 0 1 3 3v2" /><rect x="5" y="9" width="14" height="12" rx="2" /><path d="M9 13h6M10 4V3a2 2 0 0 1 4 0v1" /></>);
     case "documents":
       return wrap(<><path d="M14 3H6a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V9z" /><path d="M14 3v6h6" /><path d="M8 13h8M8 17h6" /></>);
     case "collaborators":
-      return wrap(<><circle cx="9" cy="8" r="3.2" /><path d="M3 20a6 6 0 0 1 12 0" /><circle cx="17" cy="9.5" r="2.4" /><path d="M14.5 14.5a4.5 4.5 0 0 1 6.5 4" /></>);
+      return wrap(<><circle cx="9" cy="8" r="3.6" /><path d="M2.5 20.5a6.5 6.5 0 0 1 13 0" /><circle cx="17.5" cy="9.5" r="2.6" /><path d="M14.5 14a5 5 0 0 1 7 4.5" /></>);
     default:
       return null;
   }
