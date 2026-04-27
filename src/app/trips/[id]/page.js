@@ -837,15 +837,15 @@ export default function TripDetailPage() {
           )}
 
           {/* Header content — on top of banner */}
-          <div className={`relative z-10 ${trip?.banner_image ? "pb-4" : ""}`}>
+          <div className={`relative z-10 ${trip?.banner_image ? "pb-2" : ""}`}>
             {/* Logo + Back button */}
-            <div className="flex items-start justify-between mb-4">
+            <div className="flex items-start justify-between mb-2">
               <div className="flex items-center pt-2 pl-2">
                 <img
                   src="/TRIPCRAFTLOGO.png"
                   alt="TripCraft"
                   style={{
-                    height: 200,
+                    height: 160,
                     width: "auto",
                     ...(trip?.banner_image ? { filter: "brightness(0) invert(1)" } : {}),
                   }}
@@ -1046,7 +1046,7 @@ export default function TripDetailPage() {
                     ref={guideBtnRef}
                     onClick={openPocketGuide}
                     disabled={guideLoading}
-                    className="flex items-center justify-center gap-1.5 px-3 py-1.5 rounded-md text-[11px] font-semibold uppercase tracking-wider text-stone-600 bg-stone-100 hover:bg-stone-200 hover:text-stone-800 transition-colors disabled:opacity-60 disabled:cursor-not-allowed border border-stone-300 min-w-[120px]"
+                    className="flex items-center justify-center gap-1.5 px-3 py-1.5 rounded-md text-[11px] font-semibold uppercase tracking-wider text-stone-600 bg-stone-50 hover:bg-[#da7b4a]/10 hover:text-[#b5552a] transition-colors disabled:opacity-60 disabled:cursor-not-allowed border-2 border-[#da7b4a] min-w-[120px]"
                     title="Open the Pocket Guide (traveler view)"
                   >
                     {guideLoading ? (
@@ -1062,7 +1062,7 @@ export default function TripDetailPage() {
                     type="button"
                     onClick={openTripPlan}
                     disabled={planLoading}
-                    className="flex items-center justify-center gap-1.5 px-3 py-1.5 rounded-md text-[11px] font-semibold uppercase tracking-wider text-stone-600 bg-stone-100 hover:bg-stone-200 hover:text-stone-800 transition-colors disabled:opacity-60 disabled:cursor-not-allowed border border-stone-300 min-w-[120px]"
+                    className="flex items-center justify-center gap-1.5 px-3 py-1.5 rounded-md text-[11px] font-semibold uppercase tracking-wider text-stone-600 bg-stone-50 hover:bg-[#da7b4a]/10 hover:text-[#b5552a] transition-colors disabled:opacity-60 disabled:cursor-not-allowed border-2 border-[#da7b4a] min-w-[120px]"
                     title="Open the Trip Plan (printable PDF)"
                   >
                     {planLoading ? (
