@@ -889,7 +889,7 @@ export default function TripDetailPage() {
                 ) : (
                   <h1
                     onClick={() => startEditing("title")}
-                    className={`text-6xl font-normal cursor-text transition-colors px-2 pb-0.5 ${
+                    className={`text-5xl font-normal cursor-text transition-colors px-2 pb-0.5 ${
                       trip?.banner_image
                         ? "text-white drop-shadow-md hover:text-white/90"
                         : "text-stone-800 hover:text-[#da7b4a]"
@@ -1401,10 +1401,10 @@ export default function TripDetailPage() {
             .trip-tabs-row { display: flex; align-items: flex-end; padding-left: 14px; height: 152px; position: relative; z-index: 2; }
             .trip-tab {
               width: 64px; height: 144px;
-              background: #e8d8bd;
-              border: 1px solid rgba(120,95,55,0.35);
+              background: #c89978;
+              border: 1px solid rgba(120,75,45,0.45);
               border-bottom: none;
-              border-radius: 4px 4px 0 0;
+              border-radius: 9px 9px 0 0;
               transform: rotate(8deg) translateY(0);
               transform-origin: bottom center;
               transition: transform 0.18s ease, background 0.18s ease, border-color 0.18s ease, box-shadow 0.18s ease, border-width 0.18s ease;
@@ -1414,7 +1414,7 @@ export default function TripDetailPage() {
               position: relative; z-index: 1;
               flex-shrink: 0;
             }
-            .trip-tab:hover { background: #f0e3cd; z-index: 3; }
+            .trip-tab:hover { background: #d4a585; z-index: 3; }
             .trip-tab.active {
               background: #fefcf5;
               border-top: 4px solid #da7b4a;
