@@ -133,8 +133,8 @@ export default function TripDetailPage() {
   const [diningOptions, setDiningOptions] = useState([]);
   const [transportOptions, setTransportOptions] = useState([]);
   const [currentUser, setCurrentUser] = useState(null);
+  // Single tab state — itinerary modules + tools all share one angled-tab strip.
   const [activeItineraryTab, setActiveItineraryTab] = useState("flights");
-  const [activeLowerTab, setActiveLowerTab] = useState("map");
   const [eventPopup, setEventPopup] = useState(null); // { type, data, dateKey, rect }
   const [hoveredDay, setHoveredDay] = useState(null);
   const [editingDayHeader, setEditingDayHeader] = useState(null);
@@ -1107,7 +1107,7 @@ export default function TripDetailPage() {
                   {/* Travelers — count derived from itinerary_travelers; managed in the Travelers tab */}
                   <div className="flex items-center gap-1 mt-0.5">
                     <div
-                      onClick={() => setActiveLowerTab("collaborators")}
+                      onClick={() => setActiveItineraryTab("collaborators")}
                       className="text-xs text-stone-400 cursor-pointer hover:text-[#da7b4a] transition-colors"
                       title="Manage travelers in the Travelers tab"
                     >
@@ -1385,88 +1385,95 @@ export default function TripDetailPage() {
           </div>
         )}
 
-        {/* ═══ ITINERARY TABS ═══ */}
-        <div className="mt-8">
-          <div className="flex flex-wrap gap-1 mb-0">
+        {/* ═══ COMBINED ANGLED-TAB MODULES ═══
+              File-folder-style tabs: right-leaning, vertical labels.
+              Active tab straightens to vertical and lifts forward. */}
+        <div className="mt-8 trip-tabs-wrap">
+          <style jsx>{`
+            .trip-tabs-row { display: flex; align-items: flex-end; padding-left: 14px; height: 96px; position: relative; z-index: 2; }
+            .trip-tab {
+              width: 58px; height: 88px;
+              background: rgba(195,178,155,0.45);
+              border: 1px solid rgba(180,165,140,0.55);
+              border-bottom: none;
+              border-radius: 4px 4px 0 0;
+              transform: rotate(8deg) translateY(2px);
+              transform-origin: bottom center;
+              transition: transform 0.18s ease, background 0.18s ease, border-color 0.18s ease, box-shadow 0.18s ease;
+              display: flex; flex-direction: column; align-items: center; justify-content: flex-start;
+              gap: 4px; padding: 8px 4px; cursor: pointer;
+              margin-right: -8px; box-sizing: border-box;
+              position: relative; flex-shrink: 0;
+            }
+            .trip-tab:hover { background: rgba(255,255,255,0.55); z-index: 3; }
+            .trip-tab.active {
+              background: rgba(255,255,255,0.85);
+              border-color: #da7b4a;
+              border-width: 1.5px;
+              transform: rotate(0deg) translateY(6px);
+              z-index: 5;
+              box-shadow: 0 -3px 0 0 #da7b4a inset, 0 -2px 8px rgba(218,123,74,0.18);
+            }
+            .trip-tab .tab-icon { width: 16px; height: 16px; flex-shrink: 0; opacity: 0.75; }
+            .trip-tab.active .tab-icon { opacity: 1; }
+            .trip-tab .tab-label {
+              writing-mode: vertical-rl;
+              font-family: "Oswald", sans-serif;
+              font-size: 11.5px; letter-spacing: 0.10em;
+              text-transform: uppercase; font-weight: 600;
+              color: rgba(42,31,20,0.65);
+              line-height: 1; white-space: nowrap;
+            }
+            .trip-tab.active .tab-label { color: #2a1f14; }
+            .trip-tab-divider {
+              width: 1px; align-self: stretch;
+              margin: 14px 12px 0 4px;
+              background: rgba(180,165,140,0.4);
+            }
+            .trip-tab-content {
+              background: rgba(255,255,255,0.65);
+              border: 1px solid rgba(180,165,140,0.45);
+              border-radius: 0 8px 8px 8px;
+              padding: 10px 14px;
+              min-height: 320px;
+              position: relative; z-index: 1;
+              margin-top: -1px;
+            }
+          `}</style>
+          <div className="trip-tabs-row">
             {[
-              { key: "flights", label: "Flights", color: "#059669", icon: <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor" className="w-4 h-4"><path d="M3.105 2.288a.75.75 0 0 0-.826.95l1.414 4.926A1.5 1.5 0 0 0 5.135 9.25h6.115a.75.75 0 0 1 0 1.5H5.135a1.5 1.5 0 0 0-1.442 1.086l-1.414 4.926a.75.75 0 0 0 .826.95 28.897 28.897 0 0 0 15.293-7.154.75.75 0 0 0 0-1.115A28.897 28.897 0 0 0 3.105 2.289Z" /></svg> },
-              { key: "accommodations", label: "Stays", color: "#0284c7", icon: <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor" className="w-4 h-4"><path d="M.75 15.5a.75.75 0 0 0 1.5 0V13h16v2.5a.75.75 0 0 0 1.5 0v-6a.75.75 0 0 0-1.5 0V11H16V4.5A2.5 2.5 0 0 0 13.5 2h-7A2.5 2.5 0 0 0 4 4.5V11H2.25V9.5a.75.75 0 0 0-1.5 0v6ZM5.5 4.5a1 1 0 0 1 1-1h7a1 1 0 0 1 1 1V11h-9V4.5Z" /></svg> },
-              { key: "activities", label: "Activities", color: "#ca8a04", icon: <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor" className="w-4 h-4"><path d="M13.5 5.5c1.1 0 2-.9 2-2s-.9-2-2-2-2 .9-2 2 .9 2 2 2zM9.8 8.9L7 23h2.1l1.8-8 2.1 2v6h2v-7.5l-2.1-2 .6-3C14.8 12 16.8 13 19 13v-2c-1.9 0-3.5-1-4.3-2.4l-1-1.6c-.4-.6-1-1-1.7-1-.3 0-.5.1-.8.1L6 8.3V13h2V9.6l1.8-.7"/></svg> },
-              { key: "dining", label: "Dining", color: "#ea580c", icon: <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor" className="w-4 h-4"><path strokeLinecap="round" strokeLinejoin="round" d="M12 8.25v-1.5m0 1.5c-1.355 0-2.697.056-4.024.166C6.845 8.51 6 9.473 6 10.608v2.513m6-4.871c1.355 0 2.697.056 4.024.166C17.155 8.51 18 9.473 18 10.608v2.513M15 8.25v-1.5m-6 1.5v-1.5m12 9.75-1.5.75a3.354 3.354 0 0 1-3 0 3.354 3.354 0 0 0-3 0 3.354 3.354 0 0 1-3 0 3.354 3.354 0 0 0-3 0 3.354 3.354 0 0 1-3 0L3 16.5m15-3.379a48.474 48.474 0 0 0-6-.371c-2.032 0-4.034.126-6 .371m12 0c.39.049.777.102 1.163.16 1.07.16 1.837 1.094 1.837 2.175v5.169c0 .621-.504 1.125-1.125 1.125H4.125A1.125 1.125 0 0 1 3 20.625v-5.17c0-1.08.768-2.014 1.837-2.174A47.78 47.78 0 0 1 6 13.12M12.265 3.11a.375.375 0 1 1-.53 0L12 2.845l.265.265Z" /></svg> },
-              { key: "transportation", label: "Transportation", color: "#7c3aed", icon: <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor" className="w-4 h-4"><path strokeLinecap="round" strokeLinejoin="round" d="M7.5 21 3 16.5m0 0L7.5 12M3 16.5h13.5m0-13.5L21 7.5m0 0L16.5 12M21 7.5H7.5" /></svg> },
-            ].map((tab) => (
-              <button
-                key={tab.key}
-                onClick={() => setActiveItineraryTab(tab.key)}
-                className={`flex items-center gap-2 px-5 py-2.5 rounded-t-lg text-sm font-semibold transition-all ${
-                  activeItineraryTab === tab.key
-                    ? "text-stone-800"
-                    : "text-stone-500 hover:text-stone-700"
-                }`}
-                style={{
-                  background: activeItineraryTab === tab.key
-                    ? "rgba(255,255,255,0.6)"
-                    : "rgba(195,178,155,0.35)",
-                  borderTop: activeItineraryTab === tab.key
-                    ? `2px solid ${tab.color}`
-                    : "2px solid transparent",
-                  borderLeft: activeItineraryTab === tab.key
-                    ? "1px solid rgba(180,165,140,0.3)"
-                    : "1px solid rgba(180,165,140,0.15)",
-                  borderRight: activeItineraryTab === tab.key
-                    ? "1px solid rgba(180,165,140,0.3)"
-                    : "1px solid rgba(180,165,140,0.15)",
-                  borderBottom: activeItineraryTab === tab.key
-                    ? "1px solid rgba(255,255,255,0.6)"
-                    : "1px solid rgba(180,165,140,0.3)",
-                }}
-              >
-                {tab.icon}
-                {tab.label}
-              </button>
-            ))}
-
-            {/* Budget tab — right-justified */}
-            <button
-              onClick={() => setActiveItineraryTab("budget")}
-              className={`flex items-center gap-2 px-5 py-2.5 rounded-t-lg text-sm font-semibold transition-all ml-auto ${
-                activeItineraryTab === "budget"
-                  ? "text-stone-800"
-                  : "text-stone-500 hover:text-stone-700"
-              }`}
-              style={{
-                background: activeItineraryTab === "budget"
-                  ? "rgba(255,255,255,0.6)"
-                  : "rgba(195,178,155,0.35)",
-                borderTop: activeItineraryTab === "budget"
-                  ? "2px solid #b5552a"
-                  : "2px solid transparent",
-                borderLeft: activeItineraryTab === "budget"
-                  ? "1px solid rgba(180,165,140,0.3)"
-                  : "1px solid rgba(180,165,140,0.15)",
-                borderRight: activeItineraryTab === "budget"
-                  ? "1px solid rgba(180,165,140,0.3)"
-                  : "1px solid rgba(180,165,140,0.15)",
-                borderBottom: activeItineraryTab === "budget"
-                  ? "1px solid rgba(255,255,255,0.6)"
-                  : "1px solid rgba(180,165,140,0.3)",
-              }}
-            >
-              <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24" strokeWidth={2}><path strokeLinecap="round" strokeLinejoin="round" d="M17 9V7a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2m2 4h10a2 2 0 002-2v-6a2 2 0 00-2-2H9a2 2 0 00-2 2v6a2 2 0 002 2zm7-5a2 2 0 11-4 0 2 2 0 014 0z" /></svg>
-              Budget
-            </button>
+              { key: "flights",        label: "Flights",     group: "build" },
+              { key: "accommodations", label: "Stays",       group: "build" },
+              { key: "activities",     label: "Activities",  group: "build" },
+              { key: "dining",         label: "Dining",      group: "build" },
+              { key: "transportation", label: "Transport",   group: "build" },
+              { key: "_div1",          divider: true },
+              { key: "map",            label: "Map",         group: "view" },
+              { key: "budget",         label: "Budget",      group: "view" },
+              { key: "_div2",          divider: true },
+              { key: "checklist",      label: "Checklist",   group: "prep" },
+              { key: "packing",        label: "Packing",     group: "prep" },
+              { key: "documents",      label: "Resources",   group: "prep" },
+              { key: "collaborators",  label: "Travelers",   group: "prep" },
+            ].map((tab) => {
+              if (tab.divider) return <div key={tab.key} className="trip-tab-divider" />;
+              const isActive = activeItineraryTab === tab.key;
+              return (
+                <button
+                  key={tab.key}
+                  onClick={() => setActiveItineraryTab(tab.key)}
+                  className={`trip-tab ${isActive ? "active" : ""}`}
+                  title={tab.label}
+                >
+                  <TabIcon kind={tab.key} />
+                  <span className="tab-label">{tab.label}</span>
+                </button>
+              );
+            })}
           </div>
 
-          {/* Tab content */}
-          <div
-            className="rounded-b-xl rounded-tr-xl px-4 py-2"
-            style={{
-              background: "rgba(255,255,255,0.6)",
-              border: "1px solid rgba(180,165,140,0.3)",
-              borderTop: activeItineraryTab === "flights" ? "none" : "1px solid rgba(180,165,140,0.3)",
-              minHeight: "200px",
-            }}
-          >
+          {/* Tab content — single panel container; only the active panel shows */}
+          <div className="trip-tab-content">
             <div style={{ display: activeItineraryTab === "flights" ? "block" : "none" }}>
               <FlightOptions
                 tripId={trip?.id}
@@ -1492,8 +1499,8 @@ export default function TripDetailPage() {
             <div style={{ display: activeItineraryTab === "activities" ? "block" : "none" }}>
               <ActivityOptions
                 tripId={trip?.id}
-                tripStart={activeItinerary?.start_date || trip?.start_date}
-                tripEnd={activeItinerary?.end_date || trip?.end_date}
+                tripStart={trip?.start_date}
+                tripEnd={trip?.end_date}
                 onActivityOptionsChange={setActivityOptions}
                 itinerarySelections={itinerarySelections}
                 activeItineraryId={activeItineraryId}
@@ -1503,8 +1510,8 @@ export default function TripDetailPage() {
             <div style={{ display: activeItineraryTab === "dining" ? "block" : "none" }}>
               <DiningOptions
                 tripId={trip?.id}
-                tripStart={activeItinerary?.start_date || trip?.start_date}
-                tripEnd={activeItinerary?.end_date || trip?.end_date}
+                tripStart={trip?.start_date}
+                tripEnd={trip?.end_date}
                 onDiningOptionsChange={setDiningOptions}
                 itinerarySelections={itinerarySelections}
                 activeItineraryId={activeItineraryId}
@@ -1534,87 +1541,7 @@ export default function TripDetailPage() {
                 itinerarySelections={itinerarySelections}
               />
             </div>
-          </div>
-        </div>
-
-        {/* ═══ LOWER MODULES — Tabbed Layout ═══ */}
-        <div className="mt-10">
-          <div className="flex flex-wrap gap-1 mb-0">
-            {[
-              {
-                key: "map",
-                label: "Map",
-                color: "#0d9488",
-                icon: <svg className="w-4 h-4" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor"><path fillRule="evenodd" d="m9.69 18.933.003.001C9.89 19.02 10 19 10 19s.11.02.308-.066l.002-.001.006-.003.018-.008a5.741 5.741 0 0 0 .281-.145c.186-.1.429-.24.713-.42.567-.362 1.308-.892 2.052-1.586C14.786 15.396 16.5 13.134 16.5 10a6.5 6.5 0 1 0-13 0c0 3.134 1.714 5.396 3.12 6.771.744.694 1.485 1.224 2.052 1.586a13.73 13.73 0 0 0 .994.565l.018.008.006.003ZM10 11.5a1.5 1.5 0 1 0 0-3 1.5 1.5 0 0 0 0 3Z" clipRule="evenodd" /></svg>,
-              },
-              {
-                key: "checklist",
-                label: "Checklist",
-                color: "#f59e0b",
-                icon: <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24" strokeWidth={2}><path strokeLinecap="round" strokeLinejoin="round" d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2m-6 9l2 2 4-4" /></svg>,
-              },
-              {
-                key: "packing",
-                label: "Packing",
-                color: "#6366f1",
-                icon: <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24" strokeWidth={2}><path strokeLinecap="round" strokeLinejoin="round" d="M20 7l-8-4-8 4m16 0l-8 4m8-4v10l-8 4m0-10L4 7m8 4v10M4 7v10l8 4" /></svg>,
-              },
-              {
-                key: "documents",
-                label: "Resources",
-                color: "#f43f5e",
-                icon: <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24" strokeWidth={2}><path strokeLinecap="round" strokeLinejoin="round" d="M19 20H5a2 2 0 01-2-2V6a2 2 0 012-2h10a2 2 0 012 2v1m2 13a2 2 0 01-2-2V7m2 13a2 2 0 002-2V9a2 2 0 00-2-2h-2m-4-3H9M7 16h6M7 8h6v4H7V8z" /></svg>,
-              },
-              {
-                key: "collaborators",
-                label: "Travelers",
-                color: "#8b5cf6",
-                icon: <svg className="w-4 h-4" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor"><path d="M7 8a3 3 0 1 0 0-6 3 3 0 0 0 0 6Zm7.5 1a2.5 2.5 0 1 0 0-5 2.5 2.5 0 0 0 0 5ZM1.615 16.428a1.224 1.224 0 0 1-.569-1.175 6.002 6.002 0 0 1 11.908 0c.058.467-.172.92-.57 1.174A9.953 9.953 0 0 1 7 18a9.953 9.953 0 0 1-5.385-1.572ZM14.5 16h-.106c.07-.297.088-.611.048-.933a7.47 7.47 0 0 0-1.588-3.755 4.502 4.502 0 0 1 5.874 2.636.818.818 0 0 1-.36.98A7.465 7.465 0 0 1 14.5 16Z" /></svg>,
-              },
-            ].map((tab) => (
-              <button
-                key={tab.key}
-                onClick={() => setActiveLowerTab(tab.key)}
-                className={`flex items-center gap-2 px-5 py-2.5 rounded-t-lg text-sm font-semibold transition-all ${
-                  activeLowerTab === tab.key
-                    ? "text-stone-800"
-                    : "text-stone-500 hover:text-stone-700"
-                }`}
-                style={{
-                  background: activeLowerTab === tab.key
-                    ? "rgba(255,255,255,0.6)"
-                    : "rgba(195,178,155,0.35)",
-                  borderTop: activeLowerTab === tab.key
-                    ? `2px solid ${tab.color}`
-                    : "2px solid transparent",
-                  borderLeft: activeLowerTab === tab.key
-                    ? "1px solid rgba(180,165,140,0.3)"
-                    : "1px solid rgba(180,165,140,0.15)",
-                  borderRight: activeLowerTab === tab.key
-                    ? "1px solid rgba(180,165,140,0.3)"
-                    : "1px solid rgba(180,165,140,0.15)",
-                  borderBottom: activeLowerTab === tab.key
-                    ? "1px solid rgba(255,255,255,0.6)"
-                    : "1px solid rgba(180,165,140,0.3)",
-                }}
-              >
-                {tab.icon}
-                {tab.label}
-              </button>
-            ))}
-          </div>
-
-          {/* Tab content — fixed height with scroll */}
-          <div
-            className="rounded-b-xl rounded-tr-xl px-4 py-2 overflow-y-auto"
-            style={{
-              background: "rgba(255,255,255,0.6)",
-              border: "1px solid rgba(180,165,140,0.3)",
-              borderTop: activeLowerTab === "map" ? "none" : "1px solid rgba(180,165,140,0.3)",
-              height: "600px",
-            }}
-          >
-            <div style={{ display: activeLowerTab === "map" ? "block" : "none" }}>
+            <div style={{ display: activeItineraryTab === "map" ? "block" : "none" }}>
               <TripMap
                 tripDestination={trip?.destination}
                 tripStart={trip?.start_date}
@@ -1627,10 +1554,10 @@ export default function TripDetailPage() {
                 itinerarySelections={itinerarySelections}
               />
             </div>
-            <div style={{ display: activeLowerTab === "checklist" ? "block" : "none" }}>
+            <div style={{ display: activeItineraryTab === "checklist" ? "block" : "none" }}>
               <PlanningChecklist tripId={trip?.id} />
             </div>
-            <div style={{ display: activeLowerTab === "packing" ? "block" : "none" }}>
+            <div style={{ display: activeItineraryTab === "packing" ? "block" : "none" }}>
               <PackingList
                 tripId={trip?.id}
                 tripDestination={trip?.destination}
@@ -1640,10 +1567,10 @@ export default function TripDetailPage() {
                 accommodationOptions={accommodationOptions}
               />
             </div>
-            <div style={{ display: activeLowerTab === "documents" ? "block" : "none" }}>
+            <div style={{ display: activeItineraryTab === "documents" ? "block" : "none" }}>
               <TravelDocuments tripId={trip?.id} />
             </div>
-            <div style={{ display: activeLowerTab === "collaborators" ? "block" : "none" }}>
+            <div style={{ display: activeItineraryTab === "collaborators" ? "block" : "none" }}>
               <TripTravelers
                 tripId={trip?.id}
                 tripTitle={trip?.title}
@@ -1919,28 +1846,33 @@ function getCategoryInfo(value) {
   return CATEGORIES.find((c) => c.value === value) || { value: "other", label: "Other", icon: "📌" };
 }
 
-function DayPopout({ dateKey, tripId, tripStart, dayData, activities, inRange, onClose, onUpdate, calendarEvents, activeItineraryId }) {
-  return (
-    <div className="fixed inset-0 bg-black/30 flex items-center justify-center z-50 p-4" onClick={onClose}>
-      <div
-        className="bg-white rounded-2xl shadow-xl border border-stone-200 w-full max-w-md max-h-[85vh] overflow-y-auto relative"
-        onClick={(e) => e.stopPropagation()}
-        style={{ animation: "cardFadeIn 0.2s ease-out" }}
-      >
-        <DayCardView
-          dateKey={dateKey}
-          tripStart={tripStart}
-          inRange={inRange}
-          dayData={dayData}
-          userActivities={activities}
-          calendarEvents={calendarEvents}
-          canEdit={true}
-          tripId={tripId}
-          itineraryId={activeItineraryId}
-          onClose={onClose}
-          onRefresh={onUpdate}
-        />
-      </div>
-    </div>
-  );
+// Compact SVG icon set for the angled-folder tab strip.
+function TabIcon({ kind }) {
+  const cls = "tab-icon";
+  switch (kind) {
+    case "flights":
+      return (<svg className={cls} viewBox="0 0 20 20" fill="currentColor"><path d="M3.105 2.288a.75.75 0 0 0-.826.95l1.414 4.926A1.5 1.5 0 0 0 5.135 9.25h6.115a.75.75 0 0 1 0 1.5H5.135a1.5 1.5 0 0 0-1.442 1.086l-1.414 4.926a.75.75 0 0 0 .826.95 28.897 28.897 0 0 0 15.293-7.154.75.75 0 0 0 0-1.115A28.897 28.897 0 0 0 3.105 2.289Z" /></svg>);
+    case "accommodations":
+      return (<svg className={cls} viewBox="0 0 20 20" fill="currentColor"><path d="M.75 15.5a.75.75 0 0 0 1.5 0V13h16v2.5a.75.75 0 0 0 1.5 0v-6a.75.75 0 0 0-1.5 0V11H16V4.5A2.5 2.5 0 0 0 13.5 2h-7A2.5 2.5 0 0 0 4 4.5V11H2.25V9.5a.75.75 0 0 0-1.5 0v6ZM5.5 4.5a1 1 0 0 1 1-1h7a1 1 0 0 1 1 1V11h-9V4.5Z" /></svg>);
+    case "activities":
+      return (<svg className={cls} viewBox="0 0 24 24" fill="currentColor"><path d="M13.5 5.5c1.1 0 2-.9 2-2s-.9-2-2-2-2 .9-2 2 .9 2 2 2zM9.8 8.9L7 23h2.1l1.8-8 2.1 2v6h2v-7.5l-2.1-2 .6-3C14.8 12 16.8 13 19 13v-2c-1.9 0-3.5-1-4.3-2.4l-1-1.6c-.4-.6-1-1-1.7-1-.3 0-.5.1-.8.1L6 8.3V13h2V9.6l1.8-.7"/></svg>);
+    case "dining":
+      return (<svg className={cls} fill="none" viewBox="0 0 24 24" strokeWidth={1.7} stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" d="M12 8.25v-1.5m0 1.5c-1.355 0-2.697.056-4.024.166C6.845 8.51 6 9.473 6 10.608v2.513m6-4.871c1.355 0 2.697.056 4.024.166C17.155 8.51 18 9.473 18 10.608v2.513M15 8.25v-1.5m-6 1.5v-1.5m12 9.75-1.5.75a3.354 3.354 0 0 1-3 0 3.354 3.354 0 0 0-3 0 3.354 3.354 0 0 1-3 0 3.354 3.354 0 0 0-3 0 3.354 3.354 0 0 1-3 0L3 16.5m15-3.379a48.474 48.474 0 0 0-6-.371c-2.032 0-4.034.126-6 .371" /></svg>);
+    case "transportation":
+      return (<svg className={cls} fill="none" viewBox="0 0 24 24" strokeWidth={1.7} stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" d="M7.5 21 3 16.5m0 0L7.5 12M3 16.5h13.5m0-13.5L21 7.5m0 0L16.5 12M21 7.5H7.5" /></svg>);
+    case "budget":
+      return (<svg className={cls} fill="none" stroke="currentColor" viewBox="0 0 24 24" strokeWidth={1.7}><path strokeLinecap="round" strokeLinejoin="round" d="M12 1v22M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6" /></svg>);
+    case "map":
+      return (<svg className={cls} viewBox="0 0 20 20" fill="currentColor"><path fillRule="evenodd" d="m9.69 18.933.003.001C9.89 19.02 10 19 10 19s.11.02.308-.066l.002-.001.006-.003.018-.008a5.741 5.741 0 0 0 .281-.145c.186-.1.429-.24.713-.42.567-.362 1.308-.892 2.052-1.586C14.786 15.396 16.5 13.134 16.5 10a6.5 6.5 0 1 0-13 0c0 3.134 1.714 5.396 3.12 6.771.744.694 1.485 1.224 2.052 1.586a13.73 13.73 0 0 0 .994.565l.018.008.006.003ZM10 11.5a1.5 1.5 0 1 0 0-3 1.5 1.5 0 0 0 0 3Z" clipRule="evenodd" /></svg>);
+    case "checklist":
+      return (<svg className={cls} fill="none" stroke="currentColor" viewBox="0 0 24 24" strokeWidth={1.7}><path strokeLinecap="round" strokeLinejoin="round" d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2m-6 9l2 2 4-4" /></svg>);
+    case "packing":
+      return (<svg className={cls} fill="none" stroke="currentColor" viewBox="0 0 24 24" strokeWidth={1.7}><path strokeLinecap="round" strokeLinejoin="round" d="M20 7l-8-4-8 4m16 0l-8 4m8-4v10l-8 4m0-10L4 7m8 4v10M4 7v10l8 4" /></svg>);
+    case "documents":
+      return (<svg className={cls} fill="none" stroke="currentColor" viewBox="0 0 24 24" strokeWidth={1.7}><path strokeLinecap="round" strokeLinejoin="round" d="M14 3H6a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V9zM14 3v6h6" /></svg>);
+    case "collaborators":
+      return (<svg className={cls} viewBox="0 0 20 20" fill="currentColor"><path d="M7 8a3 3 0 1 0 0-6 3 3 0 0 0 0 6Zm7.5 1a2.5 2.5 0 1 0 0-5 2.5 2.5 0 0 0 0 5ZM1.615 16.428a1.224 1.224 0 0 1-.569-1.175 6.002 6.002 0 0 1 11.908 0c.058.467-.172.92-.57 1.174A9.953 9.953 0 0 1 7 18a9.953 9.953 0 0 1-5.385-1.572ZM14.5 16h-.106c.07-.297.088-.611.048-.933a7.47 7.47 0 0 0-1.588-3.755 4.502 4.502 0 0 1 5.874 2.636.818.818 0 0 1-.36.98A7.465 7.465 0 0 1 14.5 16Z" /></svg>);
+    default:
+      return null;
+  }
 }
