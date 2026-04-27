@@ -17,6 +17,10 @@ import TravelDocuments from "@/components/TravelDocuments";
 import MapPatternBg from "@/components/MapPatternBg";
 import TripMap from "@/components/TripMap";
 import TripTravelers from "@/components/TripTravelers";
+import {
+  Plane, Bed, Star, UtensilsCrossed, ArrowLeftRight, MapPin,
+  CircleDollarSign, ClipboardCheck, Briefcase, Folder, Users,
+} from "lucide-react";
 import InlineConfirm from "@/components/InlineConfirm";
 import CATEGORY_COLORS from "@/lib/categoryColors";
 import DateRangePicker from "@/components/DateRangePicker";
@@ -1426,7 +1430,7 @@ export default function TripDetailPage() {
               writing-mode: vertical-rl;
               transform: rotate(180deg);
               font-family: "Oswald", sans-serif;
-              font-size: 12.5px; letter-spacing: 0.12em;
+              font-size: 12.5px; letter-spacing: 0.06em;
               text-transform: uppercase; font-weight: 600;
               color: rgba(42,31,20,0.65);
               line-height: 1; white-space: nowrap;
@@ -1854,38 +1858,23 @@ function getCategoryInfo(value) {
   return CATEGORIES.find((c) => c.value === value) || { value: "other", label: "Other", icon: "📌" };
 }
 
-// Uniform outline-style icon set for the angled-folder tab strip.
-// All icons: 24x24 viewBox, fill="none", stroke="currentColor", strokeWidth 1.6,
-// round line joins/caps. Same visual weight across the whole row.
+// Tab icons — lucide-react, hand-tuned by the lucide team for visual
+// uniformity across the whole set. Each icon ships as an SVG component
+// with consistent stroke weight, optical sizing, and viewBox usage.
 function TabIcon({ kind }) {
-  const cls = "tab-icon";
-  const wrap = (children) => (
-    <svg className={cls} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.6" strokeLinecap="round" strokeLinejoin="round">{children}</svg>
-  );
+  const props = { className: "tab-icon", size: 22, strokeWidth: 1.6, "aria-hidden": true };
   switch (kind) {
-    case "flights":
-      return wrap(<path d="M6 12 3.27 4.54a.5.5 0 0 1 .67-.65l16.91 7.65a.5.5 0 0 1 0 .92L3.94 20.11a.5.5 0 0 1-.67-.65L6 12Zm0 0h7" />);
-    case "accommodations":
-      return wrap(<><path d="M3 19V8M21 19V8M3 13a3 3 0 0 1 3-3h12a3 3 0 0 1 3 3M3 19h18M3 19v3M21 19v3" /><circle cx="8" cy="11" r="2" /></>);
-    case "activities":
-      return wrap(<path d="m12 2.5 3 6.1 6.7 1-4.85 4.7 1.15 6.7L12 17.85 5.95 21l1.15-6.7L2.25 9.6l6.7-1L12 2.5Z" />);
-    case "dining":
-      return wrap(<><path d="M5 3v7a3 3 0 0 0 6 0V3M5 7h6M8 10v11" /><path d="M19 3c-2.5 0-4 2.5-4 6s1.5 6 4 6v6" /></>);
-    case "transportation":
-      return wrap(<path d="M7.5 21 3 16.5 7.5 12M3 16.5h13.5M16.5 3 21 7.5 16.5 12M21 7.5H7.5" />);
-    case "budget":
-      return wrap(<><path d="M12 3v18" /><path d="M18 7H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6" /></>);
-    case "map":
-      return wrap(<><path d="M12 22s7-7 7-12a7 7 0 0 0-14 0c0 5 7 12 7 12Z" /><circle cx="12" cy="10" r="2.5" /></>);
-    case "checklist":
-      return wrap(<><path d="M9 5H6a2 2 0 0 0-2 2v13a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V7a2 2 0 0 0-2-2h-3" /><rect x="9" y="2.5" width="6" height="4.5" rx="1" /><path d="m8.5 14 2.5 2.5L16 11" /></>);
-    case "packing":
-      return wrap(<><path d="M5 9V7a3 3 0 0 1 3-3h8a3 3 0 0 1 3 3v2" /><rect x="5" y="9" width="14" height="12" rx="2" /><path d="M9 13h6M10 4V3a2 2 0 0 1 4 0v1" /></>);
-    case "documents":
-      return wrap(<><path d="M14 3H6a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V9z" /><path d="M14 3v6h6" /><path d="M8 13h8M8 17h6" /></>);
-    case "collaborators":
-      return wrap(<><circle cx="9" cy="8" r="3.6" /><path d="M2.5 20.5a6.5 6.5 0 0 1 13 0" /><circle cx="17.5" cy="9.5" r="2.6" /><path d="M14.5 14a5 5 0 0 1 7 4.5" /></>);
-    default:
-      return null;
+    case "flights":        return <Plane {...props} />;
+    case "accommodations": return <Bed {...props} />;
+    case "activities":     return <Star {...props} />;
+    case "dining":         return <UtensilsCrossed {...props} />;
+    case "transportation": return <ArrowLeftRight {...props} />;
+    case "map":            return <MapPin {...props} />;
+    case "budget":         return <CircleDollarSign {...props} />;
+    case "checklist":      return <ClipboardCheck {...props} />;
+    case "packing":        return <Briefcase {...props} />;
+    case "documents":      return <Folder {...props} />;
+    case "collaborators":  return <Users {...props} />;
+    default:               return null;
   }
 }
