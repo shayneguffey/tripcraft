@@ -954,9 +954,8 @@ export default function TripDetailPage() {
                     borderLeft: isActive ? "1px solid #b5552a" : trip?.banner_image ? "1px solid rgba(255,255,255,0.15)" : "1px solid rgba(180,165,140,0.3)",
                     borderRight: isActive ? "1px solid #b5552a" : trip?.banner_image ? "1px solid rgba(255,255,255,0.15)" : "1px solid rgba(180,165,140,0.3)",
                     borderBottom: isActive ? "2px solid transparent" : "2px solid rgba(180,165,140,0.3)",
-                    marginBottom: -2,
+                    marginBottom: -3,
                     width: "240px",
-                    minHeight: "56px",
                   }}
                   onClick={() => switchItinerary(itin.id)}
                 >
@@ -1011,49 +1010,6 @@ export default function TripDetailPage() {
                     />
                   </div>
 
-                  {/* Row 2: Pocket Guide / Print PDF — only on active tab.
-                      Tab minHeight keeps all tabs the same height so
-                      switching doesn't cause vertical shift. */}
-                  {isActive && (
-                  <div
-                    onClick={(e) => e.stopPropagation()}
-                    className="flex items-center justify-center gap-1 mt-0.5 pt-0.5 border-t border-white/20 w-full whitespace-nowrap"
-                  >
-                    <button
-                      ref={guideBtnRef}
-                      onClick={(e) => { e.stopPropagation(); openPocketGuide(); }}
-                      disabled={guideLoading}
-                      className="inline-flex items-center gap-1 px-1.5 py-0 rounded text-[10px] font-semibold uppercase tracking-wider text-white transition-colors hover:bg-white/15 disabled:opacity-60 disabled:cursor-not-allowed"
-                      title="Open the Pocket Guide (traveler view)"
-                    >
-                      {guideLoading ? (
-                        <div className="w-2.5 h-2.5 border border-white/40 border-t-white rounded-full animate-spin" />
-                      ) : (
-                        <svg className="w-2.5 h-2.5" fill="none" stroke="currentColor" viewBox="0 0 24 24" strokeWidth={2.5}>
-                          <path strokeLinecap="round" strokeLinejoin="round" d="M12 6.253v13m0-13C10.832 5.477 9.246 5 7.5 5S4.168 5.477 3 6.253v13C4.168 18.477 5.754 18 7.5 18s3.332.477 4.5 1.253m0-13C13.168 5.477 14.754 5 16.5 5c1.747 0 3.332.477 4.5 1.253v13C19.832 18.477 18.247 18 16.5 18c-1.746 0-3.332.477-4.5 1.253" />
-                        </svg>
-                      )}
-                      Pocket Guide
-                    </button>
-                    <span className="text-white/30 text-[10px]">·</span>
-                    <button
-                      type="button"
-                      onClick={(e) => { e.stopPropagation(); openTripPlan(); }}
-                      disabled={planLoading}
-                      className="inline-flex items-center gap-1 px-1.5 py-0 rounded text-[10px] font-semibold uppercase tracking-wider text-white transition-colors hover:bg-white/15 disabled:opacity-60 disabled:cursor-not-allowed"
-                      title="Open the Trip Plan (printable PDF)"
-                    >
-                      {planLoading ? (
-                        <div className="w-2.5 h-2.5 border border-white/40 border-t-white rounded-full animate-spin" />
-                      ) : (
-                        <svg className="w-2.5 h-2.5" fill="none" stroke="currentColor" viewBox="0 0 24 24" strokeWidth={2.5}>
-                          <path strokeLinecap="round" strokeLinejoin="round" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
-                        </svg>
-                      )}
-                      Trip Plan
-                    </button>
-                  </div>
-                  )}
                 </div>
               );
             })}
@@ -1077,11 +1033,50 @@ export default function TripDetailPage() {
 
         {/* ═══ CALENDAR ═══ */}
         {calendarDates.length > 0 ? (
-          <div className="relative z-10 bg-white rounded-2xl border border-stone-200 shadow-sm overflow-hidden select-none uppercase">
+          <div
+            className="relative z-10 bg-white rounded-2xl shadow-sm overflow-hidden select-none uppercase"
+            style={{ border: "3px solid #da7b4a" }}
+          >
             {/* Itinerary Info Row */}
-            <div className="px-6 py-2 border-b border-stone-200/60 bg-white normal-case">
-              <div className="flex items-start gap-6">
-                {/* Left: Dates + Travelers */}
+            <div className="px-5 py-3 border-b border-stone-200/60 bg-white normal-case">
+              <div className="flex items-start gap-5">
+                {/* Pocket Guide + Trip Plan — stacked vertically on the far left */}
+                <div className="flex-shrink-0 flex flex-col gap-1.5">
+                  <button
+                    ref={guideBtnRef}
+                    onClick={openPocketGuide}
+                    disabled={guideLoading}
+                    className="flex items-center justify-center gap-1.5 px-3 py-1.5 rounded-md text-[11px] font-semibold uppercase tracking-wider text-stone-600 bg-stone-100 hover:bg-stone-200 hover:text-stone-800 transition-colors disabled:opacity-60 disabled:cursor-not-allowed border border-stone-300 min-w-[120px]"
+                    title="Open the Pocket Guide (traveler view)"
+                  >
+                    {guideLoading ? (
+                      <div className="w-3 h-3 border border-stone-400 border-t-stone-700 rounded-full animate-spin" />
+                    ) : (
+                      <svg className="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24" strokeWidth={2}>
+                        <path strokeLinecap="round" strokeLinejoin="round" d="M12 6.253v13m0-13C10.832 5.477 9.246 5 7.5 5S4.168 5.477 3 6.253v13C4.168 18.477 5.754 18 7.5 18s3.332.477 4.5 1.253m0-13C13.168 5.477 14.754 5 16.5 5c1.747 0 3.332.477 4.5 1.253v13C19.832 18.477 18.247 18 16.5 18c-1.746 0-3.332.477-4.5 1.253" />
+                      </svg>
+                    )}
+                    Pocket Guide
+                  </button>
+                  <button
+                    type="button"
+                    onClick={openTripPlan}
+                    disabled={planLoading}
+                    className="flex items-center justify-center gap-1.5 px-3 py-1.5 rounded-md text-[11px] font-semibold uppercase tracking-wider text-stone-600 bg-stone-100 hover:bg-stone-200 hover:text-stone-800 transition-colors disabled:opacity-60 disabled:cursor-not-allowed border border-stone-300 min-w-[120px]"
+                    title="Open the Trip Plan (printable PDF)"
+                  >
+                    {planLoading ? (
+                      <div className="w-3 h-3 border border-stone-400 border-t-stone-700 rounded-full animate-spin" />
+                    ) : (
+                      <svg className="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24" strokeWidth={2}>
+                        <path strokeLinecap="round" strokeLinejoin="round" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
+                      </svg>
+                    )}
+                    Trip Plan
+                  </button>
+                </div>
+
+                {/* Dates + Travelers */}
                 <div className="flex-shrink-0">
                   {/* Date range — clickable to open date picker */}
                   <div className="relative mt-0.5 min-h-[16px]">
