@@ -784,9 +784,9 @@ export default function DashboardPage() {
 
       {/* Header layer — always on top, always clickable */}
       <div className="relative z-20">
-      <div className="max-w-6xl mx-auto px-6 pt-2 pb-0 flex items-center justify-between">
-        {/* View toggle: cards / globe */}
-        <div className="flex items-center gap-2">
+      <div className="max-w-6xl mx-auto px-6 pt-2 pb-0 grid grid-cols-3 items-center">
+        {/* View toggle: cards / globe — left column */}
+        <div className="flex items-center gap-2 justify-self-start">
           <button
             onClick={() => setView("cards")}
             className={`w-12 h-12 rounded-lg flex items-center justify-center backdrop-blur-sm transition-colors ${view === "cards" ? "bg-[#da7b4a]/25 text-[#b5552a]" : "bg-white/20 text-stone-500 hover:bg-[#da7b4a]/25 hover:text-[#b5552a]"}`}
@@ -817,12 +817,15 @@ export default function DashboardPage() {
           </Link>
         </div>
 
-        {/* Centered logo */}
-        <div className="flex items-center">
+        {/* Centered logo — center column */}
+        <div className="flex items-center justify-center">
           <img src="/TRIPCRAFTLOGO.png" alt="TripCraft" style={{ height: 265, width: "auto" }} />
         </div>
 
-        <AccountMenu variant="light" />
+        {/* Account menu — right column */}
+        <div className="justify-self-end">
+          <AccountMenu variant="light" />
+        </div>
       </div>
       </div>{/* end header layer */}
 
