@@ -292,10 +292,12 @@ function TripCard({ trip, index, onRegenerate, onStatusChange, onArchive, onFiel
               className="font-bold text-stone-800 text-base leading-tight block mb-0.5"
               placeholder="Trip name"
             />
-            {trip.start_date && trip.end_date && (
+            {trip.start_date && trip.end_date ? (
               <p className="text-stone-400 text-xs">
                 {formatTripDates(trip.start_date, trip.end_date)}
               </p>
+            ) : (
+              <p className="text-[#da7b4a] text-xs italic">Set dates →</p>
             )}
             </div>
           </div>

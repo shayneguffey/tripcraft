@@ -1371,12 +1371,31 @@ export default function TripDetailPage() {
             })}
           </div>
         ) : (
-          <div className="text-center py-16 rounded-xl border border-stone-200" style={{ background: "rgba(255,255,255,0.4)" }}>
-            <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor" className="w-12 h-12 mx-auto mb-3 text-stone-400/50">
+          <div className="text-center py-12 rounded-xl border-2 border-dashed border-[#da7b4a]/40 relative" style={{ background: "rgba(255,255,255,0.5)" }}>
+            <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor" className="w-12 h-12 mx-auto mb-3 text-[#da7b4a]/60">
               <path fillRule="evenodd" d="M6.75 2.25A.75.75 0 0 1 7.5 3v1.5h9V3A.75.75 0 0 1 18 3v1.5h.75a3 3 0 0 1 3 3v11.25a3 3 0 0 1-3 3H5.25a3 3 0 0 1-3-3V7.5a3 3 0 0 1 3-3H6V3a.75.75 0 0 1 .75-.75Zm13.5 9a1.5 1.5 0 0 0-1.5-1.5H5.25a1.5 1.5 0 0 0-1.5 1.5v7.5a1.5 1.5 0 0 0 1.5 1.5h13.5a1.5 1.5 0 0 0 1.5-1.5v-7.5Z" clipRule="evenodd" />
             </svg>
-            <h3 className="text-lg font-semibold text-stone-600 mb-2">No dates set</h3>
-            <p className="text-stone-400 text-sm">Edit your trip to add start and end dates.</p>
+            <h3 className="text-lg font-semibold text-stone-700 mb-1">No trip dates yet</h3>
+            <p className="text-stone-500 text-sm mb-4">Set the start and end dates to see the calendar and start planning.</p>
+            <div className="relative inline-block">
+              <button
+                onClick={() => setEditingItineraryDates(true)}
+                className="inline-flex items-center gap-2 px-4 py-2 rounded-lg bg-[#da7b4a] text-white font-semibold text-sm hover:bg-[#b5552a] transition-colors shadow-sm"
+              >
+                <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24" strokeWidth={2}>
+                  <path strokeLinecap="round" strokeLinejoin="round" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" />
+                </svg>
+                Set trip dates
+              </button>
+              {editingItineraryDates && (
+                <DateRangePicker
+                  startDate={effectiveStart || null}
+                  endDate={effectiveEnd || null}
+                  onSave={handleDatePickerSave}
+                  onCancel={() => setEditingItineraryDates(false)}
+                />
+              )}
+            </div>
           </div>
         )}
 
