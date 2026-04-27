@@ -1397,22 +1397,23 @@ export default function TripDetailPage() {
               border: 1px solid rgba(180,165,140,0.55);
               border-bottom: none;
               border-radius: 4px 4px 0 0;
-              transform: rotate(8deg) translateY(2px);
+              transform: rotate(8deg) translateY(0);
               transform-origin: bottom center;
               transition: transform 0.18s ease, background 0.18s ease, border-color 0.18s ease, box-shadow 0.18s ease;
               display: flex; flex-direction: column; align-items: center; justify-content: flex-start;
               gap: 4px; padding: 8px 4px; cursor: pointer;
               margin-right: -8px; box-sizing: border-box;
-              position: relative; flex-shrink: 0;
+              position: relative; z-index: 1;
+              flex-shrink: 0;
             }
             .trip-tab:hover { background: rgba(255,255,255,0.55); z-index: 3; }
             .trip-tab.active {
               background: rgba(255,255,255,0.85);
               border-color: #da7b4a;
               border-width: 1.5px;
-              transform: rotate(0deg) translateY(6px);
-              z-index: 5;
-              box-shadow: 0 -3px 0 0 #da7b4a inset, 0 -2px 8px rgba(218,123,74,0.18);
+              transform: rotate(0deg) translateY(-3px);
+              z-index: 6;
+              box-shadow: 0 -3px 0 0 #da7b4a inset, 0 -3px 10px rgba(218,123,74,0.20);
             }
             .trip-tab .tab-icon { width: 16px; height: 16px; flex-shrink: 0; opacity: 0.75; }
             .trip-tab.active .tab-icon { opacity: 1; }
@@ -1434,10 +1435,11 @@ export default function TripDetailPage() {
               background: rgba(255,255,255,0.65);
               border: 1px solid rgba(180,165,140,0.45);
               border-radius: 0 8px 8px 8px;
-              padding: 10px 14px;
+              padding: 18px 14px 10px;
               min-height: 320px;
-              position: relative; z-index: 1;
-              margin-top: -1px;
+              position: relative;
+              z-index: 4;
+              margin-top: -10px;
             }
           `}</style>
           <div className="trip-tabs-row">
