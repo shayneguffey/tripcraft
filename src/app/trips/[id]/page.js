@@ -1401,8 +1401,8 @@ export default function TripDetailPage() {
             .trip-tabs-row { display: flex; align-items: flex-end; padding-left: 14px; height: 152px; position: relative; z-index: 2; }
             .trip-tab {
               width: 64px; height: 144px;
-              background: #c89978;
-              border: 1px solid rgba(120,75,45,0.45);
+              background: #e2c8b0;
+              border: 1px solid rgba(120,80,50,0.25);
               border-bottom: none;
               border-radius: 9px 9px 0 0;
               transform: rotate(8deg) translateY(0);
@@ -1414,7 +1414,7 @@ export default function TripDetailPage() {
               position: relative; z-index: 1;
               flex-shrink: 0;
             }
-            .trip-tab:hover { background: #d4a585; z-index: 3; }
+            .trip-tab:hover { background: #ecd6bf; z-index: 3; }
             .trip-tab.active {
               background: #fefcf5;
               border-top: 4px solid #da7b4a;
